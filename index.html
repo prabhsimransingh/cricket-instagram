@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>SixShot — Cricket Content Studio</title>
+<title>WicketGram — Cricket Club Posts</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Oswald:wght@600;700&family=Bebas+Neue&display=swap"/>
 <script src="https://cdn.tailwindcss.com"></script>
@@ -64,6 +64,7 @@
   .type-milestone{background:rgba(160,80,240,.12);color:#c084fc}
   .type-photo{background:rgba(236,72,153,.12);color:#f472b6}
   @media(max-width:860px){.rg2{grid-template-columns:1fr!important}.rg3{grid-template-columns:1fr 1fr!important}}
+  @media(max-width:640px){.post-card{grid-template-columns:1fr!important}.post-card>div:first-child{aspect-ratio:1;width:100%!important}}
 </style>
 </head>
 <body x-data="App()" x-init="init()">
@@ -79,8 +80,8 @@
     <div style="display:flex;align-items:center;gap:14px">
       <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#1a472a,#0d2a18);display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 0 0 1px rgba(240,180,41,.2)">🏏</div>
       <div>
-        <div style="font-size:18px;font-weight:800;letter-spacing:-.3px;background:linear-gradient(90deg,#fff,rgba(255,255,255,.7));-webkit-background-clip:text;-webkit-text-fill-color:transparent">SixShot</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.05em;text-transform:uppercase" x-text="(settings.clubName||'Cricket Club') + ' · Content Studio'"></div>
+        <div style="font-size:18px;font-weight:800;letter-spacing:-.3px;background:linear-gradient(90deg,#f0b429,#ffe580);-webkit-background-clip:text;-webkit-text-fill-color:transparent">WicketGram</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.05em;text-transform:uppercase" x-text="(settings.clubName||'Cricket Club') + ' · Social Media'"></div>
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:12px">
@@ -116,22 +117,41 @@
       <p style="font-size:16px;font-weight:600;color:rgba(255,255,255,.45)">Queue is empty</p>
       <p style="font-size:13px;margin-top:4px">Create a post using the New Post tab</p>
     </div>
-    <div style="display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;flex-direction:column;gap:16px">
     <template x-for="post in posts" :key="post.id">
-      <div class="post-card" style="display:flex;gap:0">
-        <div style="flex-shrink:0;width:130px;min-height:130px;background:#0a0a0a;position:relative;overflow:hidden">
-          <canvas :id="'thumb-'+post.id" width="260" height="260" style="width:130px;height:130px;display:block" x-init="$nextTick(()=>renderThumb(post))"></canvas>
-        </div>
-        <div style="flex:1;padding:16px 20px;min-width:0">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
-            <span class="badge" :class="'badge-'+post.status" x-text="post.status"></span>
-            <span class="type-pill" :class="'type-'+post.type" x-text="post.type==='motm'?'Man of Match':post.type==='squad'?'Playing XI':post.type"></span>
-            <span style="font-size:11px;color:rgba(255,255,255,.25);margin-left:auto" x-text="fmtDate(post.createdAt)"></span>
+      <div class="post-card" style="display:grid;grid-template-columns:200px 1fr;min-height:200px">
+
+        <!-- LEFT: square graphic preview with type overlay -->
+        <div style="position:relative;aspect-ratio:1;background:#060a0e;overflow:hidden;border-right:1px solid rgba(255,255,255,.06)">
+          <canvas :id="'thumb-'+post.id" width="400" height="400" style="width:100%;height:100%;display:block;object-fit:cover" x-init="$nextTick(()=>renderThumb(post))"></canvas>
+          <!-- type badge overlaid bottom-left of thumbnail -->
+          <div style="position:absolute;bottom:10px;left:10px">
+            <span class="type-pill" :class="'type-'+post.type"
+              x-text="post.type==='motm'?'🌟 Man of Match':post.type==='squad'?'📋 Playing XI':post.type==='match'?'🏆 Match Result':post.type==='fixture'?'⚡ Match Day':post.type==='milestone'?'🎯 Milestone':'📸 Photo'">
+            </span>
           </div>
-          <textarea class="inp" x-model="post.caption" @change="saveQueue()" rows="2"
-            style="resize:none;margin-bottom:10px;font-size:13px;line-height:1.5" placeholder="Caption…"></textarea>
-          <div x-show="post.captions&&post.captions.length>1" style="margin-bottom:12px">
-            <div class="sh">AI Caption Options</div>
+          <!-- status dot top-right -->
+          <div style="position:absolute;top:10px;right:10px">
+            <span class="badge" :class="'badge-'+post.status" x-text="post.status"></span>
+          </div>
+        </div>
+
+        <!-- RIGHT: meta + caption + actions -->
+        <div style="padding:18px 22px;display:flex;flex-direction:column;gap:10px;min-width:0">
+
+          <!-- Title row -->
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+            <div style="font-size:15px;font-weight:700;color:#e6edf3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" x-text="postTitle(post)"></div>
+            <span style="font-size:11px;color:rgba(255,255,255,.22);white-space:nowrap" x-text="fmtDate(post.createdAt)"></span>
+          </div>
+
+          <!-- Caption textarea -->
+          <textarea class="inp" x-model="post.caption" @change="saveQueue()" rows="3"
+            style="resize:none;font-size:13px;line-height:1.55;flex:1" placeholder="Caption…"></textarea>
+
+          <!-- AI caption options (collapsed by default, expandable) -->
+          <div x-show="post.captions&&post.captions.length>1">
+            <div class="sh" style="margin-bottom:8px">✨ AI Caption Options</div>
             <div style="display:flex;flex-direction:column;gap:6px">
               <template x-for="(c,i) in post.captions||[]" :key="i">
                 <div class="cap-card" :class="{selected:post.caption===c.caption}" @click="post.caption=c.caption;saveQueue()">
@@ -141,16 +161,19 @@
               </template>
             </div>
           </div>
-          <div style="display:flex;flex-wrap:wrap;gap:8px">
-            <button class="btn btn-green" x-show="post.status!=='approved'" @click="approvePost(post)">✓ Approve</button>
-            <button class="btn btn-gold" @click="publishNow(post)" :disabled="publishing===post.id">
+
+          <!-- Action buttons -->
+          <div style="display:flex;flex-wrap:wrap;gap:8px;padding-top:4px;border-top:1px solid rgba(255,255,255,.06)">
+            <button class="btn btn-green" x-show="post.status!=='approved'" @click="approvePost(post)" style="font-size:13px">✓ Approve</button>
+            <button class="btn btn-gold" @click="publishNow(post)" :disabled="publishing===post.id" style="font-size:13px">
               <span x-show="publishing!==post.id">🚀 Post Now</span>
               <span x-show="publishing===post.id" style="display:flex;align-items:center;gap:6px"><span class="spin"></span>Posting…</span>
             </button>
-            <button class="btn btn-ghost" @click="regenCaptions(post)" :disabled="!settings.groqKey">✨ Captions</button>
-            <button class="btn btn-red" @click="rejectPost(post)">✕ Remove</button>
+            <button class="btn btn-ghost" @click="regenCaptions(post)" :disabled="!settings.groqKey" style="font-size:13px">✨ AI Captions</button>
+            <button class="btn btn-red" @click="rejectPost(post)" style="font-size:13px;margin-left:auto">✕ Remove</button>
           </div>
         </div>
+
       </div>
     </template>
     </div>
@@ -159,13 +182,50 @@
   <!-- ══ NEW POST ══ -->
   <div x-show="tab==='new'" style="padding-top:28px">
     <h2 style="font-size:20px;font-weight:700;margin-bottom:20px">Create New Post</h2>
-    <div class="stab-bar">
-      <div class="stab" :class="{active:newTab==='match'}"     @click="newTab='match'">🏆 Match Result</div>
-      <div class="stab" :class="{active:newTab==='fixture'}"   @click="newTab='fixture'">⚡ Match Day</div>
-      <div class="stab" :class="{active:newTab==='squad'}"     @click="newTab='squad'">📋 Playing XI</div>
-      <div class="stab" :class="{active:newTab==='motm'}"      @click="newTab='motm'">🌟 Man of Match</div>
-      <div class="stab" :class="{active:newTab==='milestone'}" @click="newTab='milestone'">🎯 Milestone</div>
-      <div class="stab" :class="{active:newTab==='photo'}"     @click="newTab='photo'">📸 Photo Post</div>
+    <!-- Post type picker — card style -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px" class="rg3">
+      <div @click="newTab='match'" :class="newTab==='match'?'active':''"
+        style="cursor:pointer;border-radius:14px;padding:16px 18px;border:1px solid rgba(255,255,255,.08);background:rgba(22,27,34,.6);transition:all .15s"
+        :style="newTab==='match'?'border-color:rgba(63,185,80,.5);background:rgba(63,185,80,.08)':''">
+        <div style="font-size:26px;margin-bottom:8px">🏆</div>
+        <div style="font-size:14px;font-weight:700;color:#e6edf3">Match Result</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.35);margin-top:3px">Scorecard, winners, top performers</div>
+      </div>
+      <div @click="newTab='fixture'" :class="newTab==='fixture'?'active':''"
+        style="cursor:pointer;border-radius:14px;padding:16px 18px;border:1px solid rgba(255,255,255,.08);background:rgba(22,27,34,.6);transition:all .15s"
+        :style="newTab==='fixture'?'border-color:rgba(88,166,255,.5);background:rgba(88,166,255,.08)':''">
+        <div style="font-size:26px;margin-bottom:8px">⚡</div>
+        <div style="font-size:14px;font-weight:700;color:#e6edf3">Match Day</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.35);margin-top:3px">Hype post for upcoming fixture</div>
+      </div>
+      <div @click="newTab='squad'" :class="newTab==='squad'?'active':''"
+        style="cursor:pointer;border-radius:14px;padding:16px 18px;border:1px solid rgba(255,255,255,.08);background:rgba(22,27,34,.6);transition:all .15s"
+        :style="newTab==='squad'?'border-color:rgba(240,180,41,.5);background:rgba(240,180,41,.07)':''">
+        <div style="font-size:26px;margin-bottom:8px">📋</div>
+        <div style="font-size:14px;font-weight:700;color:#e6edf3">Playing XI</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.35);margin-top:3px">Announce your squad lineup</div>
+      </div>
+      <div @click="newTab='motm'" :class="newTab==='motm'?'active':''"
+        style="cursor:pointer;border-radius:14px;padding:16px 18px;border:1px solid rgba(255,255,255,.08);background:rgba(22,27,34,.6);transition:all .15s"
+        :style="newTab==='motm'?'border-color:rgba(255,170,0,.5);background:rgba(255,170,0,.07)':''">
+        <div style="font-size:26px;margin-bottom:8px">🌟</div>
+        <div style="font-size:14px;font-weight:700;color:#e6edf3">Man of the Match</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.35);margin-top:3px">Player spotlight with stats</div>
+      </div>
+      <div @click="newTab='milestone'" :class="newTab==='milestone'?'active':''"
+        style="cursor:pointer;border-radius:14px;padding:16px 18px;border:1px solid rgba(255,255,255,.08);background:rgba(22,27,34,.6);transition:all .15s"
+        :style="newTab==='milestone'?'border-color:rgba(160,80,240,.5);background:rgba(160,80,240,.07)':''">
+        <div style="font-size:26px;margin-bottom:8px">🎯</div>
+        <div style="font-size:14px;font-weight:700;color:#e6edf3">Milestone</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.35);margin-top:3px">Club records, season achievements</div>
+      </div>
+      <div @click="newTab='photo'" :class="newTab==='photo'?'active':''"
+        style="cursor:pointer;border-radius:14px;padding:16px 18px;border:1px solid rgba(255,255,255,.08);background:rgba(22,27,34,.6);transition:all .15s"
+        :style="newTab==='photo'?'border-color:rgba(236,72,153,.5);background:rgba(236,72,153,.06)':''">
+        <div style="font-size:26px;margin-bottom:8px">📸</div>
+        <div style="font-size:14px;font-weight:700;color:#e6edf3">Photo Post</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.35);margin-top:3px">Upload any photo with AI caption</div>
+      </div>
     </div>
 
     <!-- ─── MATCH RESULT ─── -->
@@ -1011,7 +1071,7 @@ async function generateCaptions(type,data,cfg){
 // ═══════════════════════════════════════════════════════
 //  IMGUR + INSTAGRAM
 // ═══════════════════════════════════════════════════════
-async function uploadToImgur(b64,cid){const r=await fetch('https://api.imgur.com/3/image',{method:'POST',headers:{'Authorization':`Client-ID ${cid}`,'Content-Type':'application/json'},body:JSON.stringify({image:b64,type:'base64',title:'SixShot Cricket'})});const d=await r.json();if(!d.success)throw new Error(d.data?.error||'Imgur failed');return d.data.link;}
+async function uploadToImgur(b64,cid){const r=await fetch('https://api.imgur.com/3/image',{method:'POST',headers:{'Authorization':`Client-ID ${cid}`,'Content-Type':'application/json'},body:JSON.stringify({image:b64,type:'base64',title:'WicketGram Cricket'})});const d=await r.json();if(!d.success)throw new Error(d.data?.error||'Imgur failed');return d.data.link;}
 async function publishToInstagram(url,caption,cfg){const{igAccountId:id,igToken:tok}=cfg;const r1=await fetch(`https://graph.facebook.com/v19.0/${id}/media`,{method:'POST',body:new URLSearchParams({image_url:url,caption,access_token:tok})});const j1=await r1.json();if(j1.error)throw new Error(j1.error.message);const r2=await fetch(`https://graph.facebook.com/v19.0/${id}/media_publish`,{method:'POST',body:new URLSearchParams({creation_id:j1.id,access_token:tok})});const j2=await r2.json();if(j2.error)throw new Error(j2.error.message);return j2.id;}
 
 // ═══════════════════════════════════════════════════════
@@ -1147,7 +1207,8 @@ function App(){return{
     }catch(e){this.showToast(`CSV error: ${e.message}`,false);}
   },
 
-  saveSettings(){Store.setSettings(this.settings);document.title=`${this.settings.clubName||'Cricket'} — SixShot`;this.showToast('✅ Settings saved');},
+  postTitle(post){const m=post.meta||{};const t=post.type;if(t==='match')return m.opponent?`vs ${m.opponent}`:'Match Result';if(t==='fixture')return m.opponent?`vs ${m.opponent} · Match Day`:'Match Day';if(t==='squad')return m.opponent?`Playing XI · vs ${m.opponent}`:'Playing XI';if(t==='motm')return m.name?`MOTM: ${m.name}`:'Man of the Match';if(t==='milestone')return m.title||'Milestone';return 'Photo Post';},
+  saveSettings(){Store.setSettings(this.settings);document.title=`${this.settings.clubName||'Cricket'} · WicketGram`;this.showToast('✅ Settings saved');},
   async testInstagram(){this.igStatus='Testing…';this.igOk=false;try{const r=await fetch(`https://graph.facebook.com/v19.0/${this.settings.igAccountId}?fields=id,name,username,followers_count&access_token=${this.settings.igToken}`);const d=await r.json();if(d.error)throw new Error(d.error.message);this.igOk=true;this.igStatus=`✅ Connected: @${d.username} — ${d.followers_count?.toLocaleString()||'?'} followers`;}catch(e){this.igStatus=`❌ ${e.message}`;}},
   clearAll(){if(!confirm('Delete ALL posts, history and settings?'))return;['cc_q','cc_hist','cc_cfg'].forEach(k=>localStorage.removeItem(k));location.reload();},
   showToast(msg,ok=true){this.toast={show:true,msg,ok};clearTimeout(this._tt);this._tt=setTimeout(()=>this.toast.show=false,3800);},
