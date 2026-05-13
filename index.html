@@ -169,7 +169,7 @@
               <span x-show="publishing!==post.id">🚀 Post Now</span>
               <span x-show="publishing===post.id" style="display:flex;align-items:center;gap:6px"><span class="spin"></span>Posting…</span>
             </button>
-            <button class="btn btn-ghost" @click="regenCaptions(post)" :disabled="!settings.anthropicKey">✨ New Captions</button>
+            <button class="btn btn-ghost" @click="regenCaptions(post)" :disabled="!settings.groqKey">✨ New Captions</button>
             <button class="btn btn-red" @click="rejectPost(post)">✕ Remove</button>
           </div>
         </div>
@@ -556,8 +556,8 @@
         <div class="section-h">🔑 API Keys</div>
         <p style="font-size:12px;color:rgba(255,255,255,.35);margin-bottom:16px;line-height:1.5">Keys are stored in your browser only — never sent anywhere except the respective APIs.</p>
         <div style="margin-bottom:12px">
-          <label class="lbl">Anthropic API Key</label>
-          <input class="inp" type="password" x-model="settings.anthropicKey" placeholder="sk-ant-…"/>
+          <label class="lbl">Groq API Key</label>
+          <input class="inp" type="password" x-model="settings.groqKey" placeholder="gsk_…"/>
         </div>
         <div style="margin-bottom:12px">
           <label class="lbl">Instagram Access Token</label>
@@ -590,8 +590,8 @@
             <p>Convert to a Creator/Business account → connect to a Facebook Page → create a Meta Developer App → add Instagram Graph API → generate a long-lived token with <code style="font-size:11px;background:rgba(255,255,255,.07);padding:1px 5px;border-radius:4px">instagram_content_publish</code> scope</p>
           </div>
           <div>
-            <p style="font-weight:600;color:rgba(255,255,255,.85);margin-bottom:6px">2. Anthropic</p>
-            <p>Get your key at <a href="https://console.anthropic.com" target="_blank" style="color:#f0b429">console.anthropic.com</a> → API Keys</p>
+            <p style="font-weight:600;color:rgba(255,255,255,.85);margin-bottom:6px">2. Groq (AI Captions)</p>
+            <p>Get your free key at <a href="https://console.groq.com" target="_blank" style="color:#f0b429">console.groq.com</a> → API Keys</p>
             <p style="margin-top:8px;font-weight:600;color:rgba(255,255,255,.85)">3. Imgur</p>
             <p>Register a free app at <a href="https://api.imgur.com/oauth2/addclient" target="_blank" style="color:#f0b429">api.imgur.com</a> — use "OAuth 2 without callback URL". Copy the Client ID.</p>
           </div>
@@ -617,7 +617,7 @@ const Store = {
   setHistory:  (v)  => localStorage.setItem('cc_hist', JSON.stringify(v)),
   getSettings: ()   => ({
     clubName:'Cricket Club', primary:'#1a472a', accent:'#f0b429',
-    anthropicKey:'', igToken:'', igAccountId:'', imgurClientId:'',
+    groqKey:'', igToken:'', igAccountId:'', imgurClientId:'',
     ...JSON.parse(localStorage.getItem('cc_cfg')||'{}')
   }),
   setSettings: (v)  => localStorage.setItem('cc_cfg', JSON.stringify(v)),
@@ -1134,7 +1134,7 @@ function parseCSVContent(raw){
 }
 
 // ═══════════════════════════════════════════════════════════════════
-//  AI CAPTIONS (Anthropic API — browser-side)
+//  AI CAPTIONS (Groq API — OpenAI-compatible, browser-side)
 // ═══════════════════════════════════════════════════════════════════
 async function generateCaptions(type, data, settings){
   const club=settings.clubName||'Cricket Club';
@@ -1151,24 +1151,27 @@ async function generateCaptions(type, data, settings){
     return [{tone:'general',caption:''}];
   }
 
-  const resp=await fetch('https://api.anthropic.com/v1/messages',{
+  const resp=await fetch('https://api.groq.com/openai/v1/chat/completions',{
     method:'POST',
     headers:{
-      'x-api-key':settings.anthropicKey,
-      'anthropic-version':'2023-06-01',
-      'anthropic-dangerous-client-side-request-allowed':'true',
-      'content-type':'application/json',
+      'Authorization':`Bearer ${settings.groqKey}`,
+      'Content-Type':'application/json',
     },
     body:JSON.stringify({
-      model:'claude-sonnet-4-5',
+      model:'llama-3.3-70b-versatile',
       max_tokens:900,
-      system,
-      messages:[{role:'user',content:prompt}]
+      messages:[
+        {role:'system',content:system},
+        {role:'user',content:prompt}
+      ]
     })
   });
-  if(!resp.ok){const e=await resp.json();throw new Error(e.error?.message||'AI error');}
+  if(!resp.ok){const e=await resp.json();throw new Error(e.error?.message||'Groq API error');}
   const json=await resp.json();
-  return JSON.parse(json.content[0].text);
+  const text=json.choices[0].message.content.trim();
+  // Strip markdown code fences if present
+  const clean=text.replace(/^```(?:json)?\n?/,'').replace(/\n?```$/,'');
+  return JSON.parse(clean);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1321,7 +1324,7 @@ function App(){
     },
 
     async regenCaptions(post){
-      if(!this.settings.anthropicKey) return this.showToast('Anthropic key not set',false);
+      if(!this.settings.groqKey) return this.showToast('Groq key not set in Settings',false);
       try{
         const caps=await generateCaptions(post.type,post.meta||{},this.settings);
         post.captions=caps; post.caption=caps[0]?.caption||post.caption;
@@ -1335,7 +1338,7 @@ function App(){
       this.creating=true; this.createdPost=null;
       try{
         let captions=[];
-        if(this.settings.anthropicKey){
+        if(this.settings.groqKey){
           try{ captions=await generateCaptions(type,meta,this.settings); }
           catch(e){ this.showToast('Caption AI failed — post created without captions',false); }
         }
@@ -1375,15 +1378,15 @@ function App(){
       this.creating=true;
       try{
         let caption=this.pf.caption;
-        if(!caption&&this.pf.genCaption&&this.settings.anthropicKey){
+        if(!caption&&this.pf.genCaption&&this.settings.groqKey){
           try{
-            const resp=await fetch('https://api.anthropic.com/v1/messages',{
+            const resp=await fetch('https://api.groq.com/openai/v1/chat/completions',{
               method:'POST',
-              headers:{'x-api-key':this.settings.anthropicKey,'anthropic-version':'2023-06-01','anthropic-dangerous-client-side-request-allowed':'true','content-type':'application/json'},
-              body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:300,messages:[{role:'user',content:`Write a short Instagram caption for a cricket club photo. Include hashtags. Just the caption, no JSON.`}]})
+              headers:{'Authorization':`Bearer ${this.settings.groqKey}`,'Content-Type':'application/json'},
+              body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:300,messages:[{role:'user',content:`Write a short Instagram caption for a cricket club photo. Include hashtags. Just the caption, no JSON.`}]})
             });
             const j=await resp.json();
-            caption=j.content[0].text.trim();
+            caption=j.choices[0].message.content.trim();
           }catch{}
         }
         const post={
