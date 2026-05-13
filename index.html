@@ -618,142 +618,135 @@ function footerBar(ctx,A,left,right,club){const g=ctx.createLinearGradient(0,S-9
 function fmtD(s){if(!s)return'';try{return new Date(s).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}catch{return s;}}
 
 // ═══════════════════════════════════════════════════════
-//  1. MATCH RESULT  — ICC/IPL two-team scorecard style
+//  1. MATCH RESULT  — ICC/IPL broadcast-scorecard style
 // ═══════════════════════════════════════════════════════
 async function drawMatchCard(ctx,d,cfg){
   const P=hexRGB(cfg.primary||'#1a472a'),A=hexRGB(cfg.accent||'#f0b429');
   const club=(cfg.clubName||'Cricket Club').toUpperCase();
   const won=d.result?.toLowerCase()==='won',lost=d.result?.toLowerCase()==='lost';
-  const RC=won?A:lost?[220,55,55]:[180,180,180];
 
-  // ── Background ──
-  if(d.photoDataURL){await drawPhoto(ctx,d.photoDataURL,0.78);}
+  // ── Background: strong club-colour top triangle + dark base ──
+  if(d.photoDataURL){await drawPhoto(ctx,d.photoDataURL,0.8);}
   else{
-    ctx.fillStyle='#07090e';ctx.fillRect(0,0,S,S);
-    // diagonal stripe texture
-    ctx.save();ctx.strokeStyle='rgba(255,255,255,.016)';ctx.lineWidth=1;
-    for(let i=-S;i<S*2;i+=68){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i+S*.75,S);ctx.stroke();}
-    ctx.restore();
-    // club-colour bottom glow
-    const gl=ctx.createRadialGradient(S*.15,S,0,S*.15,S,S*.9);
-    gl.addColorStop(0,rgb(...P,.42));gl.addColorStop(1,'transparent');
-    ctx.fillStyle=gl;ctx.fillRect(0,0,S,S);
-    // top-right counter glow
-    const gl2=ctx.createRadialGradient(S*.88,0,0,S*.88,0,S*.65);
-    gl2.addColorStop(0,rgb(...darken(P,.6),.22));gl2.addColorStop(1,'transparent');
-    ctx.fillStyle=gl2;ctx.fillRect(0,0,S,S);
-  }
-
-  // ── Top bar ──
-  const bar=ctx.createLinearGradient(0,0,S,0);
-  bar.addColorStop(0,rgb(...A));bar.addColorStop(.65,rgb(...P));bar.addColorStop(1,rgb(...darken(P,.45)));
-  ctx.fillStyle=bar;ctx.fillRect(0,0,S,10);
-
-  // ── Header: club name left, competition pill right ──
-  ctx.font='700 22px "Inter"';ctx.fillStyle=rgb(...A,.92);ctx.fillText(club,50,60);
-  if(d.competition){
-    ctx.font='600 15px "Inter"';
-    const cw=ctx.measureText(d.competition.toUpperCase()).width;
-    rr(ctx,S-52-cw-24,34,cw+24,34,17);
-    ctx.fillStyle=rgb(...A,.1);ctx.fill();ctx.strokeStyle=rgb(...A,.3);ctx.lineWidth=1;ctx.stroke();
-    ctx.fillStyle=rgb(...A,.88);ctx.fillText(d.competition.toUpperCase(),S-52-cw-12,57);
-  }
-  if(d.date){ctx.font='500 14px "Inter"';ctx.fillStyle='rgba(255,255,255,.28)';ctx.fillText(fmtD(d.date),50,82);}
-
-  // ── BIG result watermark behind card ──
-  const word=won?'VICTORY':lost?'DEFEAT':(d.result||'').toUpperCase();
-  if(word){
+    ctx.fillStyle='#050810';ctx.fillRect(0,0,S,S);
+    // Top colour fill: diagonal sweep ≈ top 55% of canvas
     ctx.save();
-    ctx.font=`900 ${word.length>7?152:186}px "Oswald"`;
-    ctx.fillStyle=won?'rgba(240,180,41,.065)':lost?'rgba(220,55,55,.055)':'rgba(255,255,255,.038)';
-    const ww=ctx.measureText(word).width;ctx.fillText(word,(S-ww)/2,272);
-    ctx.restore();
+    ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(S,0);ctx.lineTo(S,S*.44);ctx.lineTo(0,S*.58);ctx.closePath();
+    const tf=ctx.createLinearGradient(0,0,S*.7,S*.55);
+    tf.addColorStop(0,rgb(...P));tf.addColorStop(.65,rgb(...P,.55));tf.addColorStop(1,'transparent');
+    ctx.fillStyle=tf;ctx.fill();ctx.restore();
+    // Gold diagonal slash accent
+    ctx.save();ctx.beginPath();ctx.moveTo(S*.71,0);ctx.lineTo(S*.79,0);ctx.lineTo(S*.01,S*.57);ctx.lineTo(0,S*.49);ctx.closePath();
+    ctx.fillStyle=rgb(...A,.24);ctx.fill();ctx.restore();
+    // Fine diagonal stripe texture
+    ctx.save();ctx.strokeStyle=rgb(...A,.022);ctx.lineWidth=1;
+    for(let i=-S;i<S*2;i+=58){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i+S*.68,S);ctx.stroke();}ctx.restore();
+    // Bottom ambient warm glow
+    const bg=ctx.createRadialGradient(S*.5,S,0,S*.5,S,S*.55);
+    bg.addColorStop(0,rgb(...A,.07));bg.addColorStop(1,'transparent');
+    ctx.fillStyle=bg;ctx.fillRect(0,0,S,S);
   }
 
-  // ── Two-team score card ──
-  const cY=96,cH=240;
-  rr(ctx,38,cY,S-76,cH,18);
-  const cbg=ctx.createLinearGradient(38,cY,S-38,cY+cH);
-  cbg.addColorStop(0,'rgba(255,255,255,.068)');cbg.addColorStop(1,'rgba(255,255,255,.022)');
-  ctx.fillStyle=cbg;ctx.fill();
-  ctx.strokeStyle='rgba(255,255,255,.09)';ctx.lineWidth=1.5;ctx.stroke();
-  // left accent strip (result colour)
-  rr(ctx,38,cY,7,cH,3);ctx.fillStyle=won?rgb(...A):lost?'rgb(220,55,55)':'rgba(255,255,255,.35)';ctx.fill();
+  // ── Gold top bar ──
+  const tb=ctx.createLinearGradient(0,0,S,0);
+  tb.addColorStop(0,rgb(...A));tb.addColorStop(.55,rgb(...darken(A,.72)));tb.addColorStop(1,rgb(...P,.75));
+  ctx.fillStyle=tb;ctx.fillRect(0,0,S,10);
 
-  // Our team name & score
-  ctx.font='600 17px "Inter"';ctx.fillStyle='rgba(255,255,255,.48)';ctx.fillText(club.slice(0,16),62,cY+36);
+  // ── HEADER ──
+  ctx.font='600 20px "Inter"';ctx.fillStyle='rgba(255,255,255,.9)';
+  ctx.shadowColor='rgba(0,0,0,.5)';ctx.shadowBlur=8;ctx.fillText(club,50,56);ctx.shadowBlur=0;
+  if(d.date){ctx.font='500 13px "Inter"';ctx.fillStyle='rgba(255,255,255,.42)';ctx.fillText(fmtD(d.date),50,76);}
+  if(d.competition){
+    ctx.font='600 13px "Inter"';const cw=ctx.measureText(d.competition.toUpperCase()).width;
+    rr(ctx,S-46-cw-20,32,cw+20,30,15);ctx.fillStyle='rgba(0,0,0,.42)';ctx.fill();
+    ctx.strokeStyle=rgb(...A,.55);ctx.lineWidth=1.5;ctx.stroke();
+    ctx.fillStyle=rgb(...A);ctx.fillText(d.competition.toUpperCase(),S-46-cw-10,51);
+  }
+
+  // ── HERO RESULT WORD: vivid, real colour, NOT a watermark ──
+  const word=won?'VICTORY':lost?'DEFEAT':(d.result||'RESULT').toUpperCase();
+  const fz=word.length>7?148:186;
+  ctx.font=`700 ${fz}px "Oswald"`;
+  ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillText(word,53,283);// shadow pass
+  if(won){const wg=ctx.createLinearGradient(50,112,50,288);wg.addColorStop(0,'#ffffff');wg.addColorStop(.65,rgb(...A));ctx.fillStyle=wg;}
+  else if(lost)ctx.fillStyle='#ff4f4f';
+  else ctx.fillStyle='rgba(255,255,255,.78)';
+  ctx.shadowColor=won?rgb(...A,.32):lost?'rgba(255,79,79,.28)':'transparent';ctx.shadowBlur=26;
+  ctx.fillText(word,50,279);ctx.shadowBlur=0;
+  // Accent underline, fades right
+  const ulW=Math.min(ctx.measureText(word).width*.48,360);
+  const ulG=ctx.createLinearGradient(50,0,50+ulW,0);
+  ulG.addColorStop(0,rgb(...A));ulG.addColorStop(1,rgb(...A,0));
+  ctx.fillStyle=ulG;ctx.fillRect(50,290,ulW,7);
+  // "vs" sub-line
+  if(d.opponent){ctx.font='600 19px "Inter"';ctx.fillStyle='rgba(255,255,255,.48)';
+    ctx.shadowColor='rgba(0,0,0,.4)';ctx.shadowBlur=6;
+    ctx.fillText(`vs ${d.opponent.toUpperCase()}`,50,320);ctx.shadowBlur=0;}
+
+  // ── SCORE PANEL ──
+  const spY=338,spH=218;
+  rr(ctx,36,spY,S-72,spH,18);
+  ctx.fillStyle='rgba(0,0,0,.55)';ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.1)';ctx.lineWidth=1.5;ctx.stroke();
+  // Left result-colour strip
+  rr(ctx,36,spY,8,spH,3);
+  if(won){const sg=ctx.createLinearGradient(0,spY,0,spY+spH);sg.addColorStop(0,rgb(...A));sg.addColorStop(1,rgb(...darken(A,.52)));ctx.fillStyle=sg;}
+  else ctx.fillStyle=lost?'rgb(220,55,55)':'rgba(200,200,200,.28)';ctx.fill();
+
+  // Our team
+  ctx.font='600 15px "Inter"';ctx.fillStyle='rgba(255,255,255,.42)';ctx.fillText(club.slice(0,14),60,spY+30);
   const ourSc=d.ourScore||'—';
-  ctx.font=`700 ${ourSc.length>6?70:88}px "Oswald"`;
-  ctx.fillStyle=won?rgb(...A):lost?'rgba(255,90,90,.88)':'rgba(255,255,255,.9)';
-  ctx.fillText(ourSc,62,cY+148);
+  ctx.font=`700 ${ourSc.length>6?84:102}px "Oswald"`;
+  ctx.fillStyle=won?rgb(...A):lost?'rgba(255,100,100,.9)':'rgba(255,255,255,.9)';
+  ctx.fillText(ourSc,60,spY+spH-22);
 
   // VS divider
-  ctx.beginPath();ctx.moveTo(S/2,cY+22);ctx.lineTo(S/2,cY+cH-22);
-  ctx.strokeStyle='rgba(255,255,255,.07)';ctx.lineWidth=1.5;ctx.stroke();
-  ctx.font='700 22px "Oswald"';ctx.fillStyle='rgba(255,255,255,.22)';
-  const vsw=ctx.measureText('VS').width;ctx.fillText('VS',S/2-vsw/2,cY+cH/2+8);
+  ctx.beginPath();ctx.moveTo(S/2,spY+16);ctx.lineTo(S/2,spY+spH-16);
+  ctx.strokeStyle='rgba(255,255,255,.09)';ctx.lineWidth=1.5;ctx.stroke();
+  ctx.font='700 24px "Oswald"';ctx.fillStyle='rgba(255,255,255,.2)';
+  const vsw=ctx.measureText('VS').width;ctx.fillText('VS',S/2-vsw/2,spY+spH/2+9);
 
-  // Their team name & score
-  const opp=(d.opponent||'Opponent').toUpperCase();
-  ctx.font='600 17px "Inter"';ctx.fillStyle='rgba(255,255,255,.36)';
-  const oppTW=ctx.measureText(opp.slice(0,14)).width;
-  ctx.fillText(opp.slice(0,14),S-60-oppTW,cY+36);
+  // Opponent
+  const opp=(d.opponent||'OPP').toUpperCase();
+  ctx.font='600 15px "Inter"';ctx.fillStyle='rgba(255,255,255,.3)';
+  const oW=ctx.measureText(opp.slice(0,13)).width;ctx.fillText(opp.slice(0,13),S-52-oW,spY+30);
   const thSc=d.theirScore||'—';
-  ctx.font=`700 ${thSc.length>6?70:88}px "Oswald"`;ctx.fillStyle='rgba(255,255,255,.58)';
-  const thW=ctx.measureText(thSc).width;ctx.fillText(thSc,S-60-thW,cY+148);
+  ctx.font=`700 ${thSc.length>6?84:102}px "Oswald"`;ctx.fillStyle='rgba(255,255,255,.52)';
+  const thW=ctx.measureText(thSc).width;ctx.fillText(thSc,S-52-thW,spY+spH-22);
 
-  // ── Win-margin pill ──
+  // ── MARGIN PILL ──
   if(d.margin){
     const mt=won?`WON BY ${d.margin.toUpperCase()}`:lost?`LOST BY ${d.margin.toUpperCase()}`:d.margin.toUpperCase();
-    ctx.font='700 19px "Inter"';
-    const mw=ctx.measureText(mt).width;
-    const pX=(S-mw-56)/2,pY=cY+cH+18;
-    rr(ctx,pX,pY,mw+56,44,22);
-    if(won){const pg=ctx.createLinearGradient(pX,pY,pX+mw+56,pY+44);pg.addColorStop(0,rgb(...A));pg.addColorStop(1,rgb(...darken(A,.72)));ctx.fillStyle=pg;}
-    else ctx.fillStyle=lost?'rgba(220,55,55,.28)':'rgba(255,255,255,.12)';
-    ctx.fill();
-    ctx.fillStyle=won?'#07090e':lost?'#ff7070':'rgba(255,255,255,.85)';
-    ctx.fillText(mt,pX+28,pY+29);
+    ctx.font='700 18px "Inter"';
+    const mw=ctx.measureText(mt).width,pX=(S-mw-52)/2,pY2=spY+spH+18;
+    rr(ctx,pX,pY2,mw+52,44,22);
+    if(won){const pg=ctx.createLinearGradient(pX,pY2,pX+mw+52,pY2+44);pg.addColorStop(0,rgb(...A));pg.addColorStop(1,rgb(...darken(A,.68)));ctx.fillStyle=pg;}
+    else ctx.fillStyle=lost?'rgba(220,55,55,.32)':'rgba(255,255,255,.12)';
+    ctx.fill();ctx.fillStyle=won?'#050810':lost?'#ff7070':'#fff';ctx.fillText(mt,pX+26,pY2+30);
   }
 
-  // ── Performers section ──
-  const pBase=408;
-  ctx.beginPath();ctx.moveTo(50,pBase);ctx.lineTo(S-50,pBase);
-  ctx.strokeStyle='rgba(255,255,255,.07)';ctx.lineWidth=1.5;ctx.stroke();
-  ctx.font='700 12px "Inter"';ctx.fillStyle=rgb(...A,.5);
-  ctx.letterSpacing='.12em';ctx.fillText('TOP PERFORMERS',50,pBase+18);ctx.letterSpacing='0';
+  // ── TOP PERFORMERS ──
+  const pBase=spY+spH+(d.margin?78:28);
+  ctx.beginPath();ctx.moveTo(46,pBase);ctx.lineTo(S-46,pBase);ctx.strokeStyle='rgba(255,255,255,.07)';ctx.lineWidth=1.5;ctx.stroke();
+  ctx.font='700 11px "Inter"';ctx.fillStyle=rgb(...A,.5);
+  ctx.letterSpacing='.13em';ctx.fillText('TOP PERFORMERS',46,pBase+18);ctx.letterSpacing='0';
 
-  function perfCard(name,stat,lbl,sub,x,y,w){
-    rr(ctx,x,y,w,178,14);
-    const pbg=ctx.createLinearGradient(x,y,x,y+178);
-    pbg.addColorStop(0,'rgba(255,255,255,.058)');pbg.addColorStop(1,'rgba(255,255,255,.018)');
-    ctx.fillStyle=pbg;ctx.fill();ctx.strokeStyle='rgba(255,255,255,.08)';ctx.lineWidth=1;ctx.stroke();
-    // accent top edge
-    ctx.beginPath();ctx.moveTo(x+12,y+1.5);ctx.lineTo(x+90,y+1.5);
-    ctx.strokeStyle=rgb(...A,.65);ctx.lineWidth=3;ctx.stroke();
-    ctx.font='600 13px "Inter"';ctx.fillStyle='rgba(255,255,255,.38)';
-    ctx.fillText(name.toUpperCase().slice(0,20),x+16,y+30);
-    ctx.font='700 68px "Oswald"';ctx.fillStyle=rgb(...A,.95);ctx.fillText(stat,x+16,y+116);
-    ctx.font='700 12px "Inter"';ctx.fillStyle='rgba(255,255,255,.28)';
-    ctx.letterSpacing='.08em';ctx.fillText(lbl,x+16,y+138);ctx.letterSpacing='0';
-    if(sub){ctx.font='400 13px "Inter"';ctx.fillStyle='rgba(255,255,255,.3)';ctx.fillText(sub,x+16,y+160);}
+  function pCard(name,stat,lbl,sub,x,y,w){
+    rr(ctx,x,y,w,170,12);ctx.fillStyle='rgba(255,255,255,.04)';ctx.fill();ctx.strokeStyle='rgba(255,255,255,.07)';ctx.lineWidth=1;ctx.stroke();
+    ctx.beginPath();ctx.moveTo(x+10,y+2);ctx.lineTo(x+72,y+2);ctx.strokeStyle=rgb(...A,.78);ctx.lineWidth=3.5;ctx.stroke();
+    ctx.font='600 12px "Inter"';ctx.fillStyle='rgba(255,255,255,.36)';ctx.fillText(name.toUpperCase().slice(0,18),x+14,y+28);
+    ctx.font='700 66px "Oswald"';ctx.fillStyle=rgb(...A,.95);ctx.fillText(stat,x+14,y+110);
+    ctx.font='700 11px "Inter"';ctx.fillStyle='rgba(255,255,255,.26)';
+    ctx.letterSpacing='.08em';ctx.fillText(lbl,x+14,y+132);ctx.letterSpacing='0';
+    if(sub){ctx.font='400 12px "Inter"';ctx.fillStyle='rgba(255,255,255,.28)';ctx.fillText(sub,x+14,y+152);}
   }
 
-  const hasBat=!!d.batterName,hasBwl=!!d.bowlerName;
-  const pY2=pBase+28;
-  if(hasBat&&hasBwl){
-    const hw=(S-100-16)/2;
-    perfCard(d.batterName,String(d.batterRuns||0),'RUNS',
-      [d.batterBalls&&`${d.batterBalls}b`,d.batterFours&&`${d.batterFours}×4`,d.batterSixes&&`${d.batterSixes}×6`].filter(Boolean).join('  '),50,pY2,hw);
-    perfCard(d.bowlerName,`${d.bowlerWkts||0}/${d.bowlerRuns||0}`,'WKTS',
-      d.bowlerOvers?`${d.bowlerOvers} overs`:'',50+hw+16,pY2,hw);
-  }else if(hasBat){
-    perfCard(d.batterName,String(d.batterRuns||0),'RUNS',
-      [d.batterBalls&&`${d.batterBalls}b`,d.batterFours&&`${d.batterFours}×4`,d.batterSixes&&`${d.batterSixes}×6`].filter(Boolean).join('  '),50,pY2,S-100);
-  }else if(hasBwl){
-    perfCard(d.bowlerName,`${d.bowlerWkts||0}/${d.bowlerRuns||0}`,'WKTS',
-      d.bowlerOvers?`${d.bowlerOvers} overs`:'',50,pY2,S-100);
-  }
+  const hasBat=!!d.batterName,hasBwl=!!d.bowlerName,pYY=pBase+28;
+  if(hasBat&&hasBwl){const hw=(S-96-14)/2;
+    pCard(d.batterName,String(d.batterRuns||0),'RUNS',[d.batterBalls&&`${d.batterBalls}b`,d.batterFours&&`${d.batterFours}×4`,d.batterSixes&&`${d.batterSixes}×6`].filter(Boolean).join('  '),46,pYY,hw);
+    pCard(d.bowlerName,`${d.bowlerWkts||0}/${d.bowlerRuns||0}`,'WKTS',d.bowlerOvers?`${d.bowlerOvers} overs`:'',46+hw+14,pYY,hw);
+  }else if(hasBat)pCard(d.batterName,String(d.batterRuns||0),'RUNS',[d.batterBalls&&`${d.batterBalls}b`,d.batterFours&&`${d.batterFours}×4`,d.batterSixes&&`${d.batterSixes}×6`].filter(Boolean).join('  '),46,pYY,S-92);
+  else if(hasBwl)pCard(d.bowlerName,`${d.bowlerWkts||0}/${d.bowlerRuns||0}`,'WKTS',d.bowlerOvers?`${d.bowlerOvers} overs`:'',46,pYY,S-92);
 
   footerBar(ctx,A,d.venue,'',club);
 }
@@ -789,70 +782,59 @@ async function drawFixtureCard(ctx,d,cfg){
   // Gold top bar
   ctx.fillStyle=rgb(...A);ctx.fillRect(0,0,S,10);
 
-  // MATCH DAY — big faded watermark
-  ctx.save();
-  ctx.font='700 148px "Oswald"';
-  const mdW=ctx.measureText('MATCH DAY').width;
-  ctx.fillStyle='rgba(0,0,0,.28)';ctx.fillText('MATCH DAY',(S-mdW)/2+3,286);
-  ctx.fillStyle='rgba(255,255,255,.055)';ctx.fillText('MATCH DAY',(S-mdW)/2,283);
-  ctx.restore();
+  // ── MATCH DAY label — bold and vivid at the top ──
+  ctx.font='700 24px "Inter"';ctx.fillStyle=rgb(...A);
+  ctx.letterSpacing='.14em';ctx.fillText('⚡  MATCH DAY',50,58);ctx.letterSpacing='0';
+  // Competition + format
+  if(d.competition){ctx.font='600 14px "Inter"';const cw=ctx.measureText(d.competition.toUpperCase()).width;
+    rr(ctx,S-52-cw-20,34,cw+20,32,16);ctx.fillStyle='rgba(0,0,0,.5)';ctx.fill();
+    ctx.strokeStyle=rgb(...A,.48);ctx.lineWidth=1.5;ctx.stroke();
+    ctx.fillStyle=rgb(...A,.94);ctx.letterSpacing='.02em';ctx.fillText(d.competition.toUpperCase(),S-52-cw-10,55);ctx.letterSpacing='0';}
+  if(d.format){ctx.font='700 15px "Inter"';ctx.fillStyle='rgba(255,255,255,.5)';ctx.fillText(d.format,50,80);}
 
-  // Competition badge top-right
-  if(d.competition){
-    ctx.font='600 16px "Inter"';
-    const cw=ctx.measureText(d.competition.toUpperCase()).width;
-    rr(ctx,S-55-cw-24,28,cw+24,36,18);
-    ctx.fillStyle='rgba(0,0,0,.5)';ctx.fill();ctx.strokeStyle=rgb(...A,.42);ctx.lineWidth=1;ctx.stroke();
-    ctx.fillStyle=rgb(...A,.92);ctx.fillText(d.competition.toUpperCase(),S-55-cw-12,51);
-  }
-  if(d.format){ctx.font='700 17px "Inter"';ctx.fillStyle=rgb(...A,.78);ctx.fillText(d.format,50,52);}
+  // Rule below header
+  ctx.beginPath();ctx.moveTo(50,94);ctx.lineTo(S-50,94);ctx.strokeStyle='rgba(255,255,255,.1)';ctx.lineWidth=1.5;ctx.stroke();
 
-  // ── Our club name (left, big) ──
-  ctx.font=`700 ${club.length>11?86:108}px "Oswald"`;
-  ctx.fillStyle='rgba(0,0,0,.38)';ctx.fillText(club.slice(0,13),52,332);
-  ctx.fillStyle='#ffffff';ctx.shadowColor='rgba(0,0,0,.6)';ctx.shadowBlur=22;
-  ctx.fillText(club.slice(0,13),50,330);ctx.shadowBlur=0;
+  // ── OUR CLUB NAME — hero element ──
+  ctx.font=`700 ${club.length>11?90:114}px "Oswald"`;
+  ctx.fillStyle='rgba(0,0,0,.42)';ctx.fillText(club.slice(0,13),52,252);
+  ctx.fillStyle='#ffffff';ctx.shadowColor='rgba(0,0,0,.55)';ctx.shadowBlur=22;
+  ctx.fillText(club.slice(0,13),50,250);ctx.shadowBlur=0;
 
-  // ── VS centred ──
-  const vsY=388;
-  ctx.beginPath();ctx.moveTo(58,vsY);ctx.lineTo(S/2-42,vsY);
-  ctx.strokeStyle=rgb(...A,.38);ctx.lineWidth=2;ctx.stroke();
-  ctx.beginPath();ctx.moveTo(S/2+42,vsY);ctx.lineTo(S-58,vsY);ctx.stroke();
-  ctx.font='700 48px "Oswald"';ctx.fillStyle=rgb(...A);
-  const vsw=ctx.measureText('VS').width;ctx.fillText('VS',S/2-vsw/2,vsY+16);
+  // ── VS ──
+  const vsY=300;
+  const vsCX=S*.43;
+  ctx.beginPath();ctx.moveTo(50,vsY);ctx.lineTo(vsCX-52,vsY);
+  ctx.strokeStyle=rgb(...A,.42);ctx.lineWidth=2;ctx.stroke();
+  ctx.font='700 56px "Oswald"';ctx.fillStyle=rgb(...A);
+  const vsW=ctx.measureText('VS').width;ctx.fillText('VS',vsCX-vsW/2,vsY+18);
+  ctx.beginPath();ctx.moveTo(vsCX+vsW/2+52,vsY);ctx.lineTo(S-50,vsY);ctx.stroke();
 
-  // ── Opponent (right) ──
-  ctx.font=`700 ${opp.length>11?76:96}px "Oswald"`;
+  // ── OPPONENT NAME ──
+  ctx.font=`700 ${opp.length>11?82:102}px "Oswald"`;
   ctx.fillStyle='rgba(255,255,255,.72)';
-  const oppTW=ctx.measureText(opp.slice(0,13)).width;
-  ctx.fillText(opp.slice(0,13),S-58-oppTW,458);
-  ctx.fillStyle=rgb(...A,.48);ctx.fillRect(S-58-Math.min(oppTW*.65,360),464,Math.min(oppTW*.65,360),4);
+  const oppTW=ctx.measureText(opp.slice(0,13)).width;ctx.fillText(opp.slice(0,13),S-56-oppTW,392);
+  ctx.fillStyle=rgb(...A,.45);ctx.fillRect(S-56-Math.min(oppTW*.58,340),399,Math.min(oppTW*.58,340),4);
 
-  // ── Info blocks ──
-  const infoY=500;
-  ctx.beginPath();ctx.moveTo(50,infoY);ctx.lineTo(S-50,infoY);
-  ctx.strokeStyle='rgba(255,255,255,.08)';ctx.lineWidth=1.5;ctx.stroke();
+  // ── INFO SECTION ──
+  const infoY=438;
+  ctx.beginPath();ctx.moveTo(50,infoY);ctx.lineTo(S-50,infoY);ctx.strokeStyle='rgba(255,255,255,.08)';ctx.lineWidth=1.5;ctx.stroke();
 
-  function infoBlock(icon,lbl,val,x,y){
-    ctx.font='700 12px "Inter"';ctx.fillStyle=rgb(...A,.52);
-    ctx.letterSpacing='.08em';ctx.fillText(icon+'  '+lbl,x,y+26);ctx.letterSpacing='0';
-    ctx.font='700 38px "Oswald"';ctx.fillStyle='#ffffff';ctx.fillText(val.slice(0,24),x,y+72);
+  function infoBlock2(icon,lbl,val,x,y){
+    ctx.font='700 11px "Inter"';ctx.fillStyle=rgb(...A,.52);
+    ctx.letterSpacing='.1em';ctx.fillText(icon+'  '+lbl,x,y+24);ctx.letterSpacing='0';
+    ctx.font='700 42px "Oswald"';ctx.fillStyle='#ffffff';ctx.fillText(val.slice(0,22),x,y+74);
   }
-
   const dtStr=d.datetime?new Date(d.datetime).toLocaleString('en-GB',{weekday:'short',day:'numeric',month:'short'}):(d.date?fmtD(d.date):'');
   const tmStr=d.datetime?new Date(d.datetime).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'';
-
   if(dtStr&&d.venue){
-    infoBlock('📅','DATE',dtStr,50,infoY+6);
-    if(tmStr){ctx.font='600 20px "Inter"';ctx.fillStyle=rgb(...A,.72);ctx.fillText(tmStr,50,infoY+98);}
-    infoBlock('📍','VENUE',d.venue.slice(0,22),S/2+24,infoY+6);
-  }else if(dtStr){
-    infoBlock('📅','DATE & TIME',dtStr+(tmStr?' · '+tmStr:''),50,infoY+6);
-  }else if(d.venue){
-    infoBlock('📍','VENUE',d.venue.slice(0,30),50,infoY+6);
-  }
+    infoBlock2('📅','DATE',dtStr,50,infoY+10);
+    if(tmStr){ctx.font='600 22px "Inter"';ctx.fillStyle=rgb(...A,.72);ctx.fillText(tmStr,50,infoY+108);}
+    infoBlock2('📍','VENUE',d.venue.slice(0,20),S/2+24,infoY+10);
+  }else if(dtStr){infoBlock2('📅','DATE & TIME',dtStr+(tmStr?' · '+tmStr:''),50,infoY+10);}
+  else if(d.venue){infoBlock2('📍','VENUE',d.venue.slice(0,28),50,infoY+10);}
 
-  ctx.font='500 20px "Inter"';ctx.fillStyle='rgba(255,255,255,.32)';ctx.fillText('Come support the lads! 🏏',50,S-90);
+  ctx.font='500 20px "Inter"';ctx.fillStyle='rgba(255,255,255,.28)';ctx.fillText('Come support the lads! 🏏',50,S-92);
   footerBar(ctx,A,'',club,club);
 }
 
@@ -905,44 +887,43 @@ async function drawSquadCard(ctx,d,cfg){
 
   const players=d.players||[];
   const col1=players.slice(0,6),col2=players.slice(6,11);
-  const rowH=77,startY=186,colW=(S-122)/2;
+  const rowH=82,startY=184,colW=(S-120)/2;
 
   function drawPlayer2(p,i,x,y){
-    const isCap=p.role==='Captain',isWK=p.role==='WK';
+    const isCap=p.role==='Captain';
     const rc=RC[p.role]||[139,148,158];
-    // row background
-    rr(ctx,x,y,colW,rowH-8,12);
+    const rh=rowH-9;
+    // Row bg with side gradient
+    rr(ctx,x,y,colW,rh,12);
     const rbg=ctx.createLinearGradient(x,y,x+colW,y);
-    rbg.addColorStop(0,'rgba(255,255,255,.075)');rbg.addColorStop(1,'rgba(255,255,255,.022)');
+    rbg.addColorStop(0,'rgba(255,255,255,.082)');rbg.addColorStop(1,'rgba(255,255,255,.024)');
     ctx.fillStyle=rbg;ctx.fill();
-    ctx.strokeStyle='rgba(255,255,255,.07)';ctx.lineWidth=1;ctx.stroke();
-    // left role-colour strip
-    rr(ctx,x,y,5,rowH-8,2);ctx.fillStyle=rgb(...rc,isCap?1:.72);ctx.fill();
-    // number circle
-    const numCX=x+28,numCY=y+(rowH-8)/2;
-    ctx.beginPath();ctx.arc(numCX,numCY,20,0,Math.PI*2);
-    ctx.fillStyle=rgb(...rc,.14);ctx.fill();ctx.strokeStyle=rgb(...rc,.32);ctx.lineWidth=1.5;ctx.stroke();
-    ctx.font='700 20px "Oswald"';ctx.fillStyle=rgb(...rc,.9);
-    const num=String(i+1),nw=ctx.measureText(num).width;
-    ctx.fillText(num,numCX-nw/2,numCY+7);
-    // player name
-    ctx.font=isCap?'700 30px "Oswald"':'600 28px "Oswald"';
-    ctx.fillStyle=isCap?'#ffffff':'rgba(255,255,255,.88)';
-    ctx.fillText((p.name||'TBC').slice(0,17),x+58,y+44);
-    // role chip (right side)
+    ctx.strokeStyle='rgba(255,255,255,.072)';ctx.lineWidth=1;ctx.stroke();
+    // Left role-colour strip (thicker, more visible)
+    rr(ctx,x,y,6,rh,2);ctx.fillStyle=rgb(...rc,isCap?1:.78);ctx.fill();
+    // Number circle (larger)
+    const nCX=x+30,nCY=y+rh/2;
+    ctx.beginPath();ctx.arc(nCX,nCY,22,0,Math.PI*2);
+    ctx.fillStyle=rgb(...rc,.16);ctx.fill();ctx.strokeStyle=rgb(...rc,.35);ctx.lineWidth=1.5;ctx.stroke();
+    ctx.font='700 22px "Oswald"';ctx.fillStyle=rgb(...rc,.95);
+    const num=String(i+1),nw=ctx.measureText(num).width;ctx.fillText(num,nCX-nw/2,nCY+8);
+    // Player name (bigger)
+    ctx.font=isCap?'700 34px "Oswald"':'600 32px "Oswald"';
+    ctx.fillStyle=isCap?'#ffffff':'rgba(255,255,255,.9)';
+    ctx.fillText((p.name||'TBC').slice(0,16),x+62,y+47);
+    // Role chip
     if(p.role&&p.role!=='Captain'){
-      const rtxt=p.role==='All-rounder'?'AR':p.role==='Batter'?'BAT':p.role==='Bowler'?'BWL':p.role;
-      ctx.font='700 11px "Inter"';
-      const rtw=ctx.measureText(rtxt).width;
-      rr(ctx,x+colW-16-rtw-16,y+17,rtw+16,23,11);
-      ctx.fillStyle=rgb(...rc,.16);ctx.fill();ctx.strokeStyle=rgb(...rc,.3);ctx.lineWidth=1;ctx.stroke();
-      ctx.fillStyle=rgb(...rc,.9);ctx.fillText(rtxt,x+colW-16-rtw-8,y+32);
+      const rt=p.role==='All-rounder'?'AR':p.role==='Batter'?'BAT':p.role==='Bowler'?'BWL':p.role;
+      ctx.font='700 12px "Inter"';const rtw=ctx.measureText(rt).width;
+      rr(ctx,x+colW-16-rtw-16,y+18,rtw+16,24,12);
+      ctx.fillStyle=rgb(...rc,.18);ctx.fill();ctx.strokeStyle=rgb(...rc,.32);ctx.lineWidth=1;ctx.stroke();
+      ctx.fillStyle=rgb(...rc,.92);ctx.fillText(rt,x+colW-16-rtw-8,y+34);
     }
-    if(isCap){ctx.font='700 19px "Inter"';ctx.fillStyle=rgb(...A,.9);ctx.fillText('(C)',x+colW-54,y+44);}
+    if(isCap){ctx.font='700 20px "Inter"';ctx.fillStyle=rgb(...A,.92);ctx.fillText('(C)',x+colW-56,y+47);}
   }
 
   col1.forEach((p,i)=>drawPlayer2(p,i,50,startY+i*rowH));
-  col2.forEach((p,i)=>drawPlayer2(p,i+6,50+colW+22,startY+i*rowH));
+  col2.forEach((p,i)=>drawPlayer2(p,i+6,50+colW+20,startY+i*rowH));
 
   footerBar(ctx,A,'',club,club);
 }
@@ -1019,18 +1000,25 @@ async function drawMOTMCard(ctx,d,cfg){
   if(!stats.length)stats.push({v:'★',l:'MATCH WINNER',s:''});
 
   const cNum2=Math.min(stats.length,3);
-  const cW2=(S-100-(cNum2-1)*18)/cNum2;
-  const stY=last?424:318;
+  const cW2=(S-100-(cNum2-1)*16)/cNum2;
+  const stY=last?418:312;
   stats.slice(0,3).forEach((st,i)=>{
-    const sx=50+i*(cW2+18);
-    rr(ctx,sx,stY,cW2,190,14);
-    const sbg=ctx.createLinearGradient(sx,stY,sx,stY+190);
-    sbg.addColorStop(0,'rgba(240,180,41,.15)');sbg.addColorStop(1,'rgba(240,180,41,.04)');
-    ctx.fillStyle=sbg;ctx.fill();ctx.strokeStyle='rgba(240,180,41,.3)';ctx.lineWidth=1.5;ctx.stroke();
-    ctx.font='700 13px "Inter"';ctx.fillStyle='rgba(240,180,41,.68)';
-    ctx.letterSpacing='.06em';ctx.fillText(st.l,sx+18,stY+36);ctx.letterSpacing='0';
-    ctx.font='700 84px "Oswald"';ctx.fillStyle='#ffffff';ctx.fillText(st.v,sx+18,stY+136);
-    if(st.s){ctx.font='400 15px "Inter"';ctx.fillStyle='rgba(255,255,255,.4)';ctx.fillText(st.s,sx+18,stY+162);}
+    const sx=50+i*(cW2+16);
+    rr(ctx,sx,stY,cW2,210,16);
+    const sbg=ctx.createLinearGradient(sx,stY,sx,stY+210);
+    sbg.addColorStop(0,'rgba(240,180,41,.18)');sbg.addColorStop(1,'rgba(240,180,41,.05)');
+    ctx.fillStyle=sbg;ctx.fill();ctx.strokeStyle='rgba(240,180,41,.32)';ctx.lineWidth=1.5;ctx.stroke();
+    // Gold top edge accent
+    ctx.beginPath();ctx.moveTo(sx+12,stY+2);ctx.lineTo(sx+cW2-12,stY+2);
+    ctx.strokeStyle='rgba(240,180,41,.6)';ctx.lineWidth=3;ctx.stroke();
+    ctx.font='700 13px "Inter"';ctx.fillStyle='rgba(240,180,41,.72)';
+    ctx.letterSpacing='.07em';ctx.fillText(st.l,sx+18,stY+36);ctx.letterSpacing='0';
+    // Big stat number with glow
+    ctx.font='700 92px "Oswald"';
+    ctx.fillStyle='rgba(0,0,0,.3)';ctx.fillText(st.v,sx+19,stY+148);
+    ctx.fillStyle='#ffffff';ctx.shadowColor='rgba(240,180,41,.2)';ctx.shadowBlur=18;
+    ctx.fillText(st.v,sx+18,stY+146);ctx.shadowBlur=0;
+    if(st.s){ctx.font='400 15px "Inter"';ctx.fillStyle='rgba(255,255,255,.42)';ctx.fillText(st.s,sx+18,stY+174);}
   });
 
   // Match context
