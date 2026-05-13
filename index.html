@@ -3,98 +3,90 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Cricket Instagram — Dashboard</title>
+<title>SixShot — Cricket Content Studio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Oswald:wght@600;700&display=swap"/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Oswald:wght@600;700&family=Bebas+Neue&display=swap"/>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={darkMode:'class'}</script>
 <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <style>
   :root{--p:#1a472a;--a:#f0b429}
-  *{box-sizing:border-box}
-  body{background:#0d1117;color:#e6edf3;font-family:'Inter',sans-serif;min-height:100vh}
-  /* Layout */
-  .page{max-width:1100px;margin:0 auto;padding:0 20px}
-  /* Glass cards */
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#080c10;color:#e6edf3;font-family:'Inter',sans-serif;min-height:100vh}
+  .page{max-width:1140px;margin:0 auto;padding:0 24px}
   .glass{background:rgba(22,27,34,.9);border:1px solid rgba(255,255,255,.07);border-radius:16px}
   .glass-sm{background:rgba(22,27,34,.7);border:1px solid rgba(255,255,255,.07);border-radius:12px}
-  /* Buttons */
-  .btn{display:inline-flex;align-items:center;gap:6px;font-weight:600;border-radius:10px;padding:9px 18px;cursor:pointer;transition:all .15s;font-size:14px;border:none}
-  .btn-gold{background:#f0b429;color:#0d1117}.btn-gold:hover{background:#f5c842;transform:translateY(-1px)}
-  .btn-ghost{background:rgba(240,180,41,.1);color:#f0b429;border:1px solid rgba(240,180,41,.25)}.btn-ghost:hover{background:rgba(240,180,41,.2)}
-  .btn-red{background:rgba(248,81,73,.1);color:#f85149;border:1px solid rgba(248,81,73,.25)}.btn-red:hover{background:rgba(248,81,73,.2)}
-  .btn-green{background:rgba(63,185,80,.1);color:#3fb950;border:1px solid rgba(63,185,80,.25)}.btn-green:hover{background:rgba(63,185,80,.2)}
-  .btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important}
-  /* Form inputs */
+  .btn{display:inline-flex;align-items:center;gap:6px;font-weight:600;border-radius:10px;padding:9px 18px;cursor:pointer;transition:all .15s;font-size:14px;border:none;white-space:nowrap}
+  .btn-gold{background:linear-gradient(135deg,#f0b429,#e09010);color:#0d1117;box-shadow:0 2px 12px rgba(240,180,41,.25)}.btn-gold:hover{filter:brightness(1.1);transform:translateY(-1px)}
+  .btn-ghost{background:rgba(240,180,41,.08);color:#f0b429;border:1px solid rgba(240,180,41,.2)}.btn-ghost:hover{background:rgba(240,180,41,.15)}
+  .btn-red{background:rgba(248,81,73,.08);color:#f85149;border:1px solid rgba(248,81,73,.2)}.btn-red:hover{background:rgba(248,81,73,.15)}
+  .btn-green{background:rgba(63,185,80,.08);color:#3fb950;border:1px solid rgba(63,185,80,.2)}.btn-green:hover{background:rgba(63,185,80,.15)}
+  .btn-blue{background:rgba(88,166,255,.08);color:#58a6ff;border:1px solid rgba(88,166,255,.2)}.btn-blue:hover{background:rgba(88,166,255,.15)}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important;filter:none!important}
   .inp{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 14px;color:#e6edf3;width:100%;font-size:14px;font-family:inherit;transition:border .15s}
-  .inp:focus{outline:none;border-color:#f0b429;box-shadow:0 0 0 3px rgba(240,180,41,.12)}
-  .inp::placeholder{color:rgba(255,255,255,.25)}
+  .inp:focus{outline:none;border-color:#f0b429;box-shadow:0 0 0 3px rgba(240,180,41,.1)}
+  .inp::placeholder{color:rgba(255,255,255,.2)}
   select.inp option{background:#161b22;color:#e6edf3}
-  label.lbl{display:block;font-size:11px;font-weight:600;color:rgba(255,255,255,.45);margin-bottom:6px;letter-spacing:.05em;text-transform:uppercase}
-  /* Tabs */
-  .tab-bar{display:flex;border-bottom:1px solid rgba(255,255,255,.08);gap:2px;margin-top:8px}
+  label.lbl{display:block;font-size:11px;font-weight:700;color:rgba(255,255,255,.35);margin-bottom:6px;letter-spacing:.06em;text-transform:uppercase}
+  .tab-bar{display:flex;border-bottom:1px solid rgba(255,255,255,.07);gap:2px;margin-top:6px}
   .tab{padding:12px 20px;font-size:14px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;color:#8b949e;transition:all .15s;white-space:nowrap}
-  .tab.active{color:#f0b429;border-bottom-color:#f0b429}
+  .tab.active{color:#f0b429;border-bottom-color:#f0b429;font-weight:600}
   .tab:hover:not(.active){color:#e6edf3}
-  /* Sub-tabs */
   .stab-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px}
-  .stab{padding:7px 16px;font-size:13px;font-weight:600;cursor:pointer;border-radius:8px;border:1px solid rgba(255,255,255,.08);color:#8b949e;transition:all .15s}
-  .stab.active{background:rgba(240,180,41,.12);color:#f0b429;border-color:rgba(240,180,41,.3)}
+  .stab{padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;border-radius:10px;border:1px solid rgba(255,255,255,.08);color:#8b949e;transition:all .15s;display:flex;align-items:center;gap:6px}
+  .stab.active{background:rgba(240,180,41,.1);color:#f0b429;border-color:rgba(240,180,41,.3)}
   .stab:hover:not(.active){color:#e6edf3;border-color:rgba(255,255,255,.2)}
-  /* Post cards */
   .post-card{background:rgba(22,27,34,.7);border:1px solid rgba(255,255,255,.07);border-radius:16px;overflow:hidden;transition:border .2s}
-  .post-card:hover{border-color:rgba(255,255,255,.16)}
-  /* Upload zone */
-  .drop-zone{border:2px dashed rgba(240,180,41,.25);border-radius:12px;padding:36px 20px;text-align:center;cursor:pointer;transition:all .15s}
+  .post-card:hover{border-color:rgba(255,255,255,.14)}
+  .drop-zone{border:2px dashed rgba(240,180,41,.2);border-radius:12px;padding:32px 20px;text-align:center;cursor:pointer;transition:all .15s}
   .drop-zone:hover,.drop-zone.over{border-color:#f0b429;background:rgba(240,180,41,.04)}
-  /* Caption cards */
-  .cap-card{border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;cursor:pointer;transition:all .15s;background:rgba(255,255,255,.02)}
-  .cap-card:hover{border-color:rgba(240,180,41,.35);background:rgba(240,180,41,.04)}
+  .cap-card{border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px;cursor:pointer;transition:all .15s;background:rgba(255,255,255,.02)}
+  .cap-card:hover{border-color:rgba(240,180,41,.3);background:rgba(240,180,41,.04)}
   .cap-card.selected{border-color:#f0b429;background:rgba(240,180,41,.07)}
-  /* Status badges */
-  .badge{display:inline-flex;align-items:center;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+  .badge{display:inline-flex;align-items:center;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.03em}
   .badge-draft{background:rgba(139,148,158,.15);color:#8b949e}
   .badge-approved{background:rgba(63,185,80,.15);color:#3fb950}
   .badge-posted{background:rgba(88,166,255,.15);color:#58a6ff}
-  /* Toast */
-  .toast{position:fixed;bottom:28px;right:28px;z-index:9999;padding:14px 22px;border-radius:12px;font-weight:600;font-size:14px;animation:slideUp .25s ease;pointer-events:none;max-width:360px}
+  .toast{position:fixed;bottom:28px;right:28px;z-index:9999;padding:14px 22px;border-radius:12px;font-weight:600;font-size:14px;animation:slideUp .25s ease;pointer-events:none;max-width:380px}
   @keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-  /* Spinner */
-  .spin{display:inline-block;width:18px;height:18px;border:2.5px solid rgba(255,255,255,.15);border-top-color:#f0b429;border-radius:50%;animation:rot .7s linear infinite}
+  .spin{display:inline-block;width:16px;height:16px;border:2.5px solid rgba(255,255,255,.15);border-top-color:#f0b429;border-radius:50%;animation:rot .7s linear infinite}
   @keyframes rot{to{transform:rotate(360deg)}}
-  /* Divider */
-  .divider{height:1px;background:rgba(255,255,255,.07);margin:24px 0}
-  /* Preview canvas wrapper */
-  .preview-wrap{background:#0a0a0a;border-radius:12px;overflow:hidden;aspect-ratio:1;display:flex;align-items:center;justify-content:center}
-  /* Scrollbar */
-  ::-webkit-scrollbar{width:6px;height:6px}
-  ::-webkit-scrollbar-track{background:transparent}
-  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:3px}
-  /* Color input */
+  .divider{height:1px;background:rgba(255,255,255,.07);margin:20px 0}
+  .preview-wrap{background:#0a0a0a;border-radius:14px;overflow:hidden;aspect-ratio:1;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 1px rgba(255,255,255,.06)}
+  ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
   input[type=color]{height:40px;cursor:pointer;border-radius:8px;padding:2px}
-  /* Section headers */
-  .section-h{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:12px}
+  .sh{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:10px}
+  .type-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;text-transform:capitalize}
+  .type-match{background:rgba(63,185,80,.12);color:#3fb950}
+  .type-fixture{background:rgba(88,166,255,.12);color:#58a6ff}
+  .type-squad{background:rgba(240,180,41,.12);color:#f0b429}
+  .type-motm{background:rgba(255,170,0,.15);color:#ffaa00}
+  .type-milestone{background:rgba(160,80,240,.12);color:#c084fc}
+  .type-photo{background:rgba(236,72,153,.12);color:#f472b6}
+  @media(max-width:860px){.rg2{grid-template-columns:1fr!important}.rg3{grid-template-columns:1fr 1fr!important}}
 </style>
 </head>
 <body x-data="App()" x-init="init()">
 
-<!-- ══ TOAST ══════════════════════════════════════════════════════ -->
+<!-- TOAST -->
 <div x-show="toast.show" x-transition
-  :class="toast.ok ? 'toast bg-green-950 text-green-300 border border-green-800' : 'toast bg-red-950 text-red-300 border border-red-800'"
+  :class="toast.ok?'toast bg-green-950 text-green-300 border border-green-800':'toast bg-red-950 text-red-300 border border-red-800'"
   x-text="toast.msg" style="display:none"></div>
 
-<!-- ══ HEADER ═════════════════════════════════════════════════════ -->
-<header style="background:rgba(13,17,23,.95);border-bottom:1px solid rgba(255,255,255,.07);position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)">
-  <div class="page" style="display:flex;align-items:center;justify-content:space-between;padding-top:14px;padding-bottom:14px">
-    <div style="display:flex;align-items:center;gap:12px">
-      <span style="font-size:28px">🏏</span>
+<!-- HEADER -->
+<header style="background:rgba(8,12,16,.96);border-bottom:1px solid rgba(255,255,255,.06);position:sticky;top:0;z-index:100;backdrop-filter:blur(16px)">
+  <div class="page" style="display:flex;align-items:center;justify-content:space-between;padding-top:13px;padding-bottom:13px">
+    <div style="display:flex;align-items:center;gap:14px">
+      <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#1a472a,#0d2a18);display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 0 0 1px rgba(240,180,41,.2)">🏏</div>
       <div>
-        <div style="font-size:17px;font-weight:700;line-height:1.2" x-text="settings.clubName||'Cricket Club'"></div>
-        <div style="font-size:11px;color:rgba(255,255,255,.35)">Instagram Dashboard</div>
+        <div style="font-size:18px;font-weight:800;letter-spacing:-.3px;background:linear-gradient(90deg,#fff,rgba(255,255,255,.7));-webkit-background-clip:text;-webkit-text-fill-color:transparent">SixShot</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.05em;text-transform:uppercase" x-text="(settings.clubName||'Cricket Club') + ' · Content Studio'"></div>
       </div>
     </div>
-    <div style="display:flex;align-items:center;gap:16px">
-      <span style="font-size:12px;color:rgba(255,255,255,.4)" x-text="posts.filter(p=>p.status==='approved').length + ' approved'"></span>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.35)">
+        <span x-show="posts.filter(p=>p.status==='approved').length" style="background:rgba(63,185,80,.15);color:#3fb950;padding:2px 10px;border-radius:20px;font-weight:600" x-text="posts.filter(p=>p.status==='approved').length+' ready'"></span>
+      </div>
       <button class="btn btn-ghost" style="padding:7px 14px;font-size:12px" @click="tab='settings'">⚙ Settings</button>
     </div>
   </div>
@@ -102,74 +94,60 @@
 
 <div class="page" style="padding-bottom:80px">
 
-  <!-- ══ TABS ═══════════════════════════════════════════════════════ -->
+  <!-- TABS -->
   <div class="tab-bar">
-    <div class="tab" :class="{active:tab==='queue'}" @click="tab='queue'">📬 Queue <span x-show="posts.filter(p=>p.status!=='rejected').length" style="background:rgba(240,180,41,.2);color:#f0b429;font-size:10px;padding:1px 7px;border-radius:10px;margin-left:4px" x-text="posts.filter(p=>p.status!=='rejected').length"></span></div>
+    <div class="tab" :class="{active:tab==='queue'}" @click="tab='queue'">
+      📬 Queue
+      <span x-show="posts.length" style="background:rgba(240,180,41,.2);color:#f0b429;font-size:10px;padding:1px 7px;border-radius:10px;margin-left:4px;font-weight:700" x-text="posts.length"></span>
+    </div>
     <div class="tab" :class="{active:tab==='new'}" @click="tab='new'">✚ New Post</div>
     <div class="tab" :class="{active:tab==='history'}" @click="tab='history'">📜 History</div>
     <div class="tab" :class="{active:tab==='settings'}" @click="tab='settings'">⚙ Settings</div>
   </div>
 
-  <!-- ══════════════════════════════════════════════════════════════
-       QUEUE TAB
-  ══════════════════════════════════════════════════════════════════ -->
+  <!-- ══ QUEUE ══ -->
   <div x-show="tab==='queue'" style="padding-top:28px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
       <h2 style="font-size:20px;font-weight:700">Post Queue</h2>
       <button class="btn btn-ghost" style="font-size:12px" @click="tab='new'">+ New Post</button>
     </div>
-
-    <!-- Empty state -->
-    <div x-show="posts.filter(p=>p.status!=='rejected').length===0" style="text-align:center;padding:80px 20px;color:rgba(255,255,255,.3)">
-      <div style="font-size:48px;margin-bottom:12px">📭</div>
-      <p style="font-size:16px;font-weight:600;color:rgba(255,255,255,.5)">Queue is empty</p>
-      <p style="font-size:13px;margin-top:4px">Create a post in the New Post tab</p>
+    <div x-show="!posts.length" style="text-align:center;padding:80px 20px;color:rgba(255,255,255,.3)">
+      <div style="font-size:52px;margin-bottom:12px">📭</div>
+      <p style="font-size:16px;font-weight:600;color:rgba(255,255,255,.45)">Queue is empty</p>
+      <p style="font-size:13px;margin-top:4px">Create a post using the New Post tab</p>
     </div>
-
-    <div style="display:flex;flex-direction:column;gap:16px">
-    <template x-for="post in posts.filter(p=>p.status!=='rejected')" :key="post.id">
+    <div style="display:flex;flex-direction:column;gap:14px">
+    <template x-for="post in posts" :key="post.id">
       <div class="post-card" style="display:flex;gap:0">
-
-        <!-- Thumbnail -->
-        <div style="flex-shrink:0;width:140px;min-height:140px;background:#0a0a0a;position:relative">
-          <canvas :id="'thumb-'+post.id" width="280" height="280" style="width:140px;height:140px;display:block" x-init="$nextTick(()=>renderThumb(post))"></canvas>
+        <div style="flex-shrink:0;width:130px;min-height:130px;background:#0a0a0a;position:relative;overflow:hidden">
+          <canvas :id="'thumb-'+post.id" width="260" height="260" style="width:130px;height:130px;display:block" x-init="$nextTick(()=>renderThumb(post))"></canvas>
         </div>
-
-        <!-- Content -->
-        <div style="flex:1;padding:18px;min-width:0">
+        <div style="flex:1;padding:16px 20px;min-width:0">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
             <span class="badge" :class="'badge-'+post.status" x-text="post.status"></span>
-            <span style="font-size:11px;color:rgba(255,255,255,.3);text-transform:capitalize" x-text="post.type.replace('_',' ')"></span>
+            <span class="type-pill" :class="'type-'+post.type" x-text="post.type==='motm'?'Man of Match':post.type==='squad'?'Playing XI':post.type"></span>
             <span style="font-size:11px;color:rgba(255,255,255,.25);margin-left:auto" x-text="fmtDate(post.createdAt)"></span>
           </div>
-
-          <!-- Caption editor -->
-          <textarea class="inp" x-model="post.caption" @change="saveQueue()" rows="3"
-            style="resize:none;margin-bottom:10px;font-size:13px;line-height:1.5"
-            placeholder="Caption..."></textarea>
-
-          <!-- Caption alternatives -->
+          <textarea class="inp" x-model="post.caption" @change="saveQueue()" rows="2"
+            style="resize:none;margin-bottom:10px;font-size:13px;line-height:1.5" placeholder="Caption…"></textarea>
           <div x-show="post.captions&&post.captions.length>1" style="margin-bottom:12px">
-            <div class="section-h">AI Caption Options</div>
+            <div class="sh">AI Caption Options</div>
             <div style="display:flex;flex-direction:column;gap:6px">
               <template x-for="(c,i) in post.captions||[]" :key="i">
-                <div class="cap-card" :class="{selected:post.caption===c.caption}"
-                  @click="post.caption=c.caption;saveQueue()">
-                  <div style="font-size:10px;font-weight:700;color:#f0b429;margin-bottom:4px;text-transform:uppercase" x-text="c.tone"></div>
-                  <div style="font-size:12px;color:rgba(255,255,255,.7);line-height:1.4" x-text="c.caption"></div>
+                <div class="cap-card" :class="{selected:post.caption===c.caption}" @click="post.caption=c.caption;saveQueue()">
+                  <div style="font-size:10px;font-weight:700;color:#f0b429;margin-bottom:3px;text-transform:uppercase" x-text="c.tone"></div>
+                  <div style="font-size:12px;color:rgba(255,255,255,.7);line-height:1.45" x-text="c.caption"></div>
                 </div>
               </template>
             </div>
           </div>
-
-          <!-- Actions -->
           <div style="display:flex;flex-wrap:wrap;gap:8px">
             <button class="btn btn-green" x-show="post.status!=='approved'" @click="approvePost(post)">✓ Approve</button>
             <button class="btn btn-gold" @click="publishNow(post)" :disabled="publishing===post.id">
               <span x-show="publishing!==post.id">🚀 Post Now</span>
               <span x-show="publishing===post.id" style="display:flex;align-items:center;gap:6px"><span class="spin"></span>Posting…</span>
             </button>
-            <button class="btn btn-ghost" @click="regenCaptions(post)" :disabled="!settings.groqKey">✨ New Captions</button>
+            <button class="btn btn-ghost" @click="regenCaptions(post)" :disabled="!settings.groqKey">✨ Captions</button>
             <button class="btn btn-red" @click="rejectPost(post)">✕ Remove</button>
           </div>
         </div>
@@ -178,299 +156,286 @@
     </div>
   </div>
 
-  <!-- ══════════════════════════════════════════════════════════════
-       NEW POST TAB
-  ══════════════════════════════════════════════════════════════════ -->
+  <!-- ══ NEW POST ══ -->
   <div x-show="tab==='new'" style="padding-top:28px">
     <h2 style="font-size:20px;font-weight:700;margin-bottom:20px">Create New Post</h2>
-
-    <!-- Sub-tabs -->
     <div class="stab-bar">
-      <div class="stab" :class="{active:newTab==='match'}" @click="newTab='match'">🏏 Match Result</div>
-      <div class="stab" :class="{active:newTab==='fixture'}" @click="newTab='fixture'">📅 Fixture</div>
-      <div class="stab" :class="{active:newTab==='spotlight'}" @click="newTab='spotlight'">⭐ Player Spotlight</div>
-      <div class="stab" :class="{active:newTab==='photo'}" @click="newTab='photo'">📸 Photo Post</div>
+      <div class="stab" :class="{active:newTab==='match'}"     @click="newTab='match'">🏆 Match Result</div>
+      <div class="stab" :class="{active:newTab==='fixture'}"   @click="newTab='fixture'">⚡ Match Day</div>
+      <div class="stab" :class="{active:newTab==='squad'}"     @click="newTab='squad'">📋 Playing XI</div>
+      <div class="stab" :class="{active:newTab==='motm'}"      @click="newTab='motm'">🌟 Man of Match</div>
+      <div class="stab" :class="{active:newTab==='milestone'}" @click="newTab='milestone'">🎯 Milestone</div>
+      <div class="stab" :class="{active:newTab==='photo'}"     @click="newTab='photo'">📸 Photo Post</div>
     </div>
 
-    <!-- ─── MATCH RESULT ─────────────────────────────────────────── -->
+    <!-- ─── MATCH RESULT ─── -->
     <div x-show="newTab==='match'">
-      <div style="display:grid;grid-template-columns:1fr 360px;gap:28px;align-items:start" class="responsive-grid">
-
-        <!-- Form column -->
+      <div style="display:grid;grid-template-columns:1fr 340px;gap:28px;align-items:start" class="rg2">
         <div>
-          <!-- CSV Import -->
-          <div class="glass" style="padding:20px;margin-bottom:20px">
-            <div class="section-h" style="margin-bottom:10px">⚡ Import from CricClubs CSV</div>
+          <div class="glass" style="padding:20px;margin-bottom:16px">
+            <div class="sh">⚡ Import from CricClubs CSV</div>
             <div class="drop-zone" @click="$refs.csvFile.click()"
               @dragover.prevent="$event.currentTarget.classList.add('over')"
               @dragleave="$event.currentTarget.classList.remove('over')"
               @drop.prevent="$event.currentTarget.classList.remove('over');handleCSVDrop($event)">
               <input type="file" accept=".csv,.txt" x-ref="csvFile" class="hidden" @change="handleCSVFile($event)"/>
-              <div style="font-size:28px;margin-bottom:8px">📄</div>
-              <div style="font-size:13px;color:rgba(255,255,255,.5)">Drop scorecard CSV or <span style="color:#f0b429;text-decoration:underline">browse</span></div>
-              <div style="font-size:11px;color:rgba(255,255,255,.25);margin-top:4px">CricClubs → View Scorecard → Export</div>
+              <div style="font-size:26px;margin-bottom:8px">📄</div>
+              <div style="font-size:13px;color:rgba(255,255,255,.45)">Drop scorecard CSV or <span style="color:#f0b429;text-decoration:underline">browse</span></div>
+              <div style="font-size:11px;color:rgba(255,255,255,.22);margin-top:4px">CricClubs → View Scorecard → Export</div>
             </div>
           </div>
-
-          <!-- Match Details -->
           <div class="glass" style="padding:24px">
-            <div class="divider" style="margin-top:0"></div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-              <div>
-                <label class="lbl">Opponent *</label>
-                <input class="inp" x-model="mf.opponent" @input="debouncedPreview('match')" placeholder="Brick Lane CC"/>
-              </div>
-              <div>
-                <label class="lbl">Result *</label>
+              <div><label class="lbl">Opponent *</label><input class="inp" x-model="mf.opponent" @input="debouncedPreview('match')" placeholder="Brick Lane CC"/></div>
+              <div><label class="lbl">Result *</label>
                 <select class="inp" x-model="mf.result" @change="debouncedPreview('match')">
-                  <option value="won">Won</option>
-                  <option value="lost">Lost</option>
-                  <option value="tied">Tied</option>
-                  <option value="no result">No Result</option>
+                  <option value="won">Won</option><option value="lost">Lost</option><option value="tied">Tied</option><option value="no result">No Result</option>
                 </select>
               </div>
             </div>
-
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:14px">
-              <div>
-                <label class="lbl">Our Score</label>
-                <input class="inp" x-model="mf.ourScore" @input="debouncedPreview('match')" placeholder="156/5"/>
-              </div>
-              <div>
-                <label class="lbl">Their Score</label>
-                <input class="inp" x-model="mf.theirScore" @input="debouncedPreview('match')" placeholder="143/8"/>
-              </div>
-              <div>
-                <label class="lbl">Margin</label>
-                <input class="inp" x-model="mf.margin" @input="debouncedPreview('match')" placeholder="13 runs"/>
-              </div>
-            </div>
-
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
-              <div>
-                <label class="lbl">Venue</label>
-                <input class="inp" x-model="mf.venue" @input="debouncedPreview('match')" placeholder="Victoria Park"/>
-              </div>
-              <div>
-                <label class="lbl">Match Date</label>
-                <input class="inp" type="date" x-model="mf.date" @input="debouncedPreview('match')"/>
-              </div>
-            </div>
-
-            <div style="margin-top:14px">
-              <label class="lbl">Competition</label>
-              <input class="inp" x-model="mf.competition" @input="debouncedPreview('match')" placeholder="East London T20 League"/>
-            </div>
-
-            <div class="divider"></div>
-            <div class="section-h">🏏 Top Batter</div>
-            <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:14px">
-              <div>
-                <label class="lbl">Name</label>
-                <input class="inp" x-model="mf.batterName" @input="debouncedPreview('match')" placeholder="Ravinder Singh"/>
-              </div>
-              <div>
-                <label class="lbl">Runs</label>
-                <input class="inp" type="number" x-model.number="mf.batterRuns" @input="debouncedPreview('match')" placeholder="72" min="0"/>
-              </div>
-              <div>
-                <label class="lbl">Balls</label>
-                <input class="inp" type="number" x-model.number="mf.batterBalls" @input="debouncedPreview('match')" placeholder="48" min="0"/>
-              </div>
+              <div><label class="lbl">Our Score</label><input class="inp" x-model="mf.ourScore" @input="debouncedPreview('match')" placeholder="156/5"/></div>
+              <div><label class="lbl">Their Score</label><input class="inp" x-model="mf.theirScore" @input="debouncedPreview('match')" placeholder="143/8"/></div>
+              <div><label class="lbl">Margin</label><input class="inp" x-model="mf.margin" @input="debouncedPreview('match')" placeholder="13 runs"/></div>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
-              <div>
-                <label class="lbl">Fours</label>
-                <input class="inp" type="number" x-model.number="mf.batterFours" placeholder="7" min="0"/>
-              </div>
-              <div>
-                <label class="lbl">Sixes</label>
-                <input class="inp" type="number" x-model.number="mf.batterSixes" placeholder="3" min="0"/>
-              </div>
+              <div><label class="lbl">Venue</label><input class="inp" x-model="mf.venue" @input="debouncedPreview('match')" placeholder="Victoria Park"/></div>
+              <div><label class="lbl">Match Date</label><input class="inp" type="date" x-model="mf.date" @input="debouncedPreview('match')"/></div>
             </div>
-
+            <div style="margin-top:14px"><label class="lbl">Competition</label><input class="inp" x-model="mf.competition" @input="debouncedPreview('match')" placeholder="East London T20 League"/></div>
             <div class="divider"></div>
-            <div class="section-h">🎳 Top Bowler</div>
-            <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:14px">
-              <div>
-                <label class="lbl">Name</label>
-                <input class="inp" x-model="mf.bowlerName" @input="debouncedPreview('match')" placeholder="Harpreet Dhaliwal"/>
-              </div>
-              <div>
-                <label class="lbl">Wickets</label>
-                <input class="inp" type="number" x-model.number="mf.bowlerWkts" @input="debouncedPreview('match')" placeholder="3" min="0"/>
-              </div>
-              <div>
-                <label class="lbl">Runs</label>
-                <input class="inp" type="number" x-model.number="mf.bowlerRuns" placeholder="22" min="0"/>
-              </div>
-              <div>
-                <label class="lbl">Overs</label>
-                <input class="inp" x-model="mf.bowlerOvers" placeholder="4.0"/>
-              </div>
+            <div class="sh">🏏 Top Batter</div>
+            <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:12px">
+              <div><label class="lbl">Name</label><input class="inp" x-model="mf.batterName" @input="debouncedPreview('match')" placeholder="Ravinder Singh"/></div>
+              <div><label class="lbl">Runs</label><input class="inp" type="number" x-model.number="mf.batterRuns" @input="debouncedPreview('match')" placeholder="72" min="0"/></div>
+              <div><label class="lbl">Balls</label><input class="inp" type="number" x-model.number="mf.batterBalls" @input="debouncedPreview('match')" placeholder="48" min="0"/></div>
+              <div><label class="lbl">4s</label><input class="inp" type="number" x-model.number="mf.batterFours" placeholder="7" min="0"/></div>
+              <div><label class="lbl">6s</label><input class="inp" type="number" x-model.number="mf.batterSixes" placeholder="3" min="0"/></div>
             </div>
-
             <div class="divider"></div>
-            <div class="section-h">📸 Optional Photo Background</div>
-            <div class="drop-zone" @click="$refs.matchPhoto.click()">
-              <input type="file" accept="image/*" x-ref="matchPhoto" class="hidden"
-                @change="handlePhotoUpload($event,'mf')"/>
-              <div style="font-size:13px;color:rgba(255,255,255,.4)" x-text="mf.photoName||'Add a match photo as background'"></div>
+            <div class="sh">🎳 Top Bowler</div>
+            <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:12px">
+              <div><label class="lbl">Name</label><input class="inp" x-model="mf.bowlerName" @input="debouncedPreview('match')" placeholder="Harpreet Dhaliwal"/></div>
+              <div><label class="lbl">Wickets</label><input class="inp" type="number" x-model.number="mf.bowlerWkts" @input="debouncedPreview('match')" placeholder="3" min="0"/></div>
+              <div><label class="lbl">Runs</label><input class="inp" type="number" x-model.number="mf.bowlerRuns" placeholder="22" min="0"/></div>
+              <div><label class="lbl">Overs</label><input class="inp" x-model="mf.bowlerOvers" placeholder="4.0"/></div>
             </div>
-          </div><!-- end glass -->
-
-          <button class="btn btn-gold" style="width:100%;justify-content:center;padding:13px;font-size:15px;margin-top:16px"
-            @click="submitMatch()" :disabled="creating||!mf.opponent">
-            <span x-show="!creating">✨ Generate Post & Captions</span>
+            <div class="divider"></div>
+            <div class="sh">📸 Optional Photo Background</div>
+            <div class="drop-zone" @click="$refs.matchPhoto.click()" style="padding:16px">
+              <input type="file" accept="image/*" x-ref="matchPhoto" class="hidden" @change="handlePhotoUpload($event,'mf')"/>
+              <div style="font-size:13px;color:rgba(255,255,255,.4)" x-text="mf.photoName||'Add a photo as card background'"></div>
+            </div>
+          </div>
+          <button class="btn btn-gold" style="width:100%;justify-content:center;padding:13px;font-size:15px;margin-top:16px" @click="submitMatch()" :disabled="creating||!mf.opponent">
+            <span x-show="!creating">✨ Generate Post</span>
             <span x-show="creating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
           </button>
         </div>
-
-        <!-- Live Preview column -->
-        <div style="position:sticky;top:90px">
-          <div class="section-h">Live Preview</div>
-          <div class="preview-wrap">
-            <canvas id="match-preview" width="1080" height="1080" style="width:100%;height:auto;display:block"></canvas>
-          </div>
-          <p style="font-size:11px;color:rgba(255,255,255,.25);text-align:center;margin-top:8px">Updates as you type</p>
+        <div style="position:sticky;top:80px">
+          <div class="sh">Live Preview</div>
+          <div class="preview-wrap"><canvas id="match-preview" width="1080" height="1080" style="width:100%;height:auto;display:block"></canvas></div>
+          <p style="font-size:11px;color:rgba(255,255,255,.2);text-align:center;margin-top:8px">Updates as you type</p>
         </div>
       </div>
     </div>
 
-    <!-- ─── FIXTURE ───────────────────────────────────────────────── -->
+    <!-- ─── MATCH DAY / FIXTURE ─── -->
     <div x-show="newTab==='fixture'">
-      <div style="display:grid;grid-template-columns:1fr 360px;gap:28px;align-items:start" class="responsive-grid">
+      <div style="display:grid;grid-template-columns:1fr 340px;gap:28px;align-items:start" class="rg2">
         <div>
           <div class="glass" style="padding:24px">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-              <div>
-                <label class="lbl">Opponent *</label>
-                <input class="inp" x-model="ff.opponent" @input="debouncedPreview('fixture')" placeholder="Hackney Hawks"/>
-              </div>
-              <div>
-                <label class="lbl">Date & Time *</label>
-                <input class="inp" type="datetime-local" x-model="ff.datetime" @input="debouncedPreview('fixture')"/>
-              </div>
+              <div><label class="lbl">Opponent *</label><input class="inp" x-model="ff.opponent" @input="debouncedPreview('fixture')" placeholder="Hackney Hawks"/></div>
+              <div><label class="lbl">Match Date & Time *</label><input class="inp" type="datetime-local" x-model="ff.datetime" @input="debouncedPreview('fixture')"/></div>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
-              <div>
-                <label class="lbl">Venue</label>
-                <input class="inp" x-model="ff.venue" @input="debouncedPreview('fixture')" placeholder="Victoria Park"/>
-              </div>
-              <div>
-                <label class="lbl">Competition</label>
-                <input class="inp" x-model="ff.competition" @input="debouncedPreview('fixture')"/>
-              </div>
+              <div><label class="lbl">Venue</label><input class="inp" x-model="ff.venue" @input="debouncedPreview('fixture')" placeholder="Victoria Park"/></div>
+              <div><label class="lbl">Competition</label><input class="inp" x-model="ff.competition" @input="debouncedPreview('fixture')" placeholder="Sunday League"/></div>
+            </div>
+            <div style="margin-top:14px"><label class="lbl">Format</label>
+              <select class="inp" x-model="ff.format" @change="debouncedPreview('fixture')">
+                <option value="">Select format</option><option>T20</option><option>40-Over</option><option>50-Over</option><option>T10</option>
+              </select>
             </div>
             <div class="divider"></div>
-            <div class="drop-zone" @click="$refs.fixPhoto.click()">
+            <div class="drop-zone" @click="$refs.fixPhoto.click()" style="padding:16px">
               <input type="file" accept="image/*" x-ref="fixPhoto" class="hidden" @change="handlePhotoUpload($event,'ff')"/>
               <div style="font-size:13px;color:rgba(255,255,255,.4)" x-text="ff.photoName||'📸 Optional photo background'"></div>
             </div>
           </div>
-          <button class="btn btn-gold" style="width:100%;justify-content:center;padding:13px;font-size:15px;margin-top:16px"
-            @click="submitFixture()" :disabled="creating||!ff.opponent">
-            <span x-show="!creating">✨ Generate Fixture Post</span>
+          <button class="btn btn-gold" style="width:100%;justify-content:center;padding:13px;font-size:15px;margin-top:16px" @click="submitFixture()" :disabled="creating||!ff.opponent">
+            <span x-show="!creating">✨ Generate Match Day Post</span>
             <span x-show="creating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
           </button>
         </div>
-        <div style="position:sticky;top:90px">
-          <div class="section-h">Live Preview</div>
-          <div class="preview-wrap">
-            <canvas id="fixture-preview" width="1080" height="1080" style="width:100%;height:auto;display:block"></canvas>
-          </div>
+        <div style="position:sticky;top:80px">
+          <div class="sh">Live Preview</div>
+          <div class="preview-wrap"><canvas id="fixture-preview" width="1080" height="1080" style="width:100%;height:auto;display:block"></canvas></div>
         </div>
       </div>
     </div>
 
-    <!-- ─── PLAYER SPOTLIGHT ─────────────────────────────────────── -->
-    <div x-show="newTab==='spotlight'">
-      <div style="display:grid;grid-template-columns:1fr 360px;gap:28px;align-items:start" class="responsive-grid">
+    <!-- ─── PLAYING XI ─── -->
+    <div x-show="newTab==='squad'">
+      <div style="display:grid;grid-template-columns:1fr 340px;gap:28px;align-items:start" class="rg2">
         <div>
           <div class="glass" style="padding:24px">
-            <div>
-              <label class="lbl">Player Name *</label>
-              <input class="inp" x-model="sf.name" @input="debouncedPreview('spotlight')" placeholder="Ravinder Singh"/>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+              <div><label class="lbl">Match vs *</label><input class="inp" x-model="qf.opponent" @input="debouncedPreview('squad')" placeholder="Hackney Hawks"/></div>
+              <div><label class="lbl">Date</label><input class="inp" type="date" x-model="qf.date" @input="debouncedPreview('squad')"/></div>
             </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:14px">
-              <div><label class="lbl">Season Runs</label><input class="inp" type="number" x-model.number="sf.runs" @input="debouncedPreview('spotlight')" placeholder="342" min="0"/></div>
-              <div><label class="lbl">Wickets</label><input class="inp" type="number" x-model.number="sf.wickets" @input="debouncedPreview('spotlight')" placeholder="8" min="0"/></div>
-              <div><label class="lbl">Matches</label><input class="inp" type="number" x-model.number="sf.matches" @input="debouncedPreview('spotlight')" placeholder="12" min="0"/></div>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
-              <div><label class="lbl">Highest Score</label><input class="inp" type="number" x-model.number="sf.highScore" @input="debouncedPreview('spotlight')" placeholder="87" min="0"/></div>
-              <div><label class="lbl">Best Bowling</label><input class="inp" x-model="sf.bestBowling" @input="debouncedPreview('spotlight')" placeholder="4/22"/></div>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
-              <div><label class="lbl">Catches</label><input class="inp" type="number" x-model.number="sf.catches" placeholder="5" min="0"/></div>
-              <div><label class="lbl">Batting Avg</label><input class="inp" x-model="sf.avg" placeholder="28.5"/></div>
-            </div>
+            <div style="margin-top:14px"><label class="lbl">Competition</label><input class="inp" x-model="qf.competition" @input="debouncedPreview('squad')" placeholder="Sunday League"/></div>
             <div class="divider"></div>
-            <div class="drop-zone" @click="$refs.spotPhoto.click()">
-              <input type="file" accept="image/*" x-ref="spotPhoto" class="hidden" @change="handlePhotoUpload($event,'sf')"/>
-              <div style="font-size:13px;color:rgba(255,255,255,.4)" x-text="sf.photoName||'📸 Add player photo (recommended)'"></div>
+            <div class="sh" style="margin-bottom:14px">Playing XI — Enter Players (1–11)</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <template x-for="(pl,i) in qf.players" :key="i">
+                <div style="display:grid;grid-template-columns:32px 1fr 120px;gap:8px;align-items:center">
+                  <span style="font-size:13px;font-weight:700;color:rgba(255,255,255,.4);text-align:center" x-text="i+1"></span>
+                  <input class="inp" x-model="pl.name" @input="debouncedPreview('squad')" :placeholder="'Player '+(i+1)"/>
+                  <select class="inp" x-model="pl.role" @change="debouncedPreview('squad')" style="font-size:12px">
+                    <option value="">Role</option><option>Batter</option><option>Bowler</option><option>All-rounder</option><option>WK</option><option>Captain</option>
+                  </select>
+                </div>
+              </template>
             </div>
           </div>
-          <button class="btn btn-gold" style="width:100%;justify-content:center;padding:13px;font-size:15px;margin-top:16px"
-            @click="submitSpotlight()" :disabled="creating||!sf.name">
-            <span x-show="!creating">✨ Generate Spotlight Post</span>
+          <button class="btn btn-gold" style="width:100%;justify-content:center;padding:13px;font-size:15px;margin-top:16px" @click="submitSquad()" :disabled="creating||!qf.opponent">
+            <span x-show="!creating">✨ Generate Squad Post</span>
             <span x-show="creating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
           </button>
         </div>
-        <div style="position:sticky;top:90px">
-          <div class="section-h">Live Preview</div>
-          <div class="preview-wrap">
-            <canvas id="spotlight-preview" width="1080" height="1080" style="width:100%;height:auto;display:block"></canvas>
+        <div style="position:sticky;top:80px">
+          <div class="sh">Live Preview</div>
+          <div class="preview-wrap"><canvas id="squad-preview" width="1080" height="1080" style="width:100%;height:auto;display:block"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── MAN OF THE MATCH ─── -->
+    <div x-show="newTab==='motm'">
+      <div style="display:grid;grid-template-columns:1fr 340px;gap:28px;align-items:start" class="rg2">
+        <div>
+          <div class="glass" style="padding:24px">
+            <div><label class="lbl">Player Name *</label><input class="inp" x-model="gf.name" @input="debouncedPreview('motm')" placeholder="Harpreet Singh"/></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
+              <div><label class="lbl">Match vs</label><input class="inp" x-model="gf.opponent" @input="debouncedPreview('motm')" placeholder="Punjab XI"/></div>
+              <div><label class="lbl">Date</label><input class="inp" type="date" x-model="gf.date" @input="debouncedPreview('motm')"/></div>
+            </div>
+            <div class="divider"></div>
+            <div class="sh">Performance (fill what applies)</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+              <div><label class="lbl">Runs</label><input class="inp" type="number" x-model.number="gf.runs" @input="debouncedPreview('motm')" placeholder="0" min="0"/></div>
+              <div><label class="lbl">Balls</label><input class="inp" type="number" x-model.number="gf.balls" @input="debouncedPreview('motm')" placeholder="0" min="0"/></div>
+              <div><label class="lbl">S/R</label><input class="inp" x-model="gf.sr" @input="debouncedPreview('motm')" placeholder="auto"/></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:14px">
+              <div><label class="lbl">Wickets</label><input class="inp" type="number" x-model.number="gf.wkts" @input="debouncedPreview('motm')" placeholder="0" min="0"/></div>
+              <div><label class="lbl">Runs Conceded</label><input class="inp" type="number" x-model.number="gf.conc" @input="debouncedPreview('motm')" placeholder="0" min="0"/></div>
+              <div><label class="lbl">Overs</label><input class="inp" x-model="gf.overs" @input="debouncedPreview('motm')" placeholder="4.0"/></div>
+            </div>
+            <div style="margin-top:14px"><label class="lbl">Catches / Run-outs / Stumpings</label><input class="inp" x-model="gf.fielding" @input="debouncedPreview('motm')" placeholder="2 catches"/></div>
+            <div class="divider"></div>
+            <div class="drop-zone" @click="$refs.motmPhoto.click()" style="padding:16px">
+              <input type="file" accept="image/*" x-ref="motmPhoto" class="hidden" @change="handlePhotoUpload($event,'gf')"/>
+              <div style="font-size:13px;color:rgba(255,255,255,.4)" x-text="gf.photoName||'📸 Add player photo (recommended)'"></div>
+            </div>
           </div>
+          <button class="btn btn-gold" style="width:100%;justify-content:center;padding:13px;font-size:15px;margin-top:16px" @click="submitMOTM()" :disabled="creating||!gf.name">
+            <span x-show="!creating">🌟 Generate MOTM Post</span>
+            <span x-show="creating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
+          </button>
+        </div>
+        <div style="position:sticky;top:80px">
+          <div class="sh">Live Preview</div>
+          <div class="preview-wrap"><canvas id="motm-preview" width="1080" height="1080" style="width:100%;height:auto;display:block"></canvas></div>
         </div>
       </div>
     </div>
 
-    <!-- ─── PHOTO POST ────────────────────────────────────────────── -->
+    <!-- ─── MILESTONE ─── -->
+    <div x-show="newTab==='milestone'">
+      <div style="display:grid;grid-template-columns:1fr 340px;gap:28px;align-items:start" class="rg2">
+        <div>
+          <div class="glass" style="padding:24px">
+            <div><label class="lbl">Achievement Title *</label><input class="inp" x-model="lf.title" @input="debouncedPreview('milestone')" placeholder="500 Run Club · Hat-trick Hero · Season Champions"/></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
+              <div><label class="lbl">Player / Team Name</label><input class="inp" x-model="lf.name" @input="debouncedPreview('milestone')" placeholder="Harpreet Singh / Gabru Jawaans"/></div>
+              <div><label class="lbl">Key Number (optional)</label><input class="inp" x-model="lf.number" @input="debouncedPreview('milestone')" placeholder="500 · 100 · 50"/></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
+              <div><label class="lbl">Season / Year</label><input class="inp" x-model="lf.season" @input="debouncedPreview('milestone')" placeholder="2025/26"/></div>
+              <div><label class="lbl">Subtitle</label><input class="inp" x-model="lf.subtitle" @input="debouncedPreview('milestone')" placeholder="Season Runs · Career Wickets"/></div>
+            </div>
+            <div class="divider"></div>
+            <div class="drop-zone" @click="$refs.milPhoto.click()" style="padding:16px">
+              <input type="file" accept="image/*" x-ref="milPhoto" class="hidden" @change="handlePhotoUpload($event,'lf')"/>
+              <div style="font-size:13px;color:rgba(255,255,255,.4)" x-text="lf.photoName||'📸 Add photo background'"></div>
+            </div>
+          </div>
+          <button class="btn btn-gold" style="width:100%;justify-content:center;padding:13px;font-size:15px;margin-top:16px" @click="submitMilestone()" :disabled="creating||!lf.title">
+            <span x-show="!creating">🎯 Generate Milestone Post</span>
+            <span x-show="creating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
+          </button>
+        </div>
+        <div style="position:sticky;top:80px">
+          <div class="sh">Live Preview</div>
+          <div class="preview-wrap"><canvas id="milestone-preview" width="1080" height="1080" style="width:100%;height:auto;display:block"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── PHOTO POST ─── -->
     <div x-show="newTab==='photo'">
-      <div class="glass" style="padding:24px;max-width:600px">
-        <div class="drop-zone" @click="$refs.customPhoto.click()"
-          @dragover.prevent @drop.prevent="handlePhotoUpload($event,'pf',true)">
-          <input type="file" accept="image/*" x-ref="customPhoto" class="hidden" @change="handlePhotoUpload($event,'pf')"/>
-          <div style="font-size:36px;margin-bottom:8px" x-text="pf.photoName?'✅':'🖼️'"></div>
-          <div style="font-size:13px;color:rgba(255,255,255,.5)" x-text="pf.photoName||'Drop photo or click to browse'"></div>
+      <div style="display:grid;grid-template-columns:1fr 340px;gap:28px;align-items:start" class="rg2">
+        <div class="glass" style="padding:24px">
+          <div class="drop-zone" @click="$refs.customPhoto.click()"
+            @dragover.prevent @drop.prevent="handlePhotoUpload($event,'pf',true)">
+            <input type="file" accept="image/*" x-ref="customPhoto" class="hidden" @change="handlePhotoUpload($event,'pf')"/>
+            <div style="font-size:36px;margin-bottom:8px" x-text="pf.photoName?'✅':'🖼️'"></div>
+            <div style="font-size:13px;color:rgba(255,255,255,.45)" x-text="pf.photoName||'Drop photo or click to browse'"></div>
+          </div>
+          <div style="margin-top:16px"><label class="lbl">Caption</label>
+            <textarea class="inp" x-model="pf.caption" @input="debouncedPreview('photo')" rows="3" style="resize:none" placeholder="Write caption or leave blank for AI…"></textarea>
+          </div>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:10px;font-size:13px">
+            <input type="checkbox" x-model="pf.genCaption" style="accent-color:#f0b429"/>
+            <span style="color:rgba(255,255,255,.65)">Generate caption with AI ✨</span>
+          </label>
+          <button class="btn btn-gold" style="width:100%;justify-content:center;padding:13px;font-size:15px;margin-top:18px"
+            @click="submitPhoto()" :disabled="creating||!pf.photoDataURL">
+            <span x-show="!creating">📸 Add to Queue</span>
+            <span x-show="creating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Processing…</span>
+          </button>
         </div>
-        <div style="margin-top:16px">
-          <label class="lbl">Caption (or leave blank for AI)</label>
-          <textarea class="inp" x-model="pf.caption" rows="3" style="resize:none" placeholder="Leave blank to generate with AI…"></textarea>
+        <div style="position:sticky;top:80px">
+          <div class="sh">Live Preview</div>
+          <div class="preview-wrap"><canvas id="photo-preview" width="1080" height="1080" style="width:100%;height:auto;display:block"></canvas></div>
         </div>
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:12px;font-size:13px">
-          <input type="checkbox" x-model="pf.genCaption" style="accent-color:#f0b429"/>
-          <span style="color:rgba(255,255,255,.7)">Generate caption with AI ✨</span>
-        </label>
-        <button class="btn btn-gold" style="width:100%;justify-content:center;padding:13px;font-size:15px;margin-top:20px"
-          @click="submitPhoto()" :disabled="creating||!pf.photoData">
-          <span x-show="!creating">Upload & Add to Queue</span>
-          <span x-show="creating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Processing…</span>
-        </button>
       </div>
     </div>
 
-    <!-- ─── Created post preview ─────────────────────────────────── -->
-    <div x-show="createdPost" style="margin-top:28px" class="glass" style="padding:24px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
-        <span style="color:#3fb950;font-size:18px">✅</span>
-        <span style="font-weight:700;font-size:16px">Post created!</span>
-        <button class="btn btn-ghost" style="margin-left:auto;font-size:12px" @click="tab='queue'">View in Queue →</button>
+    <!-- Created post confirmation -->
+    <div x-show="createdPost" style="margin-top:28px" class="glass" x-cloak>
+      <div style="padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px">
+        <span style="font-size:20px">✅</span>
+        <span style="font-weight:700;font-size:16px">Post added to queue!</span>
+        <button class="btn btn-ghost" style="margin-left:auto;font-size:12px" @click="tab='queue'">View Queue →</button>
       </div>
-      <div style="display:flex;gap:20px;align-items:flex-start">
-        <canvas :id="'created-thumb'" width="280" height="280" style="width:140px;height:140px;border-radius:10px;flex-shrink:0;background:#0a0a0a"
-          x-init="$nextTick(()=>createdPost&&renderThumb(createdPost,'created-thumb'))"></canvas>
+      <div style="padding:20px 24px;display:flex;gap:20px;align-items:flex-start">
+        <canvas id="created-thumb" width="280" height="280" style="width:120px;height:120px;border-radius:10px;flex-shrink:0;background:#0a0a0a"></canvas>
         <div style="flex:1">
-          <div class="section-h" style="margin-bottom:8px">Select a caption:</div>
+          <div class="sh" style="margin-bottom:10px">Select a caption:</div>
           <div style="display:flex;flex-direction:column;gap:8px">
             <template x-for="(c,i) in createdPost?.captions||[]" :key="i">
-              <div class="cap-card" :class="{selected:createdPost.caption===c.caption}"
-                @click="createdPost.caption=c.caption;saveQueue()">
+              <div class="cap-card" :class="{selected:createdPost.caption===c.caption}" @click="createdPost.caption=c.caption;saveQueue()">
                 <div style="font-size:10px;font-weight:700;color:#f0b429;margin-bottom:3px;text-transform:uppercase" x-text="c.tone"></div>
-                <div style="font-size:12px;color:rgba(255,255,255,.75);line-height:1.4" x-text="c.caption"></div>
+                <div style="font-size:12px;color:rgba(255,255,255,.75);line-height:1.45" x-text="c.caption"></div>
               </div>
             </template>
+            <div x-show="!createdPost?.captions?.length" style="font-size:13px;color:rgba(255,255,255,.3)">
+              No AI captions generated — edit the caption field in the queue, or add a Groq key in Settings.
+            </div>
           </div>
           <div style="display:flex;gap:10px;margin-top:14px">
             <button class="btn btn-gold" @click="publishNow(createdPost)" :disabled="publishing===createdPost?.id">🚀 Post Now</button>
@@ -481,1025 +446,713 @@
     </div>
   </div>
 
-  <!-- ══════════════════════════════════════════════════════════════
-       HISTORY TAB
-  ══════════════════════════════════════════════════════════════════ -->
+  <!-- ══ HISTORY ══ -->
   <div x-show="tab==='history'" style="padding-top:28px">
     <h2 style="font-size:20px;font-weight:700;margin-bottom:20px">Posted History</h2>
-    <div x-show="history.length===0" style="text-align:center;padding:80px 20px;color:rgba(255,255,255,.3)">
+    <div x-show="!history.length" style="text-align:center;padding:80px 20px;color:rgba(255,255,255,.3)">
       <div style="font-size:48px;margin-bottom:12px">📜</div>
-      <p style="font-size:16px;font-weight:600;color:rgba(255,255,255,.5)">No posts yet</p>
+      <p style="font-size:16px;font-weight:600;color:rgba(255,255,255,.45)">No posts yet</p>
     </div>
-    <div style="display:flex;flex-direction:column;gap:14px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px">
     <template x-for="post in history" :key="post.id">
-      <div class="post-card" style="display:flex;gap:0">
-        <div style="flex-shrink:0;width:100px;min-height:100px;background:#0a0a0a">
-          <canvas :id="'hist-'+post.id" width="200" height="200" style="width:100px;height:100px;display:block"
-            x-init="$nextTick(()=>renderThumb(post,'hist-'+post.id))"></canvas>
-        </div>
-        <div style="flex:1;padding:16px;min-width:0">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <div class="post-card" style="overflow:hidden">
+        <canvas :id="'hist-'+post.id" width="520" height="520" style="width:100%;aspect-ratio:1;display:block"
+          x-init="$nextTick(()=>renderThumb(post,'hist-'+post.id))"></canvas>
+        <div style="padding:14px">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
             <span class="badge badge-posted">Posted</span>
             <span style="font-size:11px;color:rgba(255,255,255,.3)" x-text="fmtDate(post.postedAt||post.createdAt)"></span>
           </div>
-          <p style="font-size:13px;color:rgba(255,255,255,.65);line-height:1.4;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" x-text="post.caption"></p>
-          <a x-show="post.mediaId" :href="'https://www.instagram.com/'" target="_blank"
-            style="font-size:12px;color:#58a6ff;text-decoration:none;margin-top:4px;display:inline-block">
-            View on Instagram ↗
-          </a>
+          <p style="font-size:12px;color:rgba(255,255,255,.55);line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical" x-text="post.caption||'—'"></p>
         </div>
       </div>
     </template>
     </div>
   </div>
 
-  <!-- ══════════════════════════════════════════════════════════════
-       SETTINGS TAB
-  ══════════════════════════════════════════════════════════════════ -->
+  <!-- ══ SETTINGS ══ -->
   <div x-show="tab==='settings'" style="padding-top:28px">
     <h2 style="font-size:20px;font-weight:700;margin-bottom:20px">Settings</h2>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:900px" class="responsive-grid">
-
-      <!-- Club Identity -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:900px" class="rg2">
       <div class="glass" style="padding:24px">
-        <div class="section-h">🏏 Club Identity</div>
-        <div style="margin-bottom:14px">
-          <label class="lbl">Club Name</label>
-          <input class="inp" x-model="settings.clubName" placeholder="Gabru Jawaans"/>
-        </div>
+        <div class="sh">🏏 Club Identity</div>
+        <div style="margin-bottom:14px"><label class="lbl">Club Name</label><input class="inp" x-model="settings.clubName" placeholder="Gabru Jawaans"/></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-          <div>
-            <label class="lbl">Primary Colour</label>
+          <div><label class="lbl">Primary Colour</label>
             <div style="display:flex;gap:8px;align-items:center">
               <input type="color" class="inp" x-model="settings.primary" style="padding:4px;flex-shrink:0;width:50px"/>
               <input class="inp" x-model="settings.primary" placeholder="#1a472a" style="flex:1"/>
             </div>
           </div>
-          <div>
-            <label class="lbl">Accent Colour</label>
+          <div><label class="lbl">Accent Colour</label>
             <div style="display:flex;gap:8px;align-items:center">
               <input type="color" class="inp" x-model="settings.accent" style="padding:4px;flex-shrink:0;width:50px"/>
               <input class="inp" x-model="settings.accent" placeholder="#f0b429" style="flex:1"/>
             </div>
           </div>
         </div>
-        <!-- Mini colour preview -->
-        <div style="margin-top:16px;border-radius:10px;overflow:hidden;height:8px;display:flex">
+        <div style="margin-top:14px;border-radius:8px;overflow:hidden;height:8px;display:flex">
           <div style="flex:1" :style="`background:${settings.primary}`"></div>
           <div style="flex:1" :style="`background:${settings.accent}`"></div>
         </div>
       </div>
-
-      <!-- API Keys -->
       <div class="glass" style="padding:24px">
-        <div class="section-h">🔑 API Keys</div>
-        <p style="font-size:12px;color:rgba(255,255,255,.35);margin-bottom:16px;line-height:1.5">Keys are stored in your browser only — never sent anywhere except the respective APIs.</p>
-        <div style="margin-bottom:12px">
-          <label class="lbl">Groq API Key</label>
-          <input class="inp" type="password" x-model="settings.groqKey" placeholder="gsk_…"/>
-        </div>
-        <div style="margin-bottom:12px">
-          <label class="lbl">Instagram Access Token</label>
-          <input class="inp" type="password" x-model="settings.igToken" placeholder="EAABs…"/>
-        </div>
-        <div style="margin-bottom:12px">
-          <label class="lbl">Instagram Account ID</label>
-          <input class="inp" x-model="settings.igAccountId" placeholder="17841400…"/>
-        </div>
-        <div style="margin-bottom:12px">
-          <label class="lbl">Imgur Client ID <a href="https://api.imgur.com/oauth2/addclient" target="_blank" style="color:#f0b429;font-size:10px;margin-left:4px">Get free →</a></label>
-          <input class="inp" x-model="settings.imgurClientId" placeholder="abc123…"/>
-        </div>
+        <div class="sh">🔑 API Keys</div>
+        <p style="font-size:12px;color:rgba(255,255,255,.3);margin-bottom:14px;line-height:1.5">Stored in your browser only — never sent anywhere except the respective APIs.</p>
+        <div style="margin-bottom:12px"><label class="lbl">Groq API Key (AI Captions)</label><input class="inp" type="password" x-model="settings.groqKey" placeholder="gsk_…"/></div>
+        <div style="margin-bottom:12px"><label class="lbl">Instagram Access Token</label><input class="inp" type="password" x-model="settings.igToken" placeholder="EAABs…"/></div>
+        <div style="margin-bottom:12px"><label class="lbl">Instagram Account ID</label><input class="inp" x-model="settings.igAccountId" placeholder="17841400…"/></div>
+        <div><label class="lbl">Imgur Client ID <a href="https://api.imgur.com/oauth2/addclient" target="_blank" style="color:#f0b429;font-size:10px;margin-left:4px">Get free →</a></label><input class="inp" x-model="settings.imgurClientId" placeholder="abc123…"/></div>
       </div>
-
-      <!-- Save + actions -->
       <div style="grid-column:1/-1;display:flex;gap:12px;flex-wrap:wrap">
         <button class="btn btn-gold" style="font-size:15px;padding:12px 28px" @click="saveSettings()">💾 Save Settings</button>
         <button class="btn btn-ghost" @click="testInstagram()" :disabled="!settings.igToken">Test Instagram Connection</button>
         <button class="btn btn-red" @click="clearAll()" style="margin-left:auto">⚠ Clear All Data</button>
       </div>
       <div x-show="igStatus" class="glass-sm" style="grid-column:1/-1;padding:14px;font-size:13px" :class="igOk?'text-green-400':'text-red-400'" x-text="igStatus"></div>
-
-      <!-- Setup Guide -->
       <div class="glass" style="padding:24px;grid-column:1/-1">
-        <div class="section-h">📖 Setup Guide</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:13px;color:rgba(255,255,255,.6)">
-          <div>
-            <p style="font-weight:600;color:rgba(255,255,255,.85);margin-bottom:6px">1. Instagram</p>
-            <p>Convert to a Creator/Business account → connect to a Facebook Page → create a Meta Developer App → add Instagram Graph API → generate a long-lived token with <code style="font-size:11px;background:rgba(255,255,255,.07);padding:1px 5px;border-radius:4px">instagram_content_publish</code> scope</p>
-          </div>
-          <div>
-            <p style="font-weight:600;color:rgba(255,255,255,.85);margin-bottom:6px">2. Groq (AI Captions)</p>
-            <p>Get your free key at <a href="https://console.groq.com" target="_blank" style="color:#f0b429">console.groq.com</a> → API Keys</p>
-            <p style="margin-top:8px;font-weight:600;color:rgba(255,255,255,.85)">3. Imgur</p>
-            <p>Register a free app at <a href="https://api.imgur.com/oauth2/addclient" target="_blank" style="color:#f0b429">api.imgur.com</a> — use "OAuth 2 without callback URL". Copy the Client ID.</p>
-          </div>
+        <div class="sh" style="margin-bottom:14px">📖 Setup Guide</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;font-size:13px;color:rgba(255,255,255,.55)" class="rg3">
+          <div><p style="font-weight:700;color:rgba(255,255,255,.85);margin-bottom:6px">1. Instagram</p><p>Convert to Creator/Business → connect Facebook Page → Meta Developer App → Instagram Graph API → long-lived token with <code style="font-size:11px;background:rgba(255,255,255,.07);padding:1px 5px;border-radius:4px">instagram_content_publish</code></p></div>
+          <div><p style="font-weight:700;color:rgba(255,255,255,.85);margin-bottom:6px">2. Groq (AI Captions)</p><p>Free at <a href="https://console.groq.com" target="_blank" style="color:#f0b429">console.groq.com</a> → API Keys. Powers all caption generation using Llama 3.3.</p></div>
+          <div><p style="font-weight:700;color:rgba(255,255,255,.85);margin-bottom:6px">3. Imgur (Image Hosting)</p><p>Register free at <a href="https://api.imgur.com/oauth2/addclient" target="_blank" style="color:#f0b429">api.imgur.com</a> — use "OAuth 2 without callback". Copy the Client ID.</p></div>
         </div>
       </div>
     </div>
   </div>
 
-</div><!-- /page -->
-
-<style>
-@media(max-width:800px){.responsive-grid{grid-template-columns:1fr!important}}
-</style>
+</div>
 
 <script>
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 //  STORAGE
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 const Store = {
-  getQueue:    ()   => JSON.parse(localStorage.getItem('cc_q')   || '[]'),
-  setQueue:    (v)  => localStorage.setItem('cc_q', JSON.stringify(v)),
-  getHistory:  ()   => JSON.parse(localStorage.getItem('cc_hist')|| '[]'),
-  setHistory:  (v)  => localStorage.setItem('cc_hist', JSON.stringify(v)),
-  getSettings: ()   => ({
-    clubName:'Cricket Club', primary:'#1a472a', accent:'#f0b429',
-    groqKey:'', igToken:'', igAccountId:'', imgurClientId:'',
-    ...JSON.parse(localStorage.getItem('cc_cfg')||'{}')
-  }),
-  setSettings: (v)  => localStorage.setItem('cc_cfg', JSON.stringify(v)),
+  getQueue:    () => JSON.parse(localStorage.getItem('cc_q')   ||'[]'),
+  setQueue:    v  => localStorage.setItem('cc_q', JSON.stringify(v)),
+  getHistory:  () => JSON.parse(localStorage.getItem('cc_hist')||'[]'),
+  setHistory:  v  => localStorage.setItem('cc_hist', JSON.stringify(v)),
+  getSettings: () => ({clubName:'Cricket Club',primary:'#1a472a',accent:'#f0b429',groqKey:'',igToken:'',igAccountId:'',imgurClientId:'',...JSON.parse(localStorage.getItem('cc_cfg')||'{}')}),
+  setSettings: v  => localStorage.setItem('cc_cfg', JSON.stringify(v)),
 };
 
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 //  COLOUR HELPERS
-// ═══════════════════════════════════════════════════════════════════
-function hexRGB(hex='#000000'){
-  hex = hex.replace('#','');
-  if(hex.length===3) hex=hex.split('').map(c=>c+c).join('');
-  return [parseInt(hex.slice(0,2),16),parseInt(hex.slice(2,4),16),parseInt(hex.slice(4,6),16)];
-}
-function rgb(r,g,b,a=1){ return a<1?`rgba(${r},${g},${b},${a})`:`rgb(${r},${g},${b})`; }
-function lerp(a,b,t){ return Math.round(a+(b-a)*t); }
-function lerpRGB(c1,c2,t){ return c1.map((v,i)=>lerp(v,c2[i],t)); }
-function darken(rgb, f){ return rgb.map(v=>Math.round(v*f)); }
+// ═══════════════════════════════════════════════════════
+const S=1080;
+function hexRGB(h='#000'){h=h.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');return[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
+function rgb(r,g,b,a=1){return a<1?`rgba(${r},${g},${b},${a})`:`rgb(${r},${g},${b})`;}
+function lerpC(a,b,t){return a.map((v,i)=>Math.round(v+(b[i]-v)*t));}
+function darken(c,f){return c.map(v=>Math.round(v*f));}
 
-// ═══════════════════════════════════════════════════════════════════
-//  CANVAS IMAGE BUILDER — Style 2: Bold & Minimal
-// ═══════════════════════════════════════════════════════════════════
-const S = 1080;
+function rr(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();}
 
-function rr(ctx,x,y,w,h,r){
-  ctx.beginPath();
-  ctx.moveTo(x+r,y);
-  ctx.lineTo(x+w-r,y); ctx.arcTo(x+w,y,x+w,y+r,r);
-  ctx.lineTo(x+w,y+h-r); ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
-  ctx.lineTo(x+r,y+h); ctx.arcTo(x,y+h,x,y+h-r,r);
-  ctx.lineTo(x,y+r); ctx.arcTo(x,y,x+r,y,r);
-  ctx.closePath();
-}
+async function loadImg(src){return new Promise(res=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>res(null);i.src=src;});}
 
-function drawBase(ctx, P, A){
-  // Background gradient
-  const bg = ctx.createLinearGradient(0,0,S,S);
-  bg.addColorStop(0, rgb(...lerpRGB(P, [0,0,0], 0.55)));
-  bg.addColorStop(0.6, rgb(...lerpRGB(P, [0,0,0], 0.72)));
-  bg.addColorStop(1, '#02050a');
-  ctx.fillStyle = bg; ctx.fillRect(0,0,S,S);
+function drawPhoto(ctx,src,dim=0.5){return new Promise(res=>{const img=new Image();img.onload=()=>{const{width:w,height:h}=img;const s=Math.min(w,h);ctx.drawImage(img,(w-s)/2,(h-s)/2,s,s,0,0,S,S);if(dim>0){ctx.fillStyle=`rgba(0,0,0,${dim})`;ctx.fillRect(0,0,S,S);}res();};img.onerror=res;img.src=src;});}
 
-  // Subtle diagonal stripe
-  ctx.save();
-  ctx.translate(S*0.3, 0); ctx.rotate(-Math.PI/5);
-  const stripe = ctx.createLinearGradient(0,0,300,0);
-  stripe.addColorStop(0,'transparent');
-  stripe.addColorStop(0.5, rgb(...A, 0.05));
-  stripe.addColorStop(1,'transparent');
-  ctx.fillStyle=stripe; ctx.fillRect(0,-100,300,S*2);
-  ctx.restore();
+function monogram(ctx,club,cx,cy,A,r=28){const g=ctx.createRadialGradient(cx,cy,0,cx,cy,r);g.addColorStop(0,rgb(...A,0.3));g.addColorStop(1,rgb(...A,0.05));ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();ctx.strokeStyle=rgb(...A,0.5);ctx.lineWidth=1.5;ctx.stroke();const m=club.split(' ').map(w=>w[0]).slice(0,2).join('');ctx.font=`700 ${r*0.65}px "Oswald"`;ctx.fillStyle=rgb(...A,0.9);const mw=ctx.measureText(m).width;ctx.fillText(m,cx-mw/2,cy+r*0.25);}
 
-  // Top accent bar (gradient: accent → primary, 6px)
-  const bar = ctx.createLinearGradient(0,0,S,0);
-  bar.addColorStop(0, rgb(...A));
-  bar.addColorStop(0.7, rgb(...P));
-  bar.addColorStop(1, rgb(...darken(P,0.5)));
-  ctx.fillStyle=bar; ctx.fillRect(0,0,S,7);
+function footerBar(ctx,A,left,right,club){const g=ctx.createLinearGradient(0,S-90,0,S);g.addColorStop(0,'transparent');g.addColorStop(1,'rgba(0,0,0,.8)');ctx.fillStyle=g;ctx.fillRect(0,S-90,S,90);ctx.beginPath();ctx.moveTo(50,S-70);ctx.lineTo(S-50,S-70);ctx.strokeStyle=rgb(...A,0.18);ctx.lineWidth=1.2;ctx.stroke();ctx.font='500 19px "Inter"';ctx.fillStyle='rgba(255,255,255,.45)';if(left)ctx.fillText(left.toUpperCase(),50,S-38);if(right){const rw=ctx.measureText(right.toUpperCase()).width;ctx.fillText(right.toUpperCase(),S-60-rw,S-38);}monogram(ctx,club,S-44,S-38,A,24);}
 
-  // Left accent stripe (4px)
-  ctx.fillStyle=rgb(...A,0.75); ctx.fillRect(0,7,5,S-7);
-}
+function fmtD(s){if(!s)return'';try{return new Date(s).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}catch{return s;}}
 
-async function drawMatchCard(ctx, d, settings){
-  const P = hexRGB(settings.primary||'#1a472a');
-  const A = hexRGB(settings.accent||'#f0b429');
-  const club = (settings.clubName||'Cricket Club').toUpperCase();
+// ═══════════════════════════════════════════════════════
+//  1. MATCH RESULT  — dark scorecard with RESULT headline
+// ═══════════════════════════════════════════════════════
+async function drawMatchCard(ctx,d,cfg){
+  const P=hexRGB(cfg.primary||'#1a472a'),A=hexRGB(cfg.accent||'#f0b429');
+  const club=(cfg.clubName||'Cricket Club').toUpperCase();
+  const won=d.result?.toLowerCase()==='won',lost=d.result?.toLowerCase()==='lost';
 
-  if(d.photoDataURL){
-    await drawPhoto(ctx, d.photoDataURL, 0.58);
-  } else {
-    drawBase(ctx, P, A);
+  if(d.photoDataURL){await drawPhoto(ctx,d.photoDataURL,0.62);}
+  else{
+    const bg=ctx.createLinearGradient(0,0,S,S);
+    bg.addColorStop(0,rgb(...lerpC(P,[0,0,0],0.45)));bg.addColorStop(1,'#010508');
+    ctx.fillStyle=bg;ctx.fillRect(0,0,S,S);
+    // grid lines
+    ctx.strokeStyle=rgb(...A,0.03);ctx.lineWidth=1;
+    for(let i=0;i<S;i+=90){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,S);ctx.stroke();ctx.beginPath();ctx.moveTo(0,i);ctx.lineTo(S,i);ctx.stroke();}
   }
 
-  const won  = d.result?.toLowerCase()==='won';
-  const lost = d.result?.toLowerCase()==='lost';
-
-  // Club name
-  ctx.font='600 22px "Inter"';
-  ctx.fillStyle=rgb(...A, 0.9);
-  ctx.fillText(club, 50, 60);
-
-  // VS Opponent
-  ctx.font='500 26px "Inter"';
-  ctx.fillStyle='rgba(255,255,255,0.38)';
-  ctx.fillText(`VS ${(d.opponent||'TBC').toUpperCase()}`, 50, 102);
-
-  // Competition pill
-  if(d.competition){
-    ctx.font='600 18px "Inter"';
-    const cw = ctx.measureText(d.competition.toUpperCase()).width;
-    rr(ctx,S-60-cw-32,38,cw+32,40,20);
-    ctx.fillStyle=rgb(...A,0.12); ctx.fill();
-    ctx.strokeStyle=rgb(...A,0.3); ctx.lineWidth=1; ctx.stroke();
-    ctx.fillStyle=rgb(...A,0.85);
-    ctx.fillText(d.competition.toUpperCase(), S-60-cw-16, 64);
-  }
-
-  // RESULT WORD — huge
-  const word = won?'VICTORY':lost?'DEFEAT':(d.result||'RESULT').toUpperCase();
-  const wordSize = word.length>7 ? 130 : 148;
-  ctx.font=`700 ${wordSize}px "Oswald"`;
-  ctx.fillStyle='rgba(0,0,0,0.45)';
-  ctx.fillText(word, 54, 264); // shadow
-  ctx.fillStyle='#ffffff';
-  ctx.shadowColor='rgba(0,0,0,0.3)'; ctx.shadowBlur=20;
-  ctx.fillText(word, 50, 260);
-  ctx.shadowBlur=0;
-
-  // Accent underline
-  const tw = ctx.measureText(word).width;
-  ctx.fillStyle=rgb(...A);
-  ctx.fillRect(50, 276, Math.min(tw*0.65, 500), 6);
-
-  // Score line
-  ctx.font='700 80px "Oswald"';
-  ctx.fillStyle=rgb(...A);
-  ctx.fillText(d.ourScore||'—', 50, 374);
-  const sw = ctx.measureText(d.ourScore||'—').width;
-  ctx.font='400 32px "Inter"';
-  ctx.fillStyle='rgba(255,255,255,0.28)';
-  ctx.fillText(` / ${d.theirScore||'—'}`, 50+sw+6, 368);
-
-  // Margin
-  if(d.margin){
-    ctx.font='500 22px "Inter"';
-    ctx.fillStyle='rgba(255,255,255,0.45)';
-    ctx.fillText(`by ${d.margin}`, 50, 414);
-  }
-
-  // Divider
-  ctx.beginPath(); ctx.moveTo(50,450); ctx.lineTo(S-50,450);
-  ctx.strokeStyle='rgba(255,255,255,0.1)'; ctx.lineWidth=1.5; ctx.stroke();
-
-  // PERFORMERS label
-  ctx.font='700 18px "Inter"';
-  ctx.fillStyle=rgb(...A,0.65);
-  ctx.letterSpacing='0.1em';
-  ctx.fillText('TOP PERFORMERS', 50, 492);
-  ctx.letterSpacing='0';
-
-  // Batter row
-  if(d.batterName){
-    ctx.font='700 40px "Oswald"';
-    ctx.fillStyle='#ffffff';
-    ctx.fillText(d.batterName, 50, 548);
-    const runsStr = String(d.batterRuns||0);
-    const rw = ctx.measureText(runsStr).width;
-    ctx.font='700 48px "Oswald"'; ctx.fillStyle=rgb(...A);
-    ctx.fillText(runsStr, S-60-rw, 548);
-    ctx.font='600 16px "Inter"'; ctx.fillStyle='rgba(255,255,255,0.3)';
-    ctx.fillText('RUNS', S-60-rw, 574);
-    if(d.batterBalls||d.batterFours||d.batterSixes){
-      ctx.font='400 20px "Inter"'; ctx.fillStyle='rgba(255,255,255,0.35)';
-      ctx.fillText(`${d.batterBalls}b  ${d.batterFours}×4  ${d.batterSixes}×6`, 50, 576);
-    }
-  }
-
-  // Thin divider between performers
-  if(d.batterName&&d.bowlerName){
-    ctx.beginPath(); ctx.moveTo(50,596); ctx.lineTo(S-50,596);
-    ctx.strokeStyle='rgba(255,255,255,0.07)'; ctx.lineWidth=1; ctx.stroke();
-  }
-
-  // Bowler row
-  if(d.bowlerName){
-    ctx.font='700 40px "Oswald"'; ctx.fillStyle='#ffffff';
-    ctx.fillText(d.bowlerName, 50, d.batterName?652:548);
-    const wStr = `${d.bowlerWkts||0}w`;
-    const ww2 = ctx.measureText(wStr).width;
-    ctx.font='700 48px "Oswald"'; ctx.fillStyle=rgb(...A);
-    ctx.fillText(wStr, S-60-ww2, d.batterName?652:548);
-    ctx.font='600 16px "Inter"'; ctx.fillStyle='rgba(255,255,255,0.3)';
-    ctx.fillText('WKTS', S-60-ww2, d.batterName?678:574);
-    if(d.bowlerOvers){
-      ctx.font='400 20px "Inter"'; ctx.fillStyle='rgba(255,255,255,0.35)';
-      ctx.fillText(`${d.bowlerOvers} ov  ${d.bowlerRuns||0} runs`, 50, d.batterName?680:576);
-    }
-  }
-
-  drawFooter(ctx, A, d.venue, fmtDateDisplay(d.date), club);
-}
-
-async function drawFixtureCard(ctx, d, settings){
-  const P = hexRGB(settings.primary||'#1a472a');
-  const A = hexRGB(settings.accent||'#f0b429');
-  const club = (settings.clubName||'Cricket Club').toUpperCase();
-
-  if(d.photoDataURL){
-    await drawPhoto(ctx, d.photoDataURL, 0.62);
-  } else {
-    drawBase(ctx, P, A);
-  }
-
-  // Club name
-  ctx.font='600 22px "Inter"'; ctx.fillStyle=rgb(...A,0.9);
-  ctx.fillText(club, 50, 60);
-
-  // UPCOMING MATCH label
-  ctx.font='700 20px "Inter"'; ctx.fillStyle=rgb(...A,0.7);
-  ctx.letterSpacing='0.12em'; ctx.fillText('⚡  UPCOMING MATCH', 50, 120);
-  ctx.letterSpacing='0';
-
-  // Club name large
-  ctx.font='700 110px "Oswald"'; ctx.fillStyle='rgba(0,0,0,0.4)';
-  ctx.fillText(club.slice(0,12), 52, 272);
-  ctx.fillStyle='#ffffff';
-  ctx.shadowColor='rgba(0,0,0,0.3)'; ctx.shadowBlur=16;
-  ctx.fillText(club.slice(0,12), 50, 270);
-  ctx.shadowBlur=0;
-
-  // VS
-  ctx.font='600 32px "Inter"'; ctx.fillStyle='rgba(255,255,255,0.35)';
-  ctx.fillText('VS', 50, 324);
-
-  // Opponent
-  ctx.font='700 90px "Oswald"'; ctx.fillStyle='rgba(255,255,255,0.75)';
-  ctx.fillText((d.opponent||'TBC').toUpperCase().slice(0,14), 50, 426);
-  const oW = ctx.measureText((d.opponent||'TBC').toUpperCase().slice(0,14)).width;
-
-  // Accent underline under opponent
-  ctx.fillStyle=rgb(...A,0.5); ctx.fillRect(50, 438, Math.min(oW*0.5, 400), 4);
-
-  // Divider
-  ctx.beginPath(); ctx.moveTo(50,480); ctx.lineTo(S-50,480);
-  ctx.strokeStyle='rgba(255,255,255,0.1)'; ctx.lineWidth=1.5; ctx.stroke();
-
-  // Date/Time box
-  if(d.datetime||d.date){
-    const dateStr = d.datetime ? new Date(d.datetime).toLocaleString('en-GB',{weekday:'short',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'}) : d.date;
-    ctx.font='700 18px "Inter"'; ctx.fillStyle=rgb(...A,0.6);
-    ctx.letterSpacing='0.08em'; ctx.fillText('📅  DATE & TIME', 50, 528);
-    ctx.letterSpacing='0';
-    ctx.font='700 44px "Oswald"'; ctx.fillStyle='#ffffff';
-    ctx.fillText(dateStr, 50, 582);
-  }
-
-  // Venue
-  if(d.venue){
-    ctx.font='700 18px "Inter"'; ctx.fillStyle=rgb(...A,0.6);
-    ctx.letterSpacing='0.08em'; ctx.fillText('📍  VENUE', 50, 640);
-    ctx.letterSpacing='0';
-    ctx.font='700 44px "Oswald"'; ctx.fillStyle='rgba(255,255,255,0.85)';
-    ctx.fillText(d.venue, 50, 694);
-  }
-
-  // Bottom call to action
-  ctx.font='600 28px "Inter"'; ctx.fillStyle='rgba(255,255,255,0.55)';
-  ctx.fillText('Come out and support the lads! 🏏', 50, S-80);
-
-  drawFooter(ctx, A, '', '', club);
-}
-
-async function drawSpotlightCard(ctx, d, settings){
-  const P = hexRGB(settings.primary||'#1a472a');
-  const A = hexRGB(settings.accent||'#f0b429');
-  const purple = [120, 40, 200];
-  const club = (settings.clubName||'Cricket Club').toUpperCase();
-
-  if(d.photoDataURL){
-    await drawPhoto(ctx, d.photoDataURL, 0.55);
-  } else {
-    // Purple-tinted background
-    const bg = ctx.createLinearGradient(0,0,S,S);
-    bg.addColorStop(0,'#0a0415');
-    bg.addColorStop(0.5,`rgb(${Math.round(P[0]*.15)},${Math.round(P[1]*.08)},${Math.round(P[2]*.25)})`);
-    bg.addColorStop(1,'#02030a');
-    ctx.fillStyle=bg; ctx.fillRect(0,0,S,S);
-    // Glow
-    const g1=ctx.createRadialGradient(S*0.7,S*0.4,0,S*0.7,S*0.4,S*0.55);
-    g1.addColorStop(0,'rgba(120,40,200,0.2)');
-    g1.addColorStop(1,'transparent');
-    ctx.fillStyle=g1; ctx.fillRect(0,0,S,S);
-  }
-
-  // Top bar — purple gradient
+  // Top accent bar gradient
   const bar=ctx.createLinearGradient(0,0,S,0);
-  bar.addColorStop(0,'rgb(140,60,220)');
-  bar.addColorStop(1,'rgba(60,20,100,0.4)');
-  ctx.fillStyle=bar; ctx.fillRect(0,0,S,7);
-  ctx.fillStyle='rgba(140,60,220,0.7)'; ctx.fillRect(0,7,5,S-7);
+  bar.addColorStop(0,rgb(...A));bar.addColorStop(0.6,rgb(...P));bar.addColorStop(1,rgb(...darken(P,0.4)));
+  ctx.fillStyle=bar;ctx.fillRect(0,0,S,8);
+  ctx.fillStyle=rgb(...A,0.8);ctx.fillRect(0,8,5,S-8);
 
-  // Club name
-  ctx.font='600 22px "Inter"'; ctx.fillStyle='rgba(200,145,255,0.75)';
-  ctx.fillText(club, 50, 60);
+  // RESULT word — centred dramatically
+  const word=won?'VICTORY':lost?'DEFEAT':(d.result||'MATCH').toUpperCase();
+  const wColor=won?rgb(...A):lost?'#ff4444':'#ffffff';
+  ctx.font=`700 ${word.length>7?120:148}px "Oswald"`;
+  ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillText(word,54,204);
+  ctx.fillStyle=wColor;ctx.shadowColor='rgba(0,0,0,.5)';ctx.shadowBlur=24;
+  ctx.fillText(word,50,200);ctx.shadowBlur=0;
+  // underline
+  const uw=Math.min(ctx.measureText(word).width*.55,480);
+  ctx.fillStyle=rgb(...A);ctx.fillRect(50,214,uw,6);
 
-  // PLAYER SPOTLIGHT pill
-  rr(ctx, S-340, 32, 290, 44, 22);
-  ctx.fillStyle='rgba(140,60,220,0.25)'; ctx.fill();
-  ctx.strokeStyle='rgba(160,80,240,0.4)'; ctx.lineWidth=1; ctx.stroke();
-  ctx.font='700 18px "Inter"'; ctx.fillStyle='rgba(200,145,255,0.9)';
-  ctx.fillText('⭐  PLAYER SPOTLIGHT', S-328, 60);
+  // club vs opponent
+  ctx.font='700 22px "Inter"';ctx.fillStyle=rgb(...A,.9);ctx.fillText(club,50,60);
+  ctx.font='500 24px "Inter"';ctx.fillStyle='rgba(255,255,255,.35)';
+  ctx.fillText(`VS ${(d.opponent||'TBC').toUpperCase()}`,50,100);
+  if(d.competition){ctx.font='600 17px "Inter"';const cw2=ctx.measureText(d.competition.toUpperCase()).width;rr(ctx,S-56-cw2-28,36,cw2+28,38,19);ctx.fillStyle=rgb(...A,.1);ctx.fill();ctx.strokeStyle=rgb(...A,.3);ctx.lineWidth=1;ctx.stroke();ctx.fillStyle=rgb(...A,.85);ctx.fillText(d.competition.toUpperCase(),S-56-cw2-14,61);}
 
-  // Player name — split first/last
-  const parts = (d.name||'Player').split(' ');
-  const first = parts[0].toUpperCase();
-  const rest  = parts.slice(1).join(' ').toUpperCase();
-  ctx.font='700 130px "Oswald"'; ctx.fillStyle='rgba(0,0,0,0.4)';
-  ctx.fillText(first, 52, 232);
-  ctx.fillStyle='#ffffff';
-  ctx.shadowColor='rgba(0,0,0,0.4)'; ctx.shadowBlur=18;
-  ctx.fillText(first, 50, 230);
-  ctx.shadowBlur=0;
-  if(rest){
-    ctx.font='700 100px "Oswald"'; ctx.fillStyle='rgba(180,110,255,0.9)';
-    ctx.fillText(rest, 50, 340);
+  // Score block
+  const scY=265;
+  ctx.font='700 88px "Oswald"';ctx.fillStyle=rgb(...A);ctx.fillText(d.ourScore||'—',50,scY+74);
+  const sw=ctx.measureText(d.ourScore||'—').width;
+  ctx.font='400 34px "Inter"';ctx.fillStyle='rgba(255,255,255,.28)';ctx.fillText(` / ${d.theirScore||'—'}`,50+sw+8,scY+68);
+  if(d.margin){ctx.font='500 22px "Inter"';ctx.fillStyle='rgba(255,255,255,.45)';ctx.fillText(`by ${d.margin}`,50,scY+112);}
+
+  // Divider
+  ctx.beginPath();ctx.moveTo(50,420);ctx.lineTo(S-50,420);ctx.strokeStyle='rgba(255,255,255,.1)';ctx.lineWidth=1.5;ctx.stroke();
+
+  // PERFORMERS
+  ctx.font='700 16px "Inter"';ctx.fillStyle=rgb(...A,.6);ctx.letterSpacing='.1em';ctx.fillText('TOP PERFORMERS',50,462);ctx.letterSpacing='0';
+
+  const perfY=d.batterName&&d.bowlerName?[512,578]:[530,530];
+  function perfRow(name,statVal,statLbl,detail,y){
+    ctx.font='700 38px "Oswald"';ctx.fillStyle='#fff';ctx.fillText(name,60,y);
+    const stw=ctx.measureText(statVal).width;
+    ctx.font='700 46px "Oswald"';ctx.fillStyle=rgb(...A);ctx.fillText(statVal,S-60-stw,y);
+    ctx.font='600 14px "Inter"';ctx.fillStyle='rgba(255,255,255,.3)';ctx.fillText(statLbl,S-60-stw,y+20);
+    if(detail){ctx.font='400 18px "Inter"';ctx.fillStyle='rgba(255,255,255,.35)';ctx.fillText(detail,60,y+24);}
   }
+  if(d.batterName)perfRow(d.batterName,String(d.batterRuns||0),'RUNS',[d.batterBalls&&`${d.batterBalls}b`,d.batterFours&&`${d.batterFours}×4`,d.batterSixes&&`${d.batterSixes}×6`].filter(Boolean).join('  '),perfY[0]);
+  if(d.batterName&&d.bowlerName){ctx.beginPath();ctx.moveTo(50,553);ctx.lineTo(S-50,553);ctx.strokeStyle='rgba(255,255,255,.06)';ctx.lineWidth=1;ctx.stroke();}
+  if(d.bowlerName)perfRow(d.bowlerName,`${d.bowlerWkts||0}w`,'WKTS',d.bowlerOvers?`${d.bowlerOvers} ov  ${d.bowlerRuns||0} runs`:'',d.batterName?perfY[1]:perfY[0]);
 
-  // Accent underline
-  ctx.fillStyle='rgba(140,60,220,0.6)';
-  ctx.fillRect(50, rest?358:250, 320, 5);
-
-  // Season stats label
-  ctx.font='500 22px "Inter"'; ctx.fillStyle='rgba(255,255,255,0.35)';
-  ctx.fillText(`Season Stats  ·  ${d.matches||0} matches`, 50, 408);
-
-  // Stat cards (3 across)
-  const stats=[
-    {icon:'🏏',label:'RUNS', val:String(d.runs||0), sub:`Best: ${d.highScore||0}`},
-    {icon:'🎳',label:'WICKETS', val:String(d.wickets||0), sub:`Best: ${d.bestBowling||'N/A'}`},
-    {icon:'⭐',label:'MATCHES', val:String(d.matches||0), sub:d.avg?`Avg: ${d.avg}`:''},
-  ];
-  const cw=(S-120-40)/3;
-  stats.forEach((st,i)=>{
-    const x=50+i*(cw+20), y=430;
-    rr(ctx,x,y,cw,148,14);
-    const grad=ctx.createLinearGradient(x,y,x,y+148);
-    grad.addColorStop(0,'rgba(255,255,255,0.08)');
-    grad.addColorStop(1,'rgba(255,255,255,0.03)');
-    ctx.fillStyle=grad; ctx.fill();
-    ctx.strokeStyle='rgba(140,60,220,0.35)'; ctx.lineWidth=1; ctx.stroke();
-    ctx.font='700 17px "Inter"'; ctx.fillStyle='rgba(190,130,255,0.8)';
-    ctx.fillText(`${st.icon} ${st.label}`,x+18,y+34);
-    ctx.font='700 66px "Oswald"'; ctx.fillStyle='#ffffff';
-    ctx.fillText(st.val,x+18,y+110);
-    if(st.sub){ctx.font='400 17px "Inter"'; ctx.fillStyle='rgba(255,255,255,0.35)'; ctx.fillText(st.sub,x+18,y+136);}
-  });
-
-  drawFooter(ctx, [140,60,220], '', `${club}  ·  2025/26 Season`, club);
+  footerBar(ctx,A,d.venue,fmtD(d.date),club);
 }
 
-async function drawPhotoCard(ctx, photoDataURL, caption, settings){
-  const A = hexRGB(settings.accent||'#f0b429');
-  await drawPhoto(ctx, photoDataURL, 0.0);
-  // Gradient overlay at bottom
-  const grad=ctx.createLinearGradient(0,S*0.5,0,S);
-  grad.addColorStop(0,'transparent');
-  grad.addColorStop(1,'rgba(0,0,0,0.85)');
-  ctx.fillStyle=grad; ctx.fillRect(0,0,S,S);
+// ═══════════════════════════════════════════════════════
+//  2. MATCH DAY / FIXTURE  — split-panel VS poster
+// ═══════════════════════════════════════════════════════
+async function drawFixtureCard(ctx,d,cfg){
+  const P=hexRGB(cfg.primary||'#1a472a'),A=hexRGB(cfg.accent||'#f0b429');
+  const club=(cfg.clubName||'Cricket Club').toUpperCase();
+
+  if(d.photoDataURL){await drawPhoto(ctx,d.photoDataURL,0.7);}
+  else{
+    // Left panel — primary, right panel — very dark
+    const left=ctx.createLinearGradient(0,0,S*.55,0);
+    left.addColorStop(0,rgb(...P));left.addColorStop(1,rgb(...lerpC(P,[5,5,5],.6)));
+    ctx.fillStyle=left;ctx.fillRect(0,0,S*.55,S);
+    const right=ctx.createLinearGradient(S*.45,0,S,0);
+    right.addColorStop(0,'#030609');right.addColorStop(1,'#06080d');
+    ctx.fillStyle=right;ctx.fillRect(S*.45,0,S*.55,S);
+    // diagonal slash
+    ctx.save();ctx.beginPath();ctx.moveTo(S*.48,0);ctx.lineTo(S*.56,0);ctx.lineTo(S*.52,S);ctx.lineTo(S*.44,S);ctx.closePath();
+    ctx.fillStyle=rgb(...A,.15);ctx.fill();ctx.restore();
+  }
+
+  // Top bar
+  ctx.fillStyle=rgb(...A);ctx.fillRect(0,0,S,7);
+
+  // Competition pill at top right
+  if(d.competition){ctx.font='600 18px "Inter"';const cw=ctx.measureText(d.competition.toUpperCase()).width;rr(ctx,S-60-cw-24,28,cw+24,38,19);ctx.fillStyle='rgba(0,0,0,.5)';ctx.fill();ctx.strokeStyle=rgb(...A,.4);ctx.lineWidth=1;ctx.stroke();ctx.fillStyle=rgb(...A,.9);ctx.fillText(d.competition.toUpperCase(),S-60-cw-12,52);}
+  // Format badge
+  if(d.format){ctx.font='700 17px "Inter"';ctx.fillStyle=rgb(...A,.8);ctx.fillText(d.format,50,58);}
+
+  // MATCH DAY label
+  ctx.font='700 20px "Inter"';ctx.fillStyle='rgba(255,255,255,.55)';ctx.letterSpacing='.15em';ctx.fillText('MATCH DAY',50,130);ctx.letterSpacing='0';
+
+  // Club name — left
+  ctx.font=`700 ${club.length>12?90:110}px "Oswald"`;
+  ctx.fillStyle='rgba(0,0,0,.3)';ctx.fillText(club.slice(0,13),52,292);
+  ctx.fillStyle='#ffffff';ctx.shadowColor='rgba(0,0,0,.5)';ctx.shadowBlur=20;
+  ctx.fillText(club.slice(0,13),50,290);ctx.shadowBlur=0;
+
+  // VS in center
+  const vsCx=S/2;
+  ctx.font='700 60px "Oswald"';ctx.fillStyle=rgb(...A);
+  const vsw=ctx.measureText('VS').width;ctx.fillText('VS',vsCx-vsw/2,340);
+  // horizontal lines each side of VS
+  ctx.beginPath();ctx.moveTo(60,315);ctx.lineTo(vsCx-vsw/2-24,315);ctx.strokeStyle=rgb(...A,.3);ctx.lineWidth=2;ctx.stroke();
+  ctx.beginPath();ctx.moveTo(vsCx+vsw/2+24,315);ctx.lineTo(S-60,315);ctx.stroke();
+
+  // Opponent — right aligned
+  const opp=(d.opponent||'TBC').toUpperCase();
+  ctx.font=`700 ${opp.length>12?80:100}px "Oswald"`;
+  ctx.fillStyle='rgba(255,255,255,.7)';
+  const oppW=ctx.measureText(opp).width;
+  ctx.fillText(opp,S-60-oppW,430);
+  ctx.fillStyle=rgb(...A,.45);ctx.fillRect(S-60-Math.min(oppW*.6,400),438,Math.min(oppW*.6,400),4);
+
+  // Divider
+  ctx.beginPath();ctx.moveTo(50,480);ctx.lineTo(S-50,480);ctx.strokeStyle='rgba(255,255,255,.1)';ctx.lineWidth=1.5;ctx.stroke();
+
+  // Date and Venue in two columns
+  const dt=d.datetime?new Date(d.datetime).toLocaleString('en-GB',{weekday:'short',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'}):fmtD(d.date);
+  if(dt){
+    ctx.font='700 16px "Inter"';ctx.fillStyle=rgb(...A,.6);ctx.letterSpacing='.08em';ctx.fillText('📅  DATE & TIME',50,534);ctx.letterSpacing='0';
+    ctx.font='700 42px "Oswald"';ctx.fillStyle='#ffffff';ctx.fillText(dt,50,586);
+  }
+  if(d.venue){
+    ctx.font='700 16px "Inter"';ctx.fillStyle=rgb(...A,.6);ctx.letterSpacing='.08em';ctx.fillText('📍  VENUE',50,640);ctx.letterSpacing='0';
+    ctx.font='700 40px "Oswald"';ctx.fillStyle='rgba(255,255,255,.85)';ctx.fillText(d.venue,50,690);
+  }
+
+  // Bottom CTA
+  ctx.font='600 24px "Inter"';ctx.fillStyle='rgba(255,255,255,.45)';ctx.fillText('Come support the lads! 🏏',50,S-90);
+  footerBar(ctx,A,'',club,club);
+}
+
+// ═══════════════════════════════════════════════════════
+//  3. PLAYING XI  — numbered squad list
+// ═══════════════════════════════════════════════════════
+async function drawSquadCard(ctx,d,cfg){
+  const P=hexRGB(cfg.primary||'#1a472a'),A=hexRGB(cfg.accent||'#f0b429');
+  const club=(cfg.clubName||'Cricket Club').toUpperCase();
+
+  // Dark rich green background
+  const bg=ctx.createLinearGradient(0,0,S,S);
+  bg.addColorStop(0,rgb(...lerpC(P,[0,0,0],.3)));bg.addColorStop(1,'#010a04');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,S,S);
+
+  // pitch texture suggestion — subtle arcs
+  ctx.strokeStyle=rgb(...P,.35);ctx.lineWidth=1.5;
+  for(let r2=100;r2<700;r2+=110){ctx.beginPath();ctx.arc(S/2,S+200,r2,Math.PI,2*Math.PI);ctx.stroke();}
+
   // Top accent bar
-  ctx.fillStyle=rgb(...A,0.8); ctx.fillRect(0,0,S,5);
-  // Caption text at bottom
-  if(caption){
-    ctx.font='600 30px "Inter"'; ctx.fillStyle='rgba(255,255,255,0.9)';
-    wrapText(ctx, caption, 60, S-120, S-120, 44);
+  ctx.fillStyle=rgb(...A);ctx.fillRect(0,0,S,8);
+  ctx.fillStyle=rgb(...A,.8);ctx.fillRect(0,8,5,S-8);
+
+  // PLAYING XI headline
+  ctx.font='700 108px "Oswald"';ctx.fillStyle='rgba(0,0,0,.3)';ctx.fillText('PLAYING XI',52,154);
+  ctx.fillStyle=rgb(...A);ctx.shadowColor='rgba(0,0,0,.4)';ctx.shadowBlur=16;
+  ctx.fillText('PLAYING XI',50,152);ctx.shadowBlur=0;
+
+  // subtitle
+  const sub=`${club}${d.opponent?' vs '+d.opponent.toUpperCase():''}${d.date?'  ·  '+fmtD(d.date):''}`;
+  ctx.font='500 21px "Inter"';ctx.fillStyle='rgba(255,255,255,.4)';ctx.fillText(sub,50,195);
+
+  // Divider
+  ctx.beginPath();ctx.moveTo(50,215);ctx.lineTo(S-50,215);ctx.strokeStyle=rgb(...A,.2);ctx.lineWidth=1.5;ctx.stroke();
+
+  // Players list — two columns
+  const players=d.players||[];
+  const col1=players.slice(0,6),col2=players.slice(6,11);
+  const rowH=71,startY=246,colW=(S-120)/2;
+
+  function drawPlayer(p,i,x,y){
+    const isCap=p.role==='Captain';
+    // row bg
+    rr(ctx,x,y,colW,rowH-6,10);
+    const rb=ctx.createLinearGradient(x,y,x+colW,y);
+    rb.addColorStop(0,'rgba(255,255,255,.06)');rb.addColorStop(1,'rgba(255,255,255,.02)');
+    ctx.fillStyle=rb;ctx.fill();
+    ctx.strokeStyle=rgb(...A,.12);ctx.lineWidth=1;ctx.stroke();
+    // number
+    ctx.font='700 26px "Oswald"';ctx.fillStyle=rgb(...A,.5);
+    const num=String(i+1);ctx.fillText(num,x+14,y+rowH-18);
+    // name
+    ctx.font=`700 30px "Oswald"`;ctx.fillStyle='#ffffff';
+    ctx.fillText((p.name||'TBC').slice(0,18),x+52,y+rowH-18);
+    // role chip
+    if(p.role&&p.role!=='Captain'){
+      const roleC={Batter:'rgba(63,185,80,.2)',Bowler:'rgba(88,166,255,.2)',WK:'rgba(240,180,41,.2)','All-rounder':'rgba(160,80,240,.2)'}[p.role]||'rgba(255,255,255,.08)';
+      const roleText=p.role==='All-rounder'?'AR':p.role==='Batter'?'BAT':p.role==='Bowler'?'BWL':p.role;
+      const rtw=ctx.measureText(roleText).width;
+      rr(ctx,x+colW-16-rtw-14,y+14,rtw+14,22,11);ctx.fillStyle=roleC;ctx.fill();
+      ctx.font='700 12px "Inter"';ctx.fillStyle='rgba(255,255,255,.7)';ctx.fillText(roleText,x+colW-16-rtw-7,y+30);
+    }
+    if(isCap){ctx.font='700 20px "Inter"';ctx.fillStyle=rgb(...A);ctx.fillText('©',x+colW-30,y+rowH-14);}
   }
+
+  col1.forEach((p,i)=>drawPlayer(p,i,50,startY+i*rowH));
+  col2.forEach((p,i)=>drawPlayer(p,i+6,50+colW+20,startY+i*rowH));
+
+  // Competition tag
+  if(d.competition){ctx.font='700 17px "Inter"';ctx.fillStyle=rgb(...A,.65);ctx.fillText(d.competition.toUpperCase(),50,S-90);}
+  footerBar(ctx,A,'',club,club);
 }
 
-function wrapText(ctx, text, x, y, maxW, lineH){
-  const words=text.split(' '); let line='';
-  for(const word of words){
-    const test=line?`${line} ${word}`:word;
-    if(ctx.measureText(test).width>maxW&&line){
-      ctx.fillText(line,x,y); line=word; y+=lineH;
-    } else line=test;
-  }
-  if(line) ctx.fillText(line,x,y);
-}
+// ═══════════════════════════════════════════════════════
+//  4. MAN OF THE MATCH  — gold spotlight card
+// ═══════════════════════════════════════════════════════
+async function drawMOTMCard(ctx,d,cfg){
+  const A=[240,180,41];// gold always
+  const P=hexRGB(cfg.primary||'#1a472a');
+  const club=(cfg.clubName||'Cricket Club').toUpperCase();
 
-function drawFooter(ctx, A, venue, date, club){
-  // Bottom strip
-  const grad=ctx.createLinearGradient(0,S-100,0,S);
-  grad.addColorStop(0,'transparent');
-  grad.addColorStop(1,'rgba(0,0,0,0.75)');
-  ctx.fillStyle=grad; ctx.fillRect(0,S-100,S,100);
-
-  ctx.beginPath(); ctx.moveTo(0,S-80); ctx.lineTo(S,S-80);
-  ctx.strokeStyle=rgb(...A,0.2); ctx.lineWidth=1.5; ctx.stroke();
-
-  const metaParts=[venue,date].filter(Boolean);
-  if(metaParts.length){
-    ctx.font='500 20px "Inter"'; ctx.fillStyle='rgba(255,255,255,0.5)';
-    ctx.fillText(metaParts.join('   •   ').toUpperCase(), 50, S-44);
+  if(d.photoDataURL){await drawPhoto(ctx,d.photoDataURL,0.55);}
+  else{
+    // Very dark, near-black background with gold warmth
+    const bg=ctx.createRadialGradient(S*.5,S*.35,0,S*.5,S*.35,S*.75);
+    bg.addColorStop(0,'#1a1200');bg.addColorStop(.5,'#0a0900');bg.addColorStop(1,'#040300');
+    ctx.fillStyle=bg;ctx.fillRect(0,0,S,S);
+    // Golden glow
+    const glow=ctx.createRadialGradient(S*.5,S*.3,0,S*.5,S*.3,420);
+    glow.addColorStop(0,'rgba(240,180,41,.18)');glow.addColorStop(.5,'rgba(240,180,41,.06)');glow.addColorStop(1,'transparent');
+    ctx.fillStyle=glow;ctx.fillRect(0,0,S,S);
   }
 
-  // Club monogram circle
-  const cx=S-52, cy=S-42;
-  const cg=ctx.createRadialGradient(cx,cy,0,cx,cy,30);
-  cg.addColorStop(0,rgb(...A,0.25)); cg.addColorStop(1,rgb(...A,0.04));
-  ctx.beginPath(); ctx.arc(cx,cy,28,0,Math.PI*2);
-  ctx.fillStyle=cg; ctx.fill();
-  ctx.strokeStyle=rgb(...A,0.5); ctx.lineWidth=1.5; ctx.stroke();
-  const mono = club.split(' ').map(w=>w[0]).slice(0,2).join('');
-  ctx.font=`700 18px "Oswald"`; ctx.fillStyle=rgb(...A,0.9);
-  const mw=ctx.measureText(mono).width;
-  ctx.fillText(mono, cx-mw/2, cy+7);
-}
+  // Gold top bar
+  const goldBar=ctx.createLinearGradient(0,0,S,0);
+  goldBar.addColorStop(0,'#f0b429');goldBar.addColorStop(.5,'#ffe080');goldBar.addColorStop(1,'#c88a10');
+  ctx.fillStyle=goldBar;ctx.fillRect(0,0,S,10);
 
-async function drawPhoto(ctx, dataURL, darkenAmt){
-  return new Promise(resolve=>{
-    const img=new Image();
-    img.onload=()=>{
-      const {width:w,height:h}=img;
-      const side=Math.min(w,h);
-      const sx=(w-side)/2, sy=(h-side)/2;
-      ctx.drawImage(img,sx,sy,side,side,0,0,S,S);
-      if(darkenAmt>0){
-        ctx.fillStyle=`rgba(0,0,0,${darkenAmt})`;
-        ctx.fillRect(0,0,S,S);
-      }
-      resolve();
-    };
-    img.onerror=resolve;
-    img.src=dataURL;
+  // Star decoration
+  ctx.font='52px serif';ctx.fillText('★',50,78);ctx.fillText('★',S-90,78);
+
+  // MAN OF THE MATCH label
+  ctx.font='700 28px "Inter"';ctx.fillStyle=rgb(...A,.9);ctx.letterSpacing='.08em';
+  const motmW=ctx.measureText('MAN OF THE MATCH').width;ctx.fillText('MAN OF THE MATCH',(S-motmW)/2,80);ctx.letterSpacing='0';
+
+  // Decorative line
+  ctx.beginPath();ctx.moveTo(80,100);ctx.lineTo(S-80,100);ctx.strokeStyle=rgb(...A,.3);ctx.lineWidth=1.5;ctx.stroke();
+
+  // Player name — split first/last for drama
+  const parts=(d.name||'Player').split(' ');
+  const first=parts[0].toUpperCase(),rest=parts.slice(1).join(' ').toUpperCase();
+  ctx.font=`700 ${first.length>8?110:140}px "Oswald"`;
+  ctx.fillStyle='rgba(0,0,0,.4)';ctx.fillText(first,52,282);
+  ctx.fillStyle='#ffffff';ctx.shadowColor='rgba(240,180,41,.3)';ctx.shadowBlur=30;
+  ctx.fillText(first,50,280);ctx.shadowBlur=0;
+  if(rest){ctx.font='700 100px "Oswald"';ctx.fillStyle=rgb(...A,.9);
+  ctx.shadowColor='rgba(240,180,41,.2)';ctx.shadowBlur=20;ctx.fillText(rest,50,384);ctx.shadowBlur=0;}
+
+  // Gold underline
+  ctx.fillStyle=rgb(...A);ctx.fillRect(50,rest?402:294,300,5);
+
+  // Performance stats cards
+  const stats=[];
+  if(d.runs)stats.push({v:String(d.runs),l:'RUNS',s:d.balls?`${d.balls} balls`:''});
+  if(d.wkts)stats.push({v:`${d.wkts}/${d.conc||0}`,l:'WKTS',s:d.overs?`${d.overs} overs`:''});
+  if(d.fielding)stats.push({v:'🧤',l:'FIELD',s:d.fielding});
+  if(!stats.length&&d.sr)stats.push({v:d.sr,l:'STRIKE RATE',s:''});
+
+  const cNum=Math.min(stats.length,3)||1;
+  const cW=(S-120-(cNum-1)*20)/cNum;
+  stats.slice(0,3).forEach((st,i)=>{
+    const x=50+i*(cW+20),y=430;
+    rr(ctx,x,y,cW,170,14);
+    const gb=ctx.createLinearGradient(x,y,x,y+170);
+    gb.addColorStop(0,'rgba(240,180,41,.12)');gb.addColorStop(1,'rgba(240,180,41,.04)');
+    ctx.fillStyle=gb;ctx.fill();ctx.strokeStyle=rgb(...A,.3);ctx.lineWidth=1;ctx.stroke();
+    ctx.font='700 16px "Inter"';ctx.fillStyle=rgb(...A,.7);ctx.letterSpacing='.06em';ctx.fillText(st.l,x+18,y+36);ctx.letterSpacing='0';
+    ctx.font='700 72px "Oswald"';ctx.fillStyle='#ffffff';ctx.fillText(st.v,x+18,y+122);
+    if(st.s){ctx.font='400 17px "Inter"';ctx.fillStyle='rgba(255,255,255,.4)';ctx.fillText(st.s,x+18,y+152);}
   });
+
+  // Match context
+  const matchCtx=[d.opponent&&`vs ${d.opponent}`,fmtD(d.date)].filter(Boolean).join('  •  ');
+  if(matchCtx){ctx.font='500 20px "Inter"';ctx.fillStyle='rgba(255,255,255,.4)';const mw2=ctx.measureText(matchCtx).width;ctx.fillText(matchCtx,(S-mw2)/2,S-90);}
+  footerBar(ctx,A,'',club,club);
 }
 
-function fmtDateDisplay(dateStr){
-  if(!dateStr) return '';
-  try{
-    const d=new Date(dateStr);
-    return d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-  }catch{return dateStr;}
+// ═══════════════════════════════════════════════════════
+//  5. MILESTONE  — purple celebration card
+// ═══════════════════════════════════════════════════════
+async function drawMilestoneCard(ctx,d,cfg){
+  const A=hexRGB(cfg.accent||'#f0b429');
+  const PUR=[140,60,220];
+  const club=(cfg.clubName||'Cricket Club').toUpperCase();
+
+  if(d.photoDataURL){await drawPhoto(ctx,d.photoDataURL,0.65);}
+  else{
+    const bg=ctx.createLinearGradient(0,0,S,S);
+    bg.addColorStop(0,'#0d0520');bg.addColorStop(.5,'#070312');bg.addColorStop(1,'#030208');
+    ctx.fillStyle=bg;ctx.fillRect(0,0,S,S);
+    // Purple glow centre
+    const gw=ctx.createRadialGradient(S*.5,S*.4,0,S*.5,S*.4,480);
+    gw.addColorStop(0,'rgba(140,60,220,.22)');gw.addColorStop(.6,'rgba(80,20,160,.08)');gw.addColorStop(1,'transparent');
+    ctx.fillStyle=gw;ctx.fillRect(0,0,S,S);
+    // accent glow top-left
+    const gl2=ctx.createRadialGradient(0,0,0,0,0,350);
+    gl2.addColorStop(0,'rgba(240,180,41,.08)');gl2.addColorStop(1,'transparent');
+    ctx.fillStyle=gl2;ctx.fillRect(0,0,S,S);
+  }
+
+  // Purple top bar
+  const purBar=ctx.createLinearGradient(0,0,S,0);
+  purBar.addColorStop(0,'rgb(160,80,240)');purBar.addColorStop(.5,'rgb(200,130,255)');purBar.addColorStop(1,'rgb(100,40,180)');
+  ctx.fillStyle=purBar;ctx.fillRect(0,0,S,9);
+  ctx.fillStyle='rgba(160,80,240,.8)';ctx.fillRect(0,9,5,S-9);
+
+  // Stars scattered
+  ['✦','✦','✦','✦'].forEach((_,i)=>{
+    ctx.font=`${16+i*6}px serif`;ctx.fillStyle=`rgba(240,180,41,${.15+i*.08})`;
+    ctx.fillText('✦',[80,S-120,S-80,160][i],[140,900,200,S-160][i]);
+  });
+
+  // MILESTONE label
+  ctx.font='700 24px "Inter"';ctx.fillStyle='rgba(200,130,255,.9)';ctx.letterSpacing='.12em';
+  const mlW=ctx.measureText('✦  MILESTONE  ✦').width;ctx.fillText('✦  MILESTONE  ✦',(S-mlW)/2,82);ctx.letterSpacing='0';
+
+  // Decorative arc
+  ctx.beginPath();ctx.arc(S/2,80,200,0,Math.PI,true);ctx.strokeStyle='rgba(160,80,240,.18)';ctx.lineWidth=80;ctx.stroke();
+
+  // Big number (if present)
+  if(d.number){
+    ctx.font='700 200px "Oswald"';ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillText(d.number,52,372);
+    const ng=ctx.createLinearGradient(50,180,50,380);ng.addColorStop(0,'#ffffff');ng.addColorStop(1,rgb(...A,.85));
+    ctx.fillStyle=ng;ctx.shadowColor='rgba(160,80,240,.4)';ctx.shadowBlur=30;
+    const nw=ctx.measureText(d.number).width;ctx.fillText(d.number,(S-nw)/2,372);ctx.shadowBlur=0;
+    // subtitle under number
+    if(d.subtitle){ctx.font='600 28px "Inter"';ctx.fillStyle='rgba(200,130,255,.8)';const sw2=ctx.measureText(d.subtitle.toUpperCase()).width;ctx.fillText(d.subtitle.toUpperCase(),(S-sw2)/2,410);}
+  }
+
+  // Achievement title
+  ctx.font=`700 ${d.number?(d.title.length>20?52:66):(d.title.length>20?72:92)}px "Oswald"`;
+  const titleY=d.number?490:330;
+  ctx.fillStyle='rgba(0,0,0,.3)';ctx.fillText(d.title.toUpperCase(),52,titleY+2);
+  ctx.fillStyle='#ffffff';ctx.shadowColor='rgba(160,80,240,.3)';ctx.shadowBlur=20;
+  const tW=ctx.measureText(d.title.toUpperCase()).width;
+  ctx.fillText(d.title.toUpperCase(),d.number?(S-tW)/2:50,titleY);ctx.shadowBlur=0;
+  // accent line
+  ctx.fillStyle=rgb(...A);ctx.fillRect(d.number?(S-200)/2:50,titleY+14,200,5);
+
+  // Player name
+  if(d.name){ctx.font='600 40px "Oswald"';ctx.fillStyle=rgb(...A,.9);const nW=ctx.measureText(d.name.toUpperCase()).width;ctx.fillText(d.name.toUpperCase(),d.number?(S-nW)/2:50,d.number?560:titleY+80);}
+
+  // Season tag
+  if(d.season){ctx.font='700 19px "Inter"';ctx.fillStyle='rgba(200,130,255,.55)';const sW=ctx.measureText(d.season.toUpperCase()).width;ctx.fillText(d.season.toUpperCase(),(S-sW)/2,S-90);}
+  footerBar(ctx,PUR,'',club,club);
 }
 
-async function renderCard(canvas, post, settings){
-  if(!canvas) return;
+// ═══════════════════════════════════════════════════════
+//  6. PHOTO POST
+// ═══════════════════════════════════════════════════════
+async function drawPhotoCard(ctx,d,cfg){
+  const A=hexRGB(cfg.accent||'#f0b429');
+  const club=(cfg.clubName||'Cricket Club').toUpperCase();
+  if(!d.photoDataURL)return;
+  await drawPhoto(ctx,d.photoDataURL,0.0);
+  // Vignette
+  const vg=ctx.createRadialGradient(S/2,S/2,S*.25,S/2,S/2,S*.72);
+  vg.addColorStop(0,'transparent');vg.addColorStop(1,'rgba(0,0,0,.55)');
+  ctx.fillStyle=vg;ctx.fillRect(0,0,S,S);
+  // Bottom gradient for caption
+  const bg=ctx.createLinearGradient(0,S*.55,0,S);
+  bg.addColorStop(0,'transparent');bg.addColorStop(1,'rgba(0,0,0,.9)');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,S,S);
+  // Top accent bar
+  ctx.fillStyle=rgb(...A,.85);ctx.fillRect(0,0,S,6);
+  // Club name top left
+  ctx.font='600 20px "Inter"';ctx.fillStyle=rgb(...A,.8);ctx.fillText(club,44,52);
+  // Caption
+  const cap=d.caption||'';
+  if(cap){
+    ctx.font='600 32px "Inter"';ctx.fillStyle='rgba(255,255,255,.92)';
+    wrapText(ctx,cap,54,S-160,S-108,46);
+  }
+  monogram(ctx,club,S-50,S-50,A,28);
+}
+
+function wrapText(ctx,text,x,y,maxW,lh){const words=text.split(' ');let line='';for(const w of words){const t=line?`${line} ${w}`:w;if(ctx.measureText(t).width>maxW&&line){ctx.fillText(line,x,y);line=w;y+=lh;}else line=t;}if(line)ctx.fillText(line,x,y);}
+
+// ═══════════════════════════════════════════════════════
+//  RENDER CARD DISPATCHER
+// ═══════════════════════════════════════════════════════
+async function renderCard(canvas,post,cfg){
+  if(!canvas)return;
   await document.fonts.ready;
   const ctx=canvas.getContext('2d');
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.clearRect(0,0,S,S);
   const d=post.meta||{};
   try{
-    if(post.type==='match')      await drawMatchCard(ctx,d,settings);
-    else if(post.type==='fixture')   await drawFixtureCard(ctx,d,settings);
-    else if(post.type==='spotlight') await drawSpotlightCard(ctx,d,settings);
-    else if(post.type==='photo'&&d.photoDataURL) await drawPhotoCard(ctx,d.photoDataURL,post.caption,settings);
-  }catch(e){console.warn('Canvas draw error',e);}
+    if(post.type==='match')         await drawMatchCard(ctx,d,cfg);
+    else if(post.type==='fixture')  await drawFixtureCard(ctx,d,cfg);
+    else if(post.type==='squad')    await drawSquadCard(ctx,d,cfg);
+    else if(post.type==='motm')     await drawMOTMCard(ctx,d,cfg);
+    else if(post.type==='milestone')await drawMilestoneCard(ctx,d,cfg);
+    else if(post.type==='photo')    await drawPhotoCard(ctx,{photoDataURL:d.photoDataURL,caption:post.caption},cfg);
+  }catch(e){console.warn('Canvas error',e);}
 }
 
-// ═══════════════════════════════════════════════════════════════════
-//  CSV PARSER (CricClubs format)
-// ═══════════════════════════════════════════════════════════════════
-function parseCSVContent(raw){
-  const lines = raw.replace(/^\d+\t/gm,'').split('\n');
-  const clean  = s => s.replace(/"/g,'').trim();
+// ═══════════════════════════════════════════════════════
+//  CSV PARSER
+// ═══════════════════════════════════════════════════════
+function parseCSV(raw){
+  const lines=raw.replace(/^\d+\t/gm,'').split('\n');
+  const c=s=>s.replace(/"/g,'').trim();
+  const hdr=lines.slice(0,5).find(l=>l.includes('won by')||l.includes('Won by'))||'';
+  const ml=lines.slice(0,5).find(l=>/vs/i.test(l)&&l.includes(','))||'';
+  let teamA='',teamB='',winner='',matchDate='';
+  const vm=ml.match(/([^,]+?)\s+[Vv]s\s+([^,\n]+)/);
+  if(vm){teamA=c(vm[1]);teamB=c(vm[2]);}
+  const wm=hdr.match(/(.+?)\s+(won by [^(]+)/i);if(wm)winner=c(wm[1]).replace(/^(League|T20|ODI|Cup)\s+/i,'');
+  const dm=hdr.match(/\((\d{2}\/\d{2}\/\d{4})\)/);
+  if(dm){try{const[mo,dy,yr]=dm[1].split('/');matchDate=`${yr}-${mo.padStart(2,'0')}-${dy.padStart(2,'0')}`;}catch{}}
+  function sec(kind,team){const mk=new RegExp(`${team.split(' ')[0]}.*${kind}`,'i');let in2=false;const r=[];for(const l of lines){if(mk.test(l.replace(/"/g,''))){in2=true;continue;}if(in2){if(/Batting|Bowling/i.test(l.replace(/"/g,''))&&!mk.test(l.replace(/"/g,'')))break;r.push(l.split(',').map(c));}}return r;}
+  function bat(rows){const r=[];for(const x of rows){const n=x[0];if(!n||/batsman|batter|total|byes|wides/i.test(n))continue;try{r.push({name:n,runs:+x[4]||0,balls:+x[5]||0,fours:+x[6]||0,sixes:+x[7]||0});}catch{}}return r;}
+  function bwl(rows){const r=[];for(const x of rows){const n=x[0];if(!n||/bowler|total/i.test(n))continue;try{r.push({name:n,overs:x[1]||'0',runs:+x[3]||0,wickets:+x[4]||0});}catch{}}return r;}
+  const bA=bat(sec('Batting',teamA)),bB=bat(sec('Batting',teamB)),wB=bwl(sec('Bowling',teamB));
+  const topBat=bA.length?bA.reduce((a,b)=>b.runs>a.runs?b:a):null;
+  const topBwl=wB.length?wB.reduce((a,b)=>b.wickets>a.wickets||(b.wickets===a.wickets&&b.runs<a.runs)?b:a):null;
+  const rA=bA.reduce((s,b)=>s+b.runs,0),rB=bB.reduce((s,b)=>s+b.runs,0);
+  return{teamA,teamB,winner,matchDate,ourScore:rA?`${rA}/10`:'',theirScore:rB?`${rB}/10`:'',topBat,topBwl};
+}
 
-  // Header: "League Team won by X (dd/mm/yyyy)" + "TeamA Vs TeamB"
-  const hdr = lines.slice(0,5).find(l=>l.includes('won by')||l.includes('Won by')||l.includes('lost by')) || '';
-  const matchLine = lines.slice(0,5).find(l=>/vs/i.test(l)&&l.includes(',')) || '';
-
-  let teamA='', teamB='', winner='', resultStr='', matchDate='';
-  const vsM = matchLine.match(/([^,]+?)\s+[Vv]s\s+([^,\n]+)/);
-  if(vsM){teamA=clean(vsM[1]); teamB=clean(vsM[2]);}
-  const winM = hdr.match(/(.+?)\s+(won by [^(]+)/i);
-  if(winM){
-    winner=clean(winM[1]).replace(/^(League|T20|ODI|Cup)\s+/i,'');
-    resultStr=clean(winM[2]);
-  }
-  const dateM = hdr.match(/\((\d{2}\/\d{2}\/\d{4})\)/);
-  if(dateM){
-    try{
-      const [m,d,y]=dateM[1].split('/');
-      matchDate=`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
-    }catch{}
-  }
-
-  // Parse sections
-  function parseSection(kind, team){
-    const marker=new RegExp(`${team.split(' ')[0]}.*${kind}`,'i');
-    let inBlock=false; const rows=[];
-    for(const line of lines){
-      if(marker.test(line.replace(/"/g,''))){inBlock=true;continue;}
-      if(inBlock){
-        if(/Batting|Bowling/i.test(line.replace(/"/g,''))&&!marker.test(line.replace(/"/g,''))) break;
-        rows.push(line.split(',').map(clean));
-      }
-    }
-    return rows;
-  }
-
-  function parseBatting(rows){
-    const batters=[];
-    for(const r of rows){
-      const name=r[0]; if(!name||/batsman|batter|total|byes|wides/i.test(name)) continue;
-      try{batters.push({name,runs:+r[4]||0,balls:+r[5]||0,fours:+r[6]||0,sixes:+r[7]||0});}catch{}
-    }
-    return batters;
-  }
-  function parseBowling(rows){
-    const bowlers=[];
-    for(const r of rows){
-      const name=r[0]; if(!name||/bowler|total/i.test(name)) continue;
-      try{bowlers.push({name,overs:r[1]||'0',runs:+r[3]||0,wickets:+r[4]||0});}catch{}
-    }
-    return bowlers;
-  }
-
-  const batA=parseBatting(parseSection('Batting',teamA));
-  const batB=parseBatting(parseSection('Batting',teamB));
-  const bwlA=parseBowling(parseSection('Bowling',teamA));
-  const bwlB=parseBowling(parseSection('Bowling',teamB));
-
-  const topBatA = batA.length?batA.reduce((a,b)=>b.runs>a.runs?b:a):null;
-  const topBwlB = bwlB.length?bwlB.reduce((a,b)=>b.wickets>a.wickets||(b.wickets===a.wickets&&b.runs<a.runs)?b:a):null;
-
-  const runsA=batA.reduce((s,b)=>s+b.runs,0);
-  const runsB=batB.reduce((s,b)=>s+b.runs,0);
-
-  return {
-    teamA, teamB, winner, resultStr, matchDate,
-    ourScore: runsA?`${runsA}/${batA.filter(b=>b.runs===0&&!b.balls).length||10}`:'',
-    theirScore: runsB?`${runsB}/${batB.filter(b=>b.runs===0&&!b.balls).length||10}`:'',
-    topBatter: topBatA, topBowler: topBwlB,
+// ═══════════════════════════════════════════════════════
+//  AI CAPTIONS (Groq)
+// ═══════════════════════════════════════════════════════
+async function generateCaptions(type,data,cfg){
+  const club=cfg.clubName||'Cricket Club';
+  const sys=`You are the social media manager for ${club}, a cricket club. Write punchy, authentic Instagram captions with relevant cricket emojis. Caption body under 200 chars. Add 6-10 hashtags on a new line. Be specific, never generic.`;
+  const prompts={
+    match:`Match: ${club} vs ${data.opponent}\nResult: ${data.result} ${data.margin?'by '+data.margin:''}\nScore: ${data.ourScore} vs ${data.theirScore}\nStar batter: ${data.batterName} ${data.batterRuns}(${data.batterBalls})\nStar bowler: ${data.bowlerName} ${data.bowlerWkts}/${data.bowlerRuns}\nReturn ONLY JSON: [{"tone":"celebratory","caption":"..."},{"tone":"player-focused","caption":"..."},{"tone":"banter","caption":"..."}]`,
+    fixture:`Upcoming: ${club} vs ${data.opponent}\nDate: ${data.datetime||data.date}, Venue: ${data.venue}, Format: ${data.format||'Cricket'}\nReturn ONLY JSON: [{"tone":"hype","caption":"..."},{"tone":"informational","caption":"..."},{"tone":"community","caption":"..."}]`,
+    squad:`Playing XI announced: ${club} vs ${data.opponent}\nPlayers: ${(data.players||[]).filter(p=>p.name).map((p,i)=>`${i+1}. ${p.name}${p.role?' ('+p.role+')':''}`).join(', ')}\nReturn ONLY JSON: [{"tone":"hype","caption":"..."},{"tone":"proud","caption":"..."},{"tone":"motivational","caption":"..."}]`,
+    motm:`Man of the Match: ${data.name}\nvs ${data.opponent||'opposition'}: ${data.runs?data.runs+' runs':''}${data.wkts?' '+data.wkts+' wickets':''}${data.fielding?' '+data.fielding:''}\nReturn ONLY JSON: [{"tone":"celebratory","caption":"..."},{"tone":"stats","caption":"..."},{"tone":"hype","caption":"..."}]`,
+    milestone:`Milestone: ${data.title}${data.number?' — '+data.number:''}${data.name?' achieved by '+data.name:''}\nReturn ONLY JSON: [{"tone":"proud","caption":"..."},{"tone":"celebratory","caption":"..."},{"tone":"tribute","caption":"..."}]`,
   };
+  const prompt=prompts[type];if(!prompt)return[{tone:'general',caption:''}];
+  const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Authorization':`Bearer ${cfg.groqKey}`,'Content-Type':'application/json'},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:900,messages:[{role:'system',content:sys},{role:'user',content:prompt}]})});
+  if(!r.ok){const e=await r.json();throw new Error(e.error?.message||'Groq error');}
+  const j=await r.json();
+  const txt=j.choices[0].message.content.trim().replace(/^```(?:json)?\n?/,'').replace(/\n?```$/,'');
+  return JSON.parse(txt);
 }
 
-// ═══════════════════════════════════════════════════════════════════
-//  AI CAPTIONS (Groq API — OpenAI-compatible, browser-side)
-// ═══════════════════════════════════════════════════════════════════
-async function generateCaptions(type, data, settings){
-  const club=settings.clubName||'Cricket Club';
-  const system=`You are the social media manager for ${club}, a cricket club. Write punchy, authentic Instagram captions with cricket emojis. Keep the caption body under 200 characters. Add 6–10 hashtags on a new line. Be specific, never generic.`;
+// ═══════════════════════════════════════════════════════
+//  IMGUR + INSTAGRAM
+// ═══════════════════════════════════════════════════════
+async function uploadToImgur(b64,cid){const r=await fetch('https://api.imgur.com/3/image',{method:'POST',headers:{'Authorization':`Client-ID ${cid}`,'Content-Type':'application/json'},body:JSON.stringify({image:b64,type:'base64',title:'SixShot Cricket'})});const d=await r.json();if(!d.success)throw new Error(d.data?.error||'Imgur failed');return d.data.link;}
+async function publishToInstagram(url,caption,cfg){const{igAccountId:id,igToken:tok}=cfg;const r1=await fetch(`https://graph.facebook.com/v19.0/${id}/media`,{method:'POST',body:new URLSearchParams({image_url:url,caption,access_token:tok})});const j1=await r1.json();if(j1.error)throw new Error(j1.error.message);const r2=await fetch(`https://graph.facebook.com/v19.0/${id}/media_publish`,{method:'POST',body:new URLSearchParams({creation_id:j1.id,access_token:tok})});const j2=await r2.json();if(j2.error)throw new Error(j2.error.message);return j2.id;}
 
-  let prompt='';
-  if(type==='match'){
-    prompt=`Match: ${club} vs ${data.opponent}\nResult: ${data.result} ${data.margin?'by '+data.margin:''}\nScore: ${data.ourScore} vs ${data.theirScore}\nTop batter: ${data.batterName} ${data.batterRuns}(${data.batterBalls})\nTop bowler: ${data.bowlerName} ${data.bowlerWkts}/${data.bowlerRuns}\n\nWrite 3 captions. Return ONLY JSON: [{"tone":"celebratory","caption":"..."},{"tone":"player-focused","caption":"..."},{"tone":"banter","caption":"..."}]`;
-  }else if(type==='fixture'){
-    prompt=`Upcoming match: ${club} vs ${data.opponent}\nDate: ${data.datetime||data.date}\nVenue: ${data.venue}\n\nWrite 3 captions. Return ONLY JSON: [{"tone":"hype","caption":"..."},{"tone":"informational","caption":"..."},{"tone":"community","caption":"..."}]`;
-  }else if(type==='spotlight'){
-    prompt=`Player spotlight: ${data.name}\nStats: ${data.runs} runs, ${data.wickets} wkts in ${data.matches} matches. Best: ${data.highScore}. Bowling: ${data.bestBowling||'N/A'}\n\nWrite 3 captions. Return ONLY JSON: [{"tone":"celebratory","caption":"..."},{"tone":"stats","caption":"..."},{"tone":"hype","caption":"..."}]`;
-  }else{
-    return [{tone:'general',caption:''}];
-  }
-
-  const resp=await fetch('https://api.groq.com/openai/v1/chat/completions',{
-    method:'POST',
-    headers:{
-      'Authorization':`Bearer ${settings.groqKey}`,
-      'Content-Type':'application/json',
-    },
-    body:JSON.stringify({
-      model:'llama-3.3-70b-versatile',
-      max_tokens:900,
-      messages:[
-        {role:'system',content:system},
-        {role:'user',content:prompt}
-      ]
-    })
-  });
-  if(!resp.ok){const e=await resp.json();throw new Error(e.error?.message||'Groq API error');}
-  const json=await resp.json();
-  const text=json.choices[0].message.content.trim();
-  // Strip markdown code fences if present
-  const clean=text.replace(/^```(?:json)?\n?/,'').replace(/\n?```$/,'');
-  return JSON.parse(clean);
-}
-
-// ═══════════════════════════════════════════════════════════════════
-//  IMGUR UPLOAD
-// ═══════════════════════════════════════════════════════════════════
-async function uploadToImgur(base64, clientId){
-  const resp=await fetch('https://api.imgur.com/3/image',{
-    method:'POST',
-    headers:{'Authorization':`Client-ID ${clientId}`,'Content-Type':'application/json'},
-    body:JSON.stringify({image:base64,type:'base64',title:'Cricket Post'})
-  });
-  const d=await resp.json();
-  if(!d.success) throw new Error(d.data?.error||'Imgur upload failed');
-  return d.data.link;
-}
-
-// ═══════════════════════════════════════════════════════════════════
-//  INSTAGRAM GRAPH API
-// ═══════════════════════════════════════════════════════════════════
-async function publishToInstagram(imageUrl, caption, settings){
-  const {igAccountId:id,igToken:tok}=settings;
-  // Step 1: create container
-  const r1=await fetch(`https://graph.facebook.com/v19.0/${id}/media`,{
-    method:'POST',
-    body:new URLSearchParams({image_url:imageUrl,caption,access_token:tok})
-  });
-  const j1=await r1.json();
-  if(j1.error) throw new Error(j1.error.message);
-  // Step 2: publish
-  const r2=await fetch(`https://graph.facebook.com/v19.0/${id}/media_publish`,{
-    method:'POST',
-    body:new URLSearchParams({creation_id:j1.id,access_token:tok})
-  });
-  const j2=await r2.json();
-  if(j2.error) throw new Error(j2.error.message);
-  return j2.id;
-}
-
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 //  ALPINE APP
-// ═══════════════════════════════════════════════════════════════════
-function App(){
-  return{
-    tab:'queue', newTab:'match',
-    posts:[], history:[],
-    settings:Store.getSettings(),
-    toast:{show:false,msg:'',ok:true},
-    publishing:null, creating:false,
-    igStatus:'', igOk:false,
-    createdPost:null,
+// ═══════════════════════════════════════════════════════
+function App(){return{
+  tab:'queue', newTab:'match',
+  posts:[], history:[], settings:Store.getSettings(),
+  toast:{show:false,msg:'',ok:true}, publishing:null, creating:false,
+  igStatus:'', igOk:false, createdPost:null,
+  // forms
+  mf:{opponent:'',result:'won',ourScore:'',theirScore:'',margin:'',venue:'',date:'',competition:'',batterName:'',batterRuns:0,batterBalls:0,batterFours:0,batterSixes:0,bowlerName:'',bowlerWkts:0,bowlerRuns:0,bowlerOvers:'',photoDataURL:'',photoName:''},
+  ff:{opponent:'',datetime:'',venue:'',competition:'',format:'',photoDataURL:'',photoName:''},
+  qf:{opponent:'',date:'',competition:'',players:Array.from({length:11},()=>({name:'',role:''}))},
+  gf:{name:'',opponent:'',date:'',runs:0,balls:0,sr:'',wkts:0,conc:0,overs:'',fielding:'',photoDataURL:'',photoName:''},
+  lf:{title:'',name:'',number:'',season:'',subtitle:'',photoDataURL:'',photoName:''},
+  pf:{photoDataURL:'',photoName:'',caption:'',genCaption:false},
+  _pt:null,
 
-    // Forms
-    mf:{opponent:'',result:'won',ourScore:'',theirScore:'',margin:'',venue:'',date:'',competition:'',
-        batterName:'',batterRuns:0,batterBalls:0,batterFours:0,batterSixes:0,
-        bowlerName:'',bowlerWkts:0,bowlerRuns:0,bowlerOvers:'',photoDataURL:'',photoName:''},
-    ff:{opponent:'',datetime:'',venue:'',competition:'',photoDataURL:'',photoName:''},
-    sf:{name:'',runs:0,wickets:0,matches:0,highScore:0,bestBowling:'',catches:0,avg:'',photoDataURL:'',photoName:''},
-    pf:{photoDataURL:'',photoName:'',caption:'',genCaption:false},
+  async init(){
+    this.posts=Store.getQueue();this.history=Store.getHistory();
+    await this.$nextTick();
+    ['match','fixture','squad','motm','milestone'].forEach(t=>this.drawPreview(t));
+  },
 
-    _previewTimer:null,
+  debouncedPreview(t){clearTimeout(this._pt);this._pt=setTimeout(()=>this.drawPreview(t),200);},
 
-    async init(){
-      this.posts=Store.getQueue();
+  async drawPreview(type){
+    const canvas=document.getElementById(type+'-preview');if(!canvas)return;
+    await document.fonts.ready;
+    const ctx=canvas.getContext('2d');ctx.clearRect(0,0,S,S);
+    const cfg=this.settings;
+    try{
+      if(type==='match')         await drawMatchCard(ctx,this.mf,cfg);
+      else if(type==='fixture')  await drawFixtureCard(ctx,this.ff,cfg);
+      else if(type==='squad')    await drawSquadCard(ctx,this.qf,cfg);
+      else if(type==='motm')     await drawMOTMCard(ctx,this.gf,cfg);
+      else if(type==='milestone')await drawMilestoneCard(ctx,this.lf,cfg);
+      else if(type==='photo'&&this.pf.photoDataURL)await drawPhotoCard(ctx,this.pf,cfg);
+    }catch(e){console.warn(e);}
+  },
+
+  async renderThumb(post,id){const c=document.getElementById(id||'thumb-'+post.id);if(c)await renderCard(c,post,this.settings);},
+
+  saveQueue(){Store.setQueue(this.posts);},
+  approvePost(p){p.status='approved';this.saveQueue();this.showToast('✓ Approved');},
+  rejectPost(p){this.posts=this.posts.filter(x=>x.id!==p.id);this.saveQueue();this.showToast('Removed');},
+
+  async publishNow(post){
+    const s=this.settings;
+    if(!s.igToken)return this.showToast('Instagram token not set',false);
+    if(!s.igAccountId)return this.showToast('Instagram Account ID not set',false);
+    if(!s.imgurClientId)return this.showToast('Imgur Client ID not set',false);
+    this.publishing=post.id;
+    try{
+      const c=document.createElement('canvas');c.width=c.height=S;
+      await renderCard(c,post,s);
+      const b64=c.toDataURL('image/jpeg',.92).split(',')[1];
+      this.showToast('⬆ Uploading…');
+      const url=await uploadToImgur(b64,s.imgurClientId);
+      this.showToast('📤 Publishing…');
+      const mid=await publishToInstagram(url,post.caption,s);
+      const done={...post,status:'posted',postedAt:new Date().toISOString(),mediaId:mid};
+      const h=Store.getHistory();h.unshift(done);Store.setHistory(h.slice(0,100));
       this.history=Store.getHistory();
+      this.posts=this.posts.filter(p=>p.id!==post.id);this.saveQueue();
+      if(this.createdPost?.id===post.id)this.createdPost=null;
+      this.showToast('🎉 Posted to Instagram!');
+    }catch(e){this.showToast(`❌ ${e.message}`,false);console.error(e);}
+    finally{this.publishing=null;}
+  },
+
+  async regenCaptions(post){
+    if(!this.settings.groqKey)return this.showToast('Groq key not set',false);
+    try{const c=await generateCaptions(post.type,post.meta||{},this.settings);post.captions=c;post.caption=c[0]?.caption||post.caption;this.saveQueue();this.showToast('✨ Fresh captions!');}
+    catch(e){this.showToast(`AI error: ${e.message}`,false);}
+  },
+
+  async _createPost(type,meta){
+    this.creating=true;this.createdPost=null;
+    try{
+      let captions=[];
+      if(this.settings.groqKey){try{captions=await generateCaptions(type,meta,this.settings);}catch(e){this.showToast('AI captions failed — post created without captions',false);}}
+      const post={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),type,status:'draft',caption:captions[0]?.caption||'',captions,meta,createdAt:new Date().toISOString()};
+      this.posts.unshift(post);this.saveQueue();this.createdPost=post;
       await this.$nextTick();
-      // Initial preview draws
-      this.drawPreview('match');
-      this.drawPreview('fixture');
-      this.drawPreview('spotlight');
-    },
+      this.renderThumb(post,'created-thumb');
+      this.showToast('✨ Post created!');return post;
+    }catch(e){this.showToast(`Error: ${e.message}`,false);}
+    finally{this.creating=false;}
+  },
 
-    debouncedPreview(type){
-      clearTimeout(this._previewTimer);
-      this._previewTimer=setTimeout(()=>this.drawPreview(type), 180);
-    },
+  async submitMatch(){await this._createPost('match',{...this.mf});},
+  async submitFixture(){await this._createPost('fixture',{...this.ff});},
+  async submitSquad(){await this._createPost('squad',{...this.qf,players:[...this.qf.players]});},
+  async submitMOTM(){await this._createPost('motm',{...this.gf});},
+  async submitMilestone(){await this._createPost('milestone',{...this.lf});},
 
-    async drawPreview(type){
-      const canvasId = type+'-preview';
-      const canvas=document.getElementById(canvasId);
-      if(!canvas) return;
-      await document.fonts.ready;
-      const ctx=canvas.getContext('2d');
-      ctx.clearRect(0,0,S,S);
-      try{
-        if(type==='match')      await drawMatchCard(ctx,this.mf,this.settings);
-        else if(type==='fixture')   await drawFixtureCard(ctx,this.ff,this.settings);
-        else if(type==='spotlight') await drawSpotlightCard(ctx,this.sf,this.settings);
-      }catch(e){console.warn(e);}
-    },
-
-    async renderThumb(post, canvasId){
-      const id = canvasId||('thumb-'+post.id);
-      const canvas=document.getElementById(id);
-      if(!canvas) return;
-      await renderCard(canvas, post, this.settings);
-    },
-
-    // ── Queue ops ──────────────────────────────────────────────────
-    saveQueue(){ Store.setQueue(this.posts); },
-
-    approvePost(post){
-      post.status='approved'; this.saveQueue();
-      this.showToast('✓ Approved');
-    },
-
-    rejectPost(post){
-      this.posts=this.posts.filter(p=>p.id!==post.id);
-      this.saveQueue(); this.showToast('Removed');
-    },
-
-    async publishNow(post){
-      const s=this.settings;
-      if(!s.igToken)      return this.showToast('Instagram token not set in Settings',false);
-      if(!s.igAccountId)  return this.showToast('Instagram Account ID not set in Settings',false);
-      if(!s.imgurClientId)return this.showToast('Imgur Client ID not set in Settings',false);
-
-      this.publishing=post.id;
-      try{
-        // Generate full-res 1080x1080 canvas
-        const canvas=document.createElement('canvas');
-        canvas.width=canvas.height=S;
-        await renderCard(canvas, post, s);
-        const dataURL=canvas.toDataURL('image/jpeg',0.92);
-        const base64=dataURL.split(',')[1];
-
-        // Upload to Imgur
-        this.showToast('⬆ Uploading image…');
-        const imageUrl=await uploadToImgur(base64, s.imgurClientId);
-
-        // Post to Instagram
-        this.showToast('📤 Publishing to Instagram…');
-        const mediaId=await publishToInstagram(imageUrl, post.caption, s);
-
-        // Move to history
-        const done={...post,status:'posted',postedAt:new Date().toISOString(),mediaId};
-        const hist=Store.getHistory();
-        hist.unshift(done);
-        Store.setHistory(hist.slice(0,100));
-        this.history=Store.getHistory();
-        this.posts=this.posts.filter(p=>p.id!==post.id);
-        this.saveQueue();
-        if(this.createdPost?.id===post.id) this.createdPost=null;
-        this.showToast('🎉 Posted to Instagram!');
-      }catch(e){
-        this.showToast(`❌ ${e.message}`,false);
-        console.error(e);
-      }finally{
-        this.publishing=null;
+  async submitPhoto(){
+    if(!this.pf.photoDataURL)return this.showToast('Select a photo first',false);
+    this.creating=true;
+    try{
+      let caption=this.pf.caption;
+      if(!caption&&this.pf.genCaption&&this.settings.groqKey){
+        try{const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Authorization':`Bearer ${this.settings.groqKey}`,'Content-Type':'application/json'},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:300,messages:[{role:'user',content:`Write a short Instagram caption for a cricket club photo. Include hashtags. Just the caption, no JSON.`}]})});const j=await r.json();caption=j.choices[0].message.content.trim();}catch{}
       }
-    },
+      const post={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),type:'photo',status:'draft',caption,captions:[],meta:{photoDataURL:this.pf.photoDataURL,photoName:this.pf.photoName},createdAt:new Date().toISOString()};
+      this.posts.unshift(post);this.saveQueue();this.createdPost=post;
+      await this.$nextTick();this.renderThumb(post,'created-thumb');
+      this.showToast('📸 Photo post created!');
+    }finally{this.creating=false;}
+  },
 
-    async regenCaptions(post){
-      if(!this.settings.groqKey) return this.showToast('Groq key not set in Settings',false);
-      try{
-        const caps=await generateCaptions(post.type,post.meta||{},this.settings);
-        post.captions=caps; post.caption=caps[0]?.caption||post.caption;
-        this.saveQueue();
-        this.showToast('✨ Fresh captions!');
-      }catch(e){this.showToast(`AI error: ${e.message}`,false);}
-    },
+  handlePhotoUpload(ev,fk,isDrop){
+    const file=isDrop?(ev.dataTransfer?.files[0]):(ev.target?.files[0]);if(!file)return;
+    const reader=new FileReader();
+    reader.onload=e=>{this[fk].photoDataURL=e.target.result;this[fk].photoName=file.name;
+      const map={mf:'match',ff:'fixture',gf:'motm',lf:'milestone',pf:'photo'};
+      if(map[fk])this.drawPreview(map[fk]);};
+    reader.readAsDataURL(file);
+  },
 
-    // ── Post creation ──────────────────────────────────────────────
-    async _createPost(type, meta){
-      this.creating=true; this.createdPost=null;
-      try{
-        let captions=[];
-        if(this.settings.groqKey){
-          try{ captions=await generateCaptions(type,meta,this.settings); }
-          catch(e){ this.showToast('Caption AI failed — post created without captions',false); }
-        }
-        const post={
-          id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),
-          type, status:'draft',
-          caption:captions[0]?.caption||'',
-          captions, meta,
-          createdAt:new Date().toISOString(),
-        };
-        this.posts.unshift(post);
-        this.saveQueue();
-        this.createdPost=post;
-        await this.$nextTick();
-        this.renderThumb(post,'created-thumb');
-        this.showToast('✨ Post created!');
-        return post;
-      }catch(e){
-        this.showToast(`Error: ${e.message}`,false);
-      }finally{
-        this.creating=false;
-      }
-    },
+  async handleCSVFile(ev){const f=ev.target?.files[0];if(!f)return;this.applyCSV(await f.text());},
+  async handleCSVDrop(ev){const f=ev.dataTransfer?.files[0];if(!f)return;this.applyCSV(await f.text());},
+  applyCSV(text){
+    try{
+      const d=parseCSV(text);
+      const isOurs=n=>this.settings.clubName.toLowerCase().split(' ').some(w=>n.toLowerCase().includes(w));
+      const isA=isOurs(d.teamA);
+      const tb=isA?d.topBat:null,bwl=isA?d.topBwl:null;
+      Object.assign(this.mf,{opponent:isA?d.teamB:d.teamA,result:d.winner&&isOurs(d.winner)?'won':(d.winner?'lost':'tied'),ourScore:isA?d.ourScore:d.theirScore,theirScore:isA?d.theirScore:d.ourScore,date:d.matchDate||this.mf.date,batterName:tb?.name||'',batterRuns:tb?.runs||0,batterBalls:tb?.balls||0,batterFours:tb?.fours||0,batterSixes:tb?.sixes||0,bowlerName:bwl?.name||'',bowlerWkts:bwl?.wickets||0,bowlerRuns:bwl?.runs||0,bowlerOvers:bwl?.overs||''});
+      this.debouncedPreview('match');this.showToast('📋 CSV imported!');
+    }catch(e){this.showToast(`CSV error: ${e.message}`,false);}
+  },
 
-    async submitMatch(){
-      await this._createPost('match',{...this.mf});
-    },
-    async submitFixture(){
-      await this._createPost('fixture',{...this.ff});
-    },
-    async submitSpotlight(){
-      await this._createPost('spotlight',{...this.sf});
-    },
-
-    async submitPhoto(){
-      if(!this.pf.photoDataURL) return this.showToast('Select a photo first',false);
-      this.creating=true;
-      try{
-        let caption=this.pf.caption;
-        if(!caption&&this.pf.genCaption&&this.settings.groqKey){
-          try{
-            const resp=await fetch('https://api.groq.com/openai/v1/chat/completions',{
-              method:'POST',
-              headers:{'Authorization':`Bearer ${this.settings.groqKey}`,'Content-Type':'application/json'},
-              body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:300,messages:[{role:'user',content:`Write a short Instagram caption for a cricket club photo. Include hashtags. Just the caption, no JSON.`}]})
-            });
-            const j=await resp.json();
-            caption=j.choices[0].message.content.trim();
-          }catch{}
-        }
-        const post={
-          id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),
-          type:'photo', status:'draft',
-          caption, captions:[],
-          meta:{photoDataURL:this.pf.photoDataURL,photoName:this.pf.photoName},
-          createdAt:new Date().toISOString(),
-        };
-        this.posts.unshift(post);
-        this.saveQueue();
-        this.createdPost=post;
-        await this.$nextTick();
-        this.renderThumb(post,'created-thumb');
-        this.showToast('📸 Photo post created!');
-      }finally{ this.creating=false; }
-    },
-
-    // ── File handling ──────────────────────────────────────────────
-    handlePhotoUpload(ev, formKey, isDrop){
-      const file=isDrop?(ev.dataTransfer?.files[0]):(ev.target?.files[0]);
-      if(!file) return;
-      const reader=new FileReader();
-      reader.onload=(e)=>{
-        this[formKey].photoDataURL=e.target.result;
-        this[formKey].photoName=file.name;
-        const typeMap={mf:'match',ff:'fixture',sf:'spotlight'};
-        if(typeMap[formKey]) this.drawPreview(typeMap[formKey]);
-      };
-      reader.readAsDataURL(file);
-    },
-
-    async handleCSVFile(ev){
-      const file=ev.target?.files[0]; if(!file) return;
-      const text=await file.text();
-      this.applyCSV(text);
-    },
-    async handleCSVDrop(ev){
-      const file=ev.dataTransfer?.files[0]; if(!file) return;
-      const text=await file.text();
-      this.applyCSV(text);
-    },
-    applyCSV(text){
-      try{
-        const d=parseCSVContent(text);
-        const isOurs=n=>this.settings.clubName.toLowerCase().split(' ').some(w=>n.toLowerCase().includes(w));
-        const ourTeam=isOurs(d.teamA)?d.teamA:d.teamB;
-        const isOursTeamA=ourTeam===d.teamA;
-        const tb=isOursTeamA?d.topBatter:null;
-        const bowl=isOursTeamA?d.topBowler:null;
-        const won=d.winner&&isOurs(d.winner);
-        Object.assign(this.mf,{
-          opponent:isOursTeamA?d.teamB:d.teamA,
-          result:won?'won':(d.winner?'lost':'tied'),
-          ourScore:isOursTeamA?d.ourScore:d.theirScore,
-          theirScore:isOursTeamA?d.theirScore:d.ourScore,
-          date:d.matchDate||this.mf.date,
-          batterName:tb?.name||'',
-          batterRuns:tb?.runs||0,
-          batterBalls:tb?.balls||0,
-          batterFours:tb?.fours||0,
-          batterSixes:tb?.sixes||0,
-          bowlerName:bowl?.name||'',
-          bowlerWkts:bowl?.wickets||0,
-          bowlerRuns:bowl?.runs||0,
-          bowlerOvers:bowl?.overs||'',
-        });
-        this.debouncedPreview('match');
-        this.showToast('📋 CSV imported! Review and submit.');
-      }catch(e){
-        this.showToast(`CSV parse error: ${e.message}`,false);
-      }
-    },
-
-    // ── Settings ───────────────────────────────────────────────────
-    saveSettings(){
-      Store.setSettings(this.settings);
-      document.title=`${this.settings.clubName||'Cricket'} — Instagram`;
-      this.showToast('✅ Settings saved');
-    },
-
-    async testInstagram(){
-      this.igStatus='Testing…'; this.igOk=false;
-      try{
-        const r=await fetch(`https://graph.facebook.com/v19.0/${this.settings.igAccountId}?fields=id,name,username,followers_count&access_token=${this.settings.igToken}`);
-        const d=await r.json();
-        if(d.error) throw new Error(d.error.message);
-        this.igOk=true;
-        this.igStatus=`✅ Connected: @${d.username} — ${d.followers_count?.toLocaleString()||'?'} followers`;
-      }catch(e){
-        this.igStatus=`❌ ${e.message}`;
-      }
-    },
-
-    clearAll(){
-      if(!confirm('Delete ALL posts, history and settings? This cannot be undone.')) return;
-      ['cc_q','cc_hist','cc_cfg'].forEach(k=>localStorage.removeItem(k));
-      location.reload();
-    },
-
-    // ── Helpers ────────────────────────────────────────────────────
-    showToast(msg,ok=true){
-      this.toast={show:true,msg,ok};
-      clearTimeout(this._toastTimer);
-      this._toastTimer=setTimeout(()=>this.toast.show=false,3600);
-    },
-    fmtDate(d){
-      if(!d) return '';
-      try{return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
-      catch{return d;}
-    },
-  };
-}
+  saveSettings(){Store.setSettings(this.settings);document.title=`${this.settings.clubName||'Cricket'} — SixShot`;this.showToast('✅ Settings saved');},
+  async testInstagram(){this.igStatus='Testing…';this.igOk=false;try{const r=await fetch(`https://graph.facebook.com/v19.0/${this.settings.igAccountId}?fields=id,name,username,followers_count&access_token=${this.settings.igToken}`);const d=await r.json();if(d.error)throw new Error(d.error.message);this.igOk=true;this.igStatus=`✅ Connected: @${d.username} — ${d.followers_count?.toLocaleString()||'?'} followers`;}catch(e){this.igStatus=`❌ ${e.message}`;}},
+  clearAll(){if(!confirm('Delete ALL posts, history and settings?'))return;['cc_q','cc_hist','cc_cfg'].forEach(k=>localStorage.removeItem(k));location.reload();},
+  showToast(msg,ok=true){this.toast={show:true,msg,ok};clearTimeout(this._tt);this._tt=setTimeout(()=>this.toast.show=false,3800);},
+  fmtDate(d){if(!d)return'';try{return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}catch{return d;}},
+};}
 </script>
 </body>
 </html>

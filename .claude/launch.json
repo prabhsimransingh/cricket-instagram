@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "cricket-ig",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["/Users/prabhsingh/Documents/Code/cricket-ig-pages/serve.py"],
+      "port": 8732
+    }
+  ]
+}
