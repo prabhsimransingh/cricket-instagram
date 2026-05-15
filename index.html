@@ -607,23 +607,40 @@
       <div class="glass" style="padding:24px">
         <div class="sh">🔑 API Keys</div>
         <p style="font-size:12px;color:rgba(255,255,255,.3);margin-bottom:14px;line-height:1.5">Stored in your browser only — never sent anywhere except the respective APIs.</p>
-        <div style="margin-bottom:12px"><label class="lbl">Groq API Key (AI Captions)</label><input class="inp" type="password" x-model="settings.groqKey" placeholder="gsk_…"/></div>
-        <div style="margin-bottom:12px"><label class="lbl">Instagram Access Token</label><input class="inp" type="password" x-model="settings.igToken" placeholder="EAABs…"/></div>
-        <div style="margin-bottom:12px"><label class="lbl">Instagram Account ID</label><input class="inp" x-model="settings.igAccountId" placeholder="17841400…"/></div>
-        <div><label class="lbl">Imgur Client ID <a href="https://api.imgur.com/oauth2/addclient" target="_blank" style="color:#f0b429;font-size:10px;margin-left:4px">Get free →</a></label><input class="inp" x-model="settings.imgurClientId" placeholder="abc123…"/></div>
+        <!-- Ayrshare — recommended -->
+        <div style="margin-bottom:18px;padding:14px;border:1.5px solid rgba(240,180,41,.35);border-radius:12px;background:rgba(240,180,41,.06)">
+          <div style="font-weight:700;color:rgba(240,180,41,.95);font-size:13px;margin-bottom:4px">⭐ Ayrshare — Recommended for Instagram posting</div>
+          <p style="font-size:11px;color:rgba(255,255,255,.45);margin-bottom:10px;line-height:1.6">
+            1. Sign up free at <a href="https://ayrshare.com" target="_blank" style="color:#f0b429">ayrshare.com</a><br>
+            2. Connect your Instagram in their dashboard<br>
+            3. Copy your API Key below — done!
+          </p>
+          <label class="lbl">Ayrshare API Key</label>
+          <input class="inp" type="password" x-model="settings.ayrshareKey" placeholder="AYS-…"/>
+          <div x-show="settings.ayrshareKey" style="margin-top:8px;font-size:11px;color:rgba(100,255,150,.7)">✓ Ayrshare key set — Imgur not required</div>
+        </div>
+        <div style="margin-bottom:12px"><label class="lbl">Groq API Key (AI Captions) <a href="https://console.groq.com" target="_blank" style="color:#f0b429;font-size:10px;margin-left:4px">Get free →</a></label><input class="inp" type="password" x-model="settings.groqKey" placeholder="gsk_…"/></div>
+        <details style="margin-bottom:12px">
+          <summary style="font-size:12px;color:rgba(255,255,255,.4);cursor:pointer;margin-bottom:10px">▸ Advanced: Instagram Graph API (alternative to Ayrshare)</summary>
+          <div style="margin-top:10px">
+            <div style="margin-bottom:12px"><label class="lbl">Instagram Access Token</label><input class="inp" type="password" x-model="settings.igToken" placeholder="EAABs…"/></div>
+            <div style="margin-bottom:12px"><label class="lbl">Instagram Account ID</label><input class="inp" x-model="settings.igAccountId" placeholder="17841400…"/></div>
+            <div><label class="lbl">Imgur Client ID (image hosting) <a href="https://api.imgur.com/oauth2/addclient" target="_blank" style="color:#f0b429;font-size:10px;margin-left:4px">Get free →</a></label><input class="inp" x-model="settings.imgurClientId" placeholder="abc123…"/></div>
+          </div>
+        </details>
       </div>
       <div style="grid-column:1/-1;display:flex;gap:12px;flex-wrap:wrap">
         <button class="btn btn-gold" style="font-size:15px;padding:12px 28px" @click="saveSettings()">💾 Save Settings</button>
-        <button class="btn btn-ghost" @click="testInstagram()" :disabled="!settings.igToken">Test Instagram Connection</button>
+        <button class="btn btn-ghost" @click="testInstagram()" :disabled="!settings.igToken&&!settings.ayrshareKey">Test Connection</button>
         <button class="btn btn-red" @click="clearAll()" style="margin-left:auto">⚠ Clear All Data</button>
       </div>
       <div x-show="igStatus" class="glass-sm" style="grid-column:1/-1;padding:14px;font-size:13px" :class="igOk?'text-green-400':'text-red-400'" x-text="igStatus"></div>
       <div class="glass" style="padding:24px;grid-column:1/-1">
         <div class="sh" style="margin-bottom:14px">📖 Setup Guide</div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;font-size:13px;color:rgba(255,255,255,.55)" class="rg3">
-          <div><p style="font-weight:700;color:rgba(255,255,255,.85);margin-bottom:6px">1. Instagram</p><p>Convert to Creator/Business → connect Facebook Page → Meta Developer App → Instagram Graph API → long-lived token with <code style="font-size:11px;background:rgba(255,255,255,.07);padding:1px 5px;border-radius:4px">instagram_content_publish</code></p></div>
+          <div style="border:1px solid rgba(240,180,41,.25);border-radius:10px;padding:14px;background:rgba(240,180,41,.04)"><p style="font-weight:700;color:rgba(240,180,41,.9);margin-bottom:6px">⭐ 1. Ayrshare (Recommended)</p><p>Sign up free at <a href="https://ayrshare.com" target="_blank" style="color:#f0b429">ayrshare.com</a> → Social Accounts → Connect Instagram. Go to API Keys, copy your key. No Facebook app setup needed.</p></div>
           <div><p style="font-weight:700;color:rgba(255,255,255,.85);margin-bottom:6px">2. Groq (AI Captions)</p><p>Free at <a href="https://console.groq.com" target="_blank" style="color:#f0b429">console.groq.com</a> → API Keys. Powers all caption generation using Llama 3.3.</p></div>
-          <div><p style="font-weight:700;color:rgba(255,255,255,.85);margin-bottom:6px">3. Imgur (Image Hosting)</p><p>Register free at <a href="https://api.imgur.com/oauth2/addclient" target="_blank" style="color:#f0b429">api.imgur.com</a> — use "OAuth 2 without callback". Copy the Client ID.</p></div>
+          <div><p style="font-weight:700;color:rgba(255,255,255,.85);margin-bottom:6px">3. Imgur (Backup image hosting)</p><p>Only needed if Ayrshare image upload fails. Register free at <a href="https://api.imgur.com/oauth2/addclient" target="_blank" style="color:#f0b429">api.imgur.com</a> — "OAuth 2 without callback".</p></div>
         </div>
       </div>
     </div>
@@ -640,7 +657,7 @@ const Store = {
   setQueue:    v  => localStorage.setItem('cc_q', JSON.stringify(v)),
   getHistory:  () => JSON.parse(localStorage.getItem('cc_hist')||'[]'),
   setHistory:  v  => localStorage.setItem('cc_hist', JSON.stringify(v)),
-  getSettings: () => ({clubName:'Cricket Club',primary:'#1a472a',accent:'#f0b429',leagueLogo:'',groqKey:'',igToken:'',igAccountId:'',imgurClientId:'',...JSON.parse(localStorage.getItem('cc_cfg')||'{}')}),
+  getSettings: () => ({clubName:'Cricket Club',primary:'#1a472a',accent:'#f0b429',leagueLogo:'',groqKey:'',ayrshareKey:'',igToken:'',igAccountId:'',imgurClientId:'',...JSON.parse(localStorage.getItem('cc_cfg')||'{}')}),
   setSettings: v  => localStorage.setItem('cc_cfg', JSON.stringify(v)),
 };
 
@@ -1539,10 +1556,43 @@ async function generateCaptions(type,data,cfg){
 }
 
 // ═══════════════════════════════════════════════════════
-//  IMGUR + INSTAGRAM
+//  IMAGE UPLOAD + PUBLISHING
 // ═══════════════════════════════════════════════════════
-async function uploadToImgur(b64,cid){const r=await fetch('https://api.imgur.com/3/image',{method:'POST',headers:{'Authorization':`Client-ID ${cid}`,'Content-Type':'application/json'},body:JSON.stringify({image:b64,type:'base64',title:'WicketGram Cricket'})});const d=await r.json();if(!d.success)throw new Error(d.data?.error||'Imgur failed');return d.data.link;}
-async function publishToInstagram(url,caption,cfg){const{igAccountId:id,igToken:tok}=cfg;const r1=await fetch(`https://graph.facebook.com/v19.0/${id}/media`,{method:'POST',body:new URLSearchParams({image_url:url,caption,access_token:tok})});const j1=await r1.json();if(j1.error)throw new Error(j1.error.message);const r2=await fetch(`https://graph.facebook.com/v19.0/${id}/media_publish`,{method:'POST',body:new URLSearchParams({creation_id:j1.id,access_token:tok})});const j2=await r2.json();if(j2.error)throw new Error(j2.error.message);return j2.id;}
+// Imgur — fallback image host
+async function uploadToImgur(b64,cid){
+  const r=await fetch('https://api.imgur.com/3/image',{method:'POST',headers:{'Authorization':`Client-ID ${cid}`,'Content-Type':'application/json'},body:JSON.stringify({image:b64,type:'base64',title:'WicketGram Cricket'})});
+  const d=await r.json();if(!d.success)throw new Error(d.data?.error||'Imgur upload failed');return d.data.link;
+}
+
+// Ayrshare — upload image (returns public URL)
+async function uploadViaAyrshare(b64,key){
+  const r=await fetch('https://app.ayrshare.com/api/media/upload',{method:'POST',
+    headers:{'Authorization':`Bearer ${key}`,'Content-Type':'application/json'},
+    body:JSON.stringify({fileName:'wicketgram.jpg',data:b64,contentType:'image/jpeg'})});
+  if(!r.ok){const e=await r.json();throw new Error(e.message||'Ayrshare media upload failed');}
+  const d=await r.json();
+  if(d.url)return d.url;
+  throw new Error(d.message||'No URL returned from Ayrshare');
+}
+
+// Ayrshare — post to Instagram
+async function publishViaAyrshare(imageUrl,caption,key){
+  const r=await fetch('https://app.ayrshare.com/api/post',{method:'POST',
+    headers:{'Authorization':`Bearer ${key}`,'Content-Type':'application/json'},
+    body:JSON.stringify({post:caption,platforms:['instagram'],mediaUrls:[imageUrl]})});
+  const d=await r.json();
+  if(d.status==='success'||d.id||d.postIds)return d.id||d.postIds?.[0]||'ok';
+  throw new Error(d.message||d.error||'Ayrshare posting failed');
+}
+
+// Instagram Graph API — legacy fallback
+async function publishToInstagram(url,caption,cfg){
+  const{igAccountId:id,igToken:tok}=cfg;
+  const r1=await fetch(`https://graph.facebook.com/v19.0/${id}/media`,{method:'POST',body:new URLSearchParams({image_url:url,caption,access_token:tok})});
+  const j1=await r1.json();if(j1.error)throw new Error(j1.error.message);
+  const r2=await fetch(`https://graph.facebook.com/v19.0/${id}/media_publish`,{method:'POST',body:new URLSearchParams({creation_id:j1.id,access_token:tok})});
+  const j2=await r2.json();if(j2.error)throw new Error(j2.error.message);return j2.id;
+}
 
 // ═══════════════════════════════════════════════════════
 //  ALPINE APP
@@ -1592,25 +1642,43 @@ function App(){return{
 
   async publishNow(post){
     const s=this.settings;
-    if(!s.igToken)return this.showToast('Instagram token not set',false);
-    if(!s.igAccountId)return this.showToast('Instagram Account ID not set',false);
-    if(!s.imgurClientId)return this.showToast('Imgur Client ID not set',false);
+    const useAyrshare=!!s.ayrshareKey;
+    const useIG=!!s.igToken&&!!s.igAccountId;
+    if(!useAyrshare&&!useIG)return this.showToast('Add your Ayrshare API key in Settings to post',false);
     this.publishing=post.id;
     try{
-      const c=document.createElement('canvas');c.width=c.height=S;
-      await renderCard(c,post,s);
-      const b64=c.toDataURL('image/jpeg',.92).split(',')[1];
-      this.showToast('⬆ Uploading…');
-      const url=await uploadToImgur(b64,s.imgurClientId);
-      this.showToast('📤 Publishing…');
-      const mid=await publishToInstagram(url,post.caption,s);
+      // Render card to canvas
+      const cv=document.createElement('canvas');cv.width=cv.height=S;
+      await renderCard(cv,post,s);
+      const b64=cv.toDataURL('image/jpeg',.92).split(',')[1];
+      // Upload image
+      this.showToast('⬆ Uploading image…');
+      let imageUrl;
+      if(useAyrshare){
+        try{imageUrl=await uploadViaAyrshare(b64,s.ayrshareKey);}
+        catch(e){
+          // Ayrshare media upload failed — try Imgur as backup
+          if(!s.imgurClientId)throw new Error('Image upload failed ('+e.message+'). Add Imgur Client ID as backup in Settings.');
+          this.showToast('⚠ Ayrshare upload failed, trying Imgur…');
+          imageUrl=await uploadToImgur(b64,s.imgurClientId);
+        }
+      }else{
+        if(!s.imgurClientId)throw new Error('Imgur Client ID not set');
+        imageUrl=await uploadToImgur(b64,s.imgurClientId);
+      }
+      // Publish
+      this.showToast('📤 Publishing to Instagram…');
+      let mid;
+      if(useAyrshare){mid=await publishViaAyrshare(imageUrl,post.caption,s.ayrshareKey);}
+      else{mid=await publishToInstagram(imageUrl,post.caption,s);}
+      // Move to history
       const done={...post,status:'posted',postedAt:new Date().toISOString(),mediaId:mid};
       const h=Store.getHistory();h.unshift(done);Store.setHistory(h.slice(0,100));
       this.history=Store.getHistory();
       this.posts=this.posts.filter(p=>p.id!==post.id);this.saveQueue();
       if(this.createdPost?.id===post.id)this.createdPost=null;
       this.showToast('🎉 Posted to Instagram!');
-    }catch(e){this.showToast(`❌ ${e.message}`,false);console.error(e);}
+    }catch(e){this.showToast('❌ '+e.message,false);console.error(e);}
     finally{this.publishing=null;}
   },
 
@@ -1687,20 +1755,30 @@ function App(){return{
   postTitle(post){const m=post.meta||{};const t=post.type;if(t==='match')return m.opponent?`vs ${m.opponent}`:'Match Result';if(t==='fixture')return m.opponent?`vs ${m.opponent} · Match Day`:'Match Day';if(t==='squad')return m.opponent?`Playing XI · vs ${m.opponent}`:'Playing XI';if(t==='motm')return m.name?`MOTM: ${m.name}`:'Man of the Match';if(t==='milestone')return m.title||'Milestone';return 'Photo Post';},
   refreshPreviews(){clearTimeout(this._rt);this._rt=setTimeout(()=>['match','fixture','squad','motm','milestone'].forEach(t=>this.drawPreview(t)),300);},
   saveSettings(){Store.setSettings(this.settings);document.title=`${this.settings.clubName||'Cricket'} · WicketGram`;this.refreshPreviews();this.showToast('✅ Settings saved');},
-  async testInstagram(){this.igStatus='Testing…';this.igOk=false;try{const r=await fetch(`https://graph.facebook.com/v19.0/${this.settings.igAccountId}?fields=id,name,username,followers_count&access_token=${this.settings.igToken}`);const d=await r.json();if(d.error)throw new Error(d.error.message);this.igOk=true;this.igStatus=`✅ Connected: @${d.username} — ${d.followers_count?.toLocaleString()||'?'} followers`;}catch(e){this.igStatus=`❌ ${e.message}`;}},
-  clearAll(){if(!confirm('Delete ALL posts, history and settings?'))return;['cc_q','cc_hist','cc_cfg'].forEach(k=>localStorage.removeItem(k));location.reload();},
-  showToast(msg,ok=true){this.toast={show:true,msg,ok};clearTimeout(this._tt);this._tt=setTimeout(()=>this.toast.show=false,3800);},
-  fmtDate(d){if(!d)return'';try{return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}catch{return d;}},
-
-  loadSample(t){
-    const s=SAMPLES[t];if(!s)return;
-    if(t==='match')Object.assign(this.mf,{...s});
-    else if(t==='fixture')Object.assign(this.ff,{...s});
-    else if(t==='squad'){this.qf.opponent=s.opponent;this.qf.date=s.date;this.qf.competition=s.competition;this.qf.players=s.players.map(p=>({...p}));while(this.qf.players.length<11)this.qf.players.push({name:'',role:''});}
-    else if(t==='motm')Object.assign(this.gf,{...s});
-    else if(t==='milestone')Object.assign(this.lf,{...s});
-    this.drawPreview(t);this.showToast('📋 Sample data loaded!');
-  },
+  async testInstagram(){
+    const s=this.settings;
+    this.igStatus='Testing…';this.igOk=false;
+    if(s.ayrshareKey){
+      try{
+        const r=await fetch('https://app.ayrshare.com/api/user',{headers:{'Authorization':`Bearer ${s.ayrshareKey}`}});
+        const d=await r.json();
+        if(d.email||d.activeSocialAccounts){
+          const plats=(d.activeSocialAccounts||[]).join(', ')||'connected';
+          const hasIG=(d.activeSocialAccounts||[]).some(p=>p.toLowerCase().includes('instagram'));
+          this.igStatus=`✅ Ayrshare connected (${d.email||'active'}) · Platforms: ${plats}${hasIG?'':' — ⚠ Instagram not connected yet'}`;
+          this.igOk=true;
+        }else throw new Error(d.message||d.error||'Auth failed');
+      }catch(e){this.igStatus='❌ Ayrshare: '+e.message;this.igOk=false;}
+      return;
+    }
+    if(!s.igToken){this.igStatus='No API key set. Add Ayrshare key above.';return;}
+    try{
+      const r=await fetch(`https://graph.facebook.com/v19.0/me?fields=name,id&access_token=${s.igToken}`);
+      const d=await r.json();
+      if(d.error)throw new Error(d.error.message);
+      this.igStatus=`✅ Instagram Graph API: ${d.name} (${d.id})`;this.igOk=true;
+    }catch(e){this.igStatus='❌ Instagram: '+e.message;this.igOk=false;}
+  },,
 
   playPreview(t){
     const c=document.getElementById(t+'-preview');if(!c)return;
