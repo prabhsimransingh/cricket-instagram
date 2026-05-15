@@ -52,7 +52,7 @@
   .spin{display:inline-block;width:16px;height:16px;border:2.5px solid rgba(255,255,255,.15);border-top-color:#f0b429;border-radius:50%;animation:rot .7s linear infinite}
   @keyframes rot{to{transform:rotate(360deg)}}
   .divider{height:1px;background:rgba(255,255,255,.07);margin:20px 0}
-  .preview-wrap{background:#0a0a0a;border-radius:14px;overflow:hidden;aspect-ratio:1;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 1px rgba(255,255,255,.06)}
+  .preview-wrap{background:#0a0a0a;border-radius:14px;overflow:hidden;aspect-ratio:9/16;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 1px rgba(255,255,255,.06)}
   ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
   input[type=color]{height:40px;cursor:pointer;border-radius:8px;padding:2px}
   .sh{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:10px}
@@ -166,8 +166,8 @@
       <div class="post-card" style="display:grid;grid-template-columns:200px 1fr;min-height:200px">
 
         <!-- LEFT: square graphic preview with type overlay -->
-        <div class="post-thumb" style="position:relative;aspect-ratio:1;background:#060a0e;overflow:hidden;border-right:1px solid rgba(255,255,255,.06)">
-          <canvas :id="'thumb-'+post.id" width="400" height="400" style="width:100%;height:100%;display:block;object-fit:cover" x-init="$nextTick(()=>renderThumb(post))"></canvas>
+        <div class="post-thumb" style="position:relative;aspect-ratio:9/16;background:#060a0e;overflow:hidden;border-right:1px solid rgba(255,255,255,.06)">
+          <canvas :id="'thumb-'+post.id" width="400" height="711" style="width:100%;height:100%;display:block;object-fit:cover" x-init="$nextTick(()=>renderThumb(post))"></canvas>
           <!-- type badge overlaid bottom-left of thumbnail -->
           <div style="position:absolute;bottom:10px;left:10px">
             <span class="type-pill" :class="'type-'+post.type"
@@ -436,7 +436,7 @@
         </div>
         <div class="prev-col" style="position:sticky;top:80px">
           <div class="sh">Live Preview</div>
-          <div class="preview-wrap"><canvas id="match-preview" width="1080" height="1080" style="width:100%;height:auto;display:block"></canvas></div>
+          <div class="preview-wrap"><canvas id="match-preview" width="1080" height="1920" style="width:100%;height:auto;display:block"></canvas></div>
           <div style="display:flex;gap:8px;margin-top:10px">
             <button class="btn btn-ghost" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="playPreview('match')">▶ Play Effects</button>
             <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="exportVideo('match')">🎬 Export Video</button>
@@ -476,7 +476,7 @@
         </div>
         <div class="prev-col" style="position:sticky;top:80px">
           <div class="sh">Live Preview</div>
-          <div class="preview-wrap"><canvas id="fixture-preview" width="1080" height="1080" style="width:100%;height:auto;display:block"></canvas></div>
+          <div class="preview-wrap"><canvas id="fixture-preview" width="1080" height="1920" style="width:100%;height:auto;display:block"></canvas></div>
           <div style="display:flex;gap:8px;margin-top:10px">
             <button class="btn btn-ghost" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="playPreview('fixture')">▶ Play Effects</button>
             <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="exportVideo('fixture')">🎬 Export Video</button>
@@ -519,7 +519,7 @@
         </div>
         <div class="prev-col" style="position:sticky;top:80px">
           <div class="sh">Live Preview</div>
-          <div class="preview-wrap"><canvas id="squad-preview" width="1080" height="1080" style="width:100%;height:auto;display:block"></canvas></div>
+          <div class="preview-wrap"><canvas id="squad-preview" width="1080" height="1920" style="width:100%;height:auto;display:block"></canvas></div>
           <div style="display:flex;gap:8px;margin-top:10px">
             <button class="btn btn-ghost" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="playPreview('squad')">▶ Play Effects</button>
             <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="exportVideo('squad')">🎬 Export Video</button>
@@ -567,7 +567,7 @@
         </div>
         <div class="prev-col" style="position:sticky;top:80px">
           <div class="sh">Live Preview</div>
-          <div class="preview-wrap"><canvas id="motm-preview" width="1080" height="1080" style="width:100%;height:auto;display:block"></canvas></div>
+          <div class="preview-wrap"><canvas id="motm-preview" width="1080" height="1920" style="width:100%;height:auto;display:block"></canvas></div>
           <div style="display:flex;gap:8px;margin-top:10px">
             <button class="btn btn-ghost" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="playPreview('motm')">▶ Play Effects</button>
             <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="exportVideo('motm')">🎬 Export Video</button>
@@ -606,7 +606,7 @@
         </div>
         <div class="prev-col" style="position:sticky;top:80px">
           <div class="sh">Live Preview</div>
-          <div class="preview-wrap"><canvas id="milestone-preview" width="1080" height="1080" style="width:100%;height:auto;display:block"></canvas></div>
+          <div class="preview-wrap"><canvas id="milestone-preview" width="1080" height="1920" style="width:100%;height:auto;display:block"></canvas></div>
           <div style="display:flex;gap:8px;margin-top:10px">
             <button class="btn btn-ghost" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="playPreview('milestone')">▶ Play Effects</button>
             <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="exportVideo('milestone')">🎬 Export Video</button>
@@ -640,7 +640,7 @@
         </div>
         <div class="prev-col" style="position:sticky;top:80px">
           <div class="sh">Live Preview</div>
-          <div class="preview-wrap"><canvas id="photo-preview" width="1080" height="1080" style="width:100%;height:auto;display:block"></canvas></div>
+          <div class="preview-wrap"><canvas id="photo-preview" width="1080" height="1920" style="width:100%;height:auto;display:block"></canvas></div>
           <div style="display:flex;gap:8px;margin-top:10px">
             <button class="btn btn-ghost" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="playPreview('photo')">▶ Play Effects</button>
             <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="exportVideo('photo')">🎬 Export Video</button>
@@ -698,7 +698,7 @@
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px">
     <template x-for="post in history" :key="post.id">
       <div class="post-card" style="overflow:hidden">
-        <canvas :id="'hist-'+post.id" width="520" height="520" style="width:100%;aspect-ratio:1;display:block"
+        <canvas :id="'hist-'+post.id" width="520" height="520" style="width:100%;aspect-ratio:9/16;display:block"
           x-init="$nextTick(()=>renderThumb(post,'hist-'+post.id))"></canvas>
         <div style="padding:14px">
           <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
@@ -817,14 +817,14 @@ const Store = {
   setQueue:    v  => localStorage.setItem('cc_q', JSON.stringify(v)),
   getHistory:  () => JSON.parse(localStorage.getItem('cc_hist')||'[]'),
   setHistory:  v  => localStorage.setItem('cc_hist', JSON.stringify(v)),
-  getSettings: () => ({clubName:'Cricket Club',primary:'#152244',accent:'#17b8b8',leagueLogo:NACL_LOGO_B64,clubLogo:CHAMPIONS_LOGO_B64,groqKey:'',ayrshareKey:'',igToken:'',igAccountId:'',imgurClientId:'',...JSON.parse(localStorage.getItem('cc_cfg')||'{}')}),
-  setSettings: v  => localStorage.setItem('cc_cfg', JSON.stringify(v)),
+  getSettings:()=>{const s=JSON.parse(localStorage.getItem('cc_cfg')||'{}');return{clubName:'Champions',primary:'#152244',accent:'#17b8b8',leagueLogo:NACL_LOGO_B64,clubLogo:CHAMPIONS_LOGO_B64,groqKey:'',ayrshareKey:'',igToken:'',igAccountId:'',imgurClientId:'',...s};},
+  setSettings:v=>{const s={...v};if(s.leagueLogo===NACL_LOGO_B64)delete s.leagueLogo;if(s.clubLogo===CHAMPIONS_LOGO_B64)delete s.clubLogo;try{localStorage.setItem('cc_cfg',JSON.stringify(s));}catch(e){console.warn('Settings:',e);}},
 };
 
 // ═══════════════════════════════════════════════════════
 //  COLOUR HELPERS
 // ═══════════════════════════════════════════════════════
-const S=1080;
+const W=1080,H=1920,S=1080;
 function hexRGB(h='#000'){h=h.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');return[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
 function rgb(r,g,b,a=1){return a<1?`rgba(${r},${g},${b},${a})`:`rgb(${r},${g},${b})`;}
 function lerpC(a,b,t){return a.map((v,i)=>Math.round(v+(b[i]-v)*t));}
@@ -834,11 +834,11 @@ function rr(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y)
 
 async function loadImg(src){return new Promise(res=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>res(null);i.src=src;});}
 
-function drawPhoto(ctx,src,dim=0.5){return new Promise(res=>{const img=new Image();img.onload=()=>{const{width:w,height:h}=img;const s=Math.min(w,h);ctx.drawImage(img,(w-s)/2,(h-s)/2,s,s,0,0,S,S);if(dim>0){ctx.fillStyle=`rgba(0,0,0,${dim})`;ctx.fillRect(0,0,S,S);}res();};img.onerror=res;img.src=src;});}
+function drawPhoto(ctx,src,dim=0.5){return new Promise(res=>{const img=new Image();img.onload=()=>{const{width:iw,height:ih}=img;const sc=Math.max(W/iw,H/ih),dw=iw*sc,dh=ih*sc;ctx.drawImage(img,(W-dw)/2,(H-dh)/2,dw,dh);if(dim>0){ctx.fillStyle=`rgba(0,0,0,${dim})`;ctx.fillRect(0,0,W,H);}res();};img.onerror=res;img.src=src;});}
 
 function monogram(ctx,club,cx,cy,A,r=28){const g=ctx.createRadialGradient(cx,cy,0,cx,cy,r);g.addColorStop(0,rgb(...A,0.3));g.addColorStop(1,rgb(...A,0.05));ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();ctx.strokeStyle=rgb(...A,0.5);ctx.lineWidth=1.5;ctx.stroke();const m=club.split(' ').map(w=>w[0]).slice(0,2).join('');ctx.font=`700 ${r*0.65}px "Oswald"`;ctx.fillStyle=rgb(...A,0.9);const mw=ctx.measureText(m).width;ctx.fillText(m,cx-mw/2,cy+r*0.25);}
 
-function footerBar(ctx,A,left,right,club){const g=ctx.createLinearGradient(0,S-90,0,S);g.addColorStop(0,'transparent');g.addColorStop(1,'rgba(0,0,0,.8)');ctx.fillStyle=g;ctx.fillRect(0,S-90,S,90);ctx.beginPath();ctx.moveTo(50,S-70);ctx.lineTo(S-50,S-70);ctx.strokeStyle=rgb(...A,0.18);ctx.lineWidth=1.2;ctx.stroke();ctx.font='500 19px "Inter"';ctx.fillStyle='rgba(255,255,255,.45)';if(left)ctx.fillText(left.toUpperCase(),50,S-38);if(right){const rw=ctx.measureText(right.toUpperCase()).width;ctx.fillText(right.toUpperCase(),S-60-rw,S-38);}monogram(ctx,club,S-44,S-38,A,24);}
+function footerBar(ctx,A,left,right,club){const g=ctx.createLinearGradient(0,H-110,0,H);g.addColorStop(0,'transparent');g.addColorStop(1,'rgba(0,0,0,.9)');ctx.fillStyle=g;ctx.fillRect(0,H-110,W,110);ctx.beginPath();ctx.moveTo(50,H-84);ctx.lineTo(W-50,H-84);ctx.strokeStyle=rgb(...A,0.18);ctx.lineWidth=1.2;ctx.stroke();ctx.font='500 22px "Inter"';ctx.fillStyle='rgba(255,255,255,.5)';if(left)ctx.fillText(left.toUpperCase(),50,H-46);if(right){const rw=ctx.measureText(right.toUpperCase()).width;ctx.fillText(right.toUpperCase(),W-60-rw,H-46);}monogram(ctx,club,W-50,H-46,A,26);}
 
 function fmtD(s){if(!s)return'';try{return new Date(s).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}catch{return s;}}
 
@@ -966,32 +966,32 @@ function goldText(ctx,text,x,y,fz,maxW){
 function jerseyBg(ctx,P,A,postType){
   const {navy,midNavy,teal,lime}=JKT;
   // 1. Deep navy base
-  ctx.fillStyle=`rgb(${navy.join(',')})`;ctx.fillRect(0,0,S,S);
+  ctx.fillStyle=`rgb(${navy.join(',')})`;ctx.fillRect(0,0,W,H);
   // 2. Primary diagonal colour zone (left)
   ctx.save();
-  ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(S*.68,0);ctx.lineTo(S*.30,S);ctx.lineTo(0,S);ctx.closePath();
+  ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(S*.68,0);ctx.lineTo(S*.30,H);ctx.lineTo(0,H);ctx.closePath();
   const zg=ctx.createLinearGradient(0,0,S*.6,S*.9);
   zg.addColorStop(0,`rgb(${midNavy.join(',')})`);zg.addColorStop(1,`rgba(${navy.join(',')},0.6)`);
   ctx.fillStyle=zg;ctx.fill();ctx.restore();
   // 3. Teal accent stripe
   ctx.save();
-  ctx.beginPath();ctx.moveTo(S*.57,0);ctx.lineTo(S*.70,0);ctx.lineTo(S*.32,S);ctx.lineTo(S*.22,S);ctx.closePath();
+  ctx.beginPath();ctx.moveTo(S*.57,0);ctx.lineTo(S*.70,0);ctx.lineTo(S*.32,H);ctx.lineTo(S*.22,H);ctx.closePath();
   const tg=ctx.createLinearGradient(S*.64,0,S*.27,S);
   tg.addColorStop(0,`rgba(${teal.join(',')},0.95)`);tg.addColorStop(1,`rgba(${teal.join(',')},0.05)`);
   ctx.fillStyle=tg;ctx.fill();ctx.restore();
   // 4. Subtle dot texture — right dark zone only
   ctx.save();ctx.fillStyle=`rgba(${lime.join(',')},0.04)`;
   const gs=36;
-  for(let row=0;row<Math.ceil(S/gs)+2;row++){
+  for(let row=0;row<Math.ceil(H/gs)+2;row++){
     for(let col=0;col<Math.ceil(S/gs)+2;col++){
       const px=col*gs+(row%2)*gs*.5,py=row*gs;
       if(px>S*.25){ctx.beginPath();ctx.arc(px,py,2,0,Math.PI*2);ctx.fill();}
     }
   }ctx.restore();
   // 5. Bottom vignette
-  const bv=ctx.createLinearGradient(0,S*.5,0,S);
+  const bv=ctx.createLinearGradient(0,H*.55,0,H);
   bv.addColorStop(0,'transparent');bv.addColorStop(1,'rgba(0,0,0,.95)');
-  ctx.fillStyle=bv;ctx.fillRect(0,0,S,S);
+  ctx.fillStyle=bv;ctx.fillRect(0,0,W,H);
 }
 
 // ─── Draw NACL logo (top-right) ─────────────────────────────
@@ -999,7 +999,7 @@ async function drawLeagueLogo(ctx,cfg){
   if(!cfg||!cfg.leagueLogo)return;
   const img=await loadImg(cfg.leagueLogo);if(!img)return;
   // Circular watermark (centre, clipped)
-  const wR=140,wCx=S/2,wCy=S/2;
+  const wR=140,wCx=W/2,wCy=H/2;
   ctx.save();
   ctx.beginPath();ctx.arc(wCx,wCy,wR,0,Math.PI*2);ctx.clip();
   ctx.globalAlpha=0.05;
@@ -1030,8 +1030,8 @@ async function drawJersey(ctx){
   // Draw only the front half of the jersey image (left crop ~55%)
   const iw=img.naturalWidth||img.width,ih=img.naturalHeight||img.height;
   const cropW=Math.floor(iw*0.55); // just the front half
-  const dh=S*0.62,dw=dh*(cropW/ih);
-  const dx=S-dw+dw*0.18,dy=S-dh-20;
+  const dh=H*0.45,dw=dh*(cropW/ih);
+  const dx=S-dw+dw*0.18,dy=H-dh-110;
   ctx.save();
   ctx.globalAlpha=0.04;
   // flip horizontally so jersey faces inward
@@ -1075,7 +1075,7 @@ async function drawMatchCard(ctx,d,cfg){
 
   // Top chrome bar
   ctx.fillStyle=`rgb(${teal.join(',')})`;ctx.fillRect(0,0,S,10);
-  ctx.fillStyle=`rgba(${teal.join(',')},0.6)`;ctx.fillRect(0,10,5,S-10);
+  ctx.fillStyle=`rgba(${teal.join(',')},0.6)`;ctx.fillRect(0,10,5,H-10);
 
   // Both logos
   await drawClubLogo(ctx,cfg);
@@ -1083,13 +1083,13 @@ async function drawMatchCard(ctx,d,cfg){
 
   // Header: club name + date
   const hX=cfg.clubLogo?172:50;
-  ctx.font='700 20px "Inter"';ctx.fillStyle='rgba(255,255,255,.88)';
+  ctx.font='700 28px "Inter"';ctx.fillStyle='rgba(255,255,255,.95)';
   ctx.shadowColor='rgba(0,0,0,.8)';ctx.shadowBlur=12;
   ctx.fillText(club,hX,58);ctx.shadowBlur=0;
-  if(d.date){ctx.font='400 13px "Inter"';ctx.fillStyle='rgba(255,255,255,.4)';ctx.fillText(fmtD(d.date),hX,76);}
+  if(d.date){ctx.font='400 18px "Inter"';ctx.fillStyle='rgba(255,255,255,.5)';ctx.fillText(fmtD(d.date),hX,82);}
   // Competition chip
   if(d.competition){
-    ctx.font='600 13px "Inter"';
+    ctx.font='600 17px "Inter"';
     const cw=ctx.measureText(d.competition.toUpperCase()).width;
     const chipX=cfg.leagueLogo?S-cw-168:S-cw-56;
     rr(ctx,chipX-12,28,cw+24,32,16);ctx.fillStyle='rgba(0,0,0,.55)';ctx.fill();
@@ -1178,7 +1178,7 @@ async function drawMatchCard(ctx,d,cfg){
   const pBase=spY+spH+(d.margin?84:28);
   if(hasBat||hasBwl){
     ctx.fillStyle=`rgba(${lime.join(',')},0.7)`;ctx.fillRect(50,pBase,4,20);
-    ctx.font='700 11px "Inter"';ctx.fillStyle=`rgba(${lime.join(',')},0.75)`;
+    ctx.font='700 15px "Inter"';ctx.fillStyle=`rgba(${lime.join(',')},0.85)`;
     ctx.letterSpacing='.16em';ctx.fillText('TOP PERFORMERS',60,pBase+16);ctx.letterSpacing='0';
     const pYY=pBase+32,cardH=Math.max(150,S-100-pYY);
     function pCard(name,stat,lbl,sub,x,y,w,h){
@@ -1187,7 +1187,7 @@ async function drawMatchCard(ctx,d,cfg){
       ctx.strokeStyle=`rgba(${teal.join(',')},0.2)`;ctx.lineWidth=1.5;ctx.stroke();
       ctx.fillStyle=`rgb(${teal.join(',')})`;rr(ctx,x,y,Math.min(w*.5,200),5,2);ctx.fill();
       ctx.fillStyle=`rgba(${lime.join(',')},0.8)`;ctx.fillRect(x,y,4,h);
-      ctx.font='600 12px "Inter"';ctx.fillStyle='rgba(255,255,255,.38)';ctx.fillText(name.toUpperCase().slice(0,20),x+14,y+28);
+      ctx.font='600 16px "Inter"';ctx.fillStyle='rgba(255,255,255,.55)';ctx.fillText(name.toUpperCase().slice(0,20),x+14,y+28);
       ctx.font=`900 ${stat.length>4?58:74}px "Oswald"`;
       ctx.fillStyle=`rgb(${teal.join(',')})`;ctx.fillText(stat,x+14,y+Math.round(h*.56));
       ctx.font='700 11px "Inter"';ctx.fillStyle=`rgba(${lime.join(',')},0.7)`;
@@ -1217,7 +1217,7 @@ async function drawFixtureCard(ctx,d,cfg){
 
   // Top bar
   ctx.fillStyle=`rgb(${teal.join(',')})`;ctx.fillRect(0,0,S,10);
-  ctx.fillStyle=`rgba(${teal.join(',')},0.6)`;ctx.fillRect(0,10,5,S-10);
+  ctx.fillStyle=`rgba(${teal.join(',')},0.6)`;ctx.fillRect(0,10,5,H-10);
 
   await drawClubLogo(ctx,cfg);
   await drawLeagueLogo(ctx,cfg);
@@ -1899,7 +1899,7 @@ async function renderCard(canvas,post,cfg){
   if(!canvas)return;
   await document.fonts.ready;
   const ctx=canvas.getContext('2d');
-  ctx.clearRect(0,0,S,S);
+  ctx.clearRect(0,0,W,H);
   const d=post.meta||{};
   try{
     if(post.type==='match')         await drawMatchCard(ctx,d,cfg);
@@ -2033,14 +2033,14 @@ function App(){return{
     post._tt=setTimeout(()=>{
       this.saveQueue();
       const el=document.getElementById('thumb-'+post.id);
-      if(el)renderCard(el,post,this.settings).catch(()=>{});
+      if(el){el.width=400;el.height=711;renderCard(el,post,this.settings).catch(()=>{});}
     },350);
   },
 
   async drawPreview(type){
     const canvas=document.getElementById(type+'-preview');if(!canvas)return;
     await document.fonts.ready;
-    const ctx=canvas.getContext('2d');ctx.clearRect(0,0,S,S);
+    const ctx=canvas.getContext('2d');ctx.clearRect(0,0,W,H);
     const cfg=this.settings;
     try{
       if(type==='match')         await drawMatchCard(ctx,this.mf,cfg);
@@ -2062,7 +2062,7 @@ function App(){return{
     if(!post)return;
     this.downloading=post.id;
     try{
-      const cv=document.createElement('canvas');cv.width=cv.height=S;
+      const cv=document.createElement('canvas');cv.width=W;cv.height=H;
       await renderCard(cv,post,this.settings);
       const type=post.type||'post';
       const opp=(post.meta?.opponent||'').replace(/\s+/g,'-').toLowerCase();
@@ -2090,7 +2090,7 @@ function App(){return{
     this.publishing=post.id;
     try{
       // Render card → blob (memory-safe, no OOM crash)
-      const cv=document.createElement('canvas');cv.width=cv.height=S;
+      const cv=document.createElement('canvas');cv.width=W;cv.height=H;
       await renderCard(cv,post,s);
       const blob=await new Promise((res,rej)=>cv.toBlob(b=>b?res(b):rej(new Error('Canvas failed')),'image/jpeg',0.92));
       const igFile=new File([blob],'instagram-post.jpg',{type:'image/jpeg'});
