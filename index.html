@@ -780,6 +780,13 @@
           <div x-show="settings.ayrshareKey" style="margin-top:8px;font-size:11px;color:rgba(100,255,150,.7)">✓ Ayrshare key set — Imgur not required</div>
         </div>
         <div style="margin-bottom:12px"><label class="lbl">Groq API Key (AI Captions) <a href="https://console.groq.com" target="_blank" style="color:#f0b429;font-size:10px;margin-left:4px">Get free →</a></label><input class="inp" type="password" x-model="settings.groqKey" placeholder="gsk_…"/></div>
+<div style="margin-bottom:12px;padding:12px;border:1px solid rgba(139,196,0,.3);border-radius:10px;background:rgba(139,196,0,.06)">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;color:rgba(139,196,0,.95)">
+            <input type="checkbox" x-model="settings.aiCharacters" style="cursor:pointer;width:18px;height:18px"/>
+            ✨ AI Character Art for Matches (Pollinations)
+          </label>
+          <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:8px">Generates character art for home/away teams. Free, requires internet. <a href="https://pollinations.ai" target="_blank" style="color:#8bc400">Learn more</a></div>
+        </div>
         <details style="margin-bottom:12px">
           <summary style="font-size:12px;color:rgba(255,255,255,.4);cursor:pointer;margin-bottom:10px">▸ Advanced: Instagram Graph API (alternative to Ayrshare)</summary>
           <div style="margin-top:10px">
@@ -817,9 +824,37 @@ const Store = {
   setQueue:    v  => localStorage.setItem('cc_q', JSON.stringify(v)),
   getHistory:  () => JSON.parse(localStorage.getItem('cc_hist')||'[]'),
   setHistory:  v  => localStorage.setItem('cc_hist', JSON.stringify(v)),
-  getSettings:()=>{const s=JSON.parse(localStorage.getItem('cc_cfg')||'{}');return{clubName:'Champions',primary:'#152244',accent:'#17b8b8',leagueLogo:NACL_LOGO_B64,clubLogo:CHAMPIONS_LOGO_B64,groqKey:'',ayrshareKey:'',igToken:'',igAccountId:'',imgurClientId:'',...s};},
+  getSettings:()=>{const s=JSON.parse(localStorage.getItem('cc_cfg')||'{}');return{clubName:'Champions',primary:'#152244',accent:'#17b8b8',leagueLogo:NACL_LOGO_B64,clubLogo:CHAMPIONS_LOGO_B64,groqKey:'',ayrshareKey:'',igToken:'',igAccountId:'',imgurClientId:'',aiCharacters:false,aiCharCache:{},...s};},
   setSettings:v=>{const s={...v};if(s.leagueLogo===NACL_LOGO_B64)delete s.leagueLogo;if(s.clubLogo===CHAMPIONS_LOGO_B64)delete s.clubLogo;try{localStorage.setItem('cc_cfg',JSON.stringify(s));}catch(e){console.warn('Settings:',e);}},
 };
+
+
+// ═══════════════════════════════════════════════════════
+//  POLLINATIONS.AI — AI Character Generation
+// ═══════════════════════════════════════════════════════
+async function generateCharacter(teamName,side='home'){
+  const s=Store.getSettings();if(!s.aiCharacters)return null;
+  const cacheKey=`${teamName}-${side}`;
+  if(s.aiCharCache?.[cacheKey])return s.aiCharCache[cacheKey];
+  const isBatsman=side==='home';
+  const prompt=isBatsman?
+    `cricket batsman dramatic action pose, ${teamName}, blue electric aura, dynamic lighting, dark background, PNG transparent, 8k`:
+    `${teamName} warrior mascot cricket team, fire orange aura, dynamic action pose, dark background, PNG transparent, 8k`;
+  try{
+    const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=512&height=896&nologo=true&seed=${teamName}-${side}`;
+    const img=new Image();
+    return new Promise((res,rej)=>{
+      img.onload=()=>{const cached={...s.aiCharCache,[cacheKey]:url};s.aiCharCache=cached;Store.setSettings(s);res(url);};
+      img.onerror=()=>res(null);
+      img.src=url;
+    });
+  }catch(e){return null;}
+}
+
+async function loadCharacterImg(url){
+  if(!url)return null;
+  return new Promise((res)=>{const img=new Image();img.onload=()=>res(img);img.onerror=()=>res(null);img.crossOrigin='anonymous';img.src=url;});
+}
 
 // ═══════════════════════════════════════════════════════
 //  COLOUR HELPERS
@@ -1255,6 +1290,30 @@ async function drawFixtureCard(ctx,d,cfg){
   ctx.fillStyle=cg2;ctx.shadowColor='rgba(255,185,0,.3)';ctx.shadowBlur=22;
   ctx.fillText(club.slice(0,15),hX,283);ctx.shadowBlur=0;
   ctx.fillStyle=`rgba(${teal.join(',')},0.5)`;ctx.fillRect(hX,293,Math.min(ctx.measureText(club.slice(0,15)).width*.55,340),5);
+
+
+  // AI CHARACTER ART (if enabled)
+  let homeCharImg=null,awayCharImg=null;
+  if(cfg.aiCharacters){
+    const homeUrl=await generateCharacter(club,'home');
+    const awayUrl=await generateCharacter(opp,'away');
+    homeCharImg=homeUrl?await loadCharacterImg(homeUrl):null;
+    awayCharImg=awayUrl?await loadCharacterImg(awayUrl):null;
+  }
+  // Draw home character (left side, blue)
+  if(homeCharImg){
+    ctx.save();ctx.globalAlpha=0.92;
+    const chW=280,chH=560;
+    ctx.drawImage(homeCharImg,50,350,chW,chH);
+    ctx.restore();
+  }
+  // Draw away character (right side, orange)
+  if(awayCharImg){
+    ctx.save();ctx.globalAlpha=0.92;
+    const chW=280,chH=560;
+    ctx.drawImage(awayCharImg,S-330,350,chW,chH);
+    ctx.restore();
+  }
 
   // VS
   const vsY=330;
