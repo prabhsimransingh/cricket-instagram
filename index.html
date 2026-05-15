@@ -862,6 +862,24 @@
           </label>
           <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:8px">Generate entire card image via Pollinations (slower, stunning visuals)</div>
         </div>
+
+        <!-- DALL-E 3 Settings -->
+        <div style="margin-bottom:12px;padding:12px;border:2px solid rgba(88,166,255,.4);border-radius:10px;background:rgba(88,166,255,.08)">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;color:rgba(88,166,255,.95);margin-bottom:10px">
+            <input type="checkbox" x-model="settings.useDallE" style="cursor:pointer;width:18px;height:18px"/>
+            🚀 Use DALL-E 3 (Professional AI - $5 free credit)
+          </label>
+          <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:10px">Switch from Pollinations to OpenAI DALL-E 3 for professional-quality cricket posters. Get $5 free credit when you sign up.</div>
+          <div style="margin-bottom:10px">
+            <label class="lbl">DALL-E API Key <a href="https://platform.openai.com/account/api-keys" target="_blank" style="color:#58a6ff;font-size:10px;margin-left:4px">Get key →</a></label>
+            <input class="inp" type="password" x-model="settings.dalleApiKey" placeholder="sk-proj-…"/>
+          </div>
+          <div style="font-size:11px;color:rgba(88,166,255,.7);display:flex;align-items:center;gap:6px">
+            <span x-show="settings.dalleApiKey">✓ DALL-E key set — ready to generate professional images</span>
+            <span x-show="!settings.dalleApiKey">→ Add your API key to enable DALL-E 3 generation</span>
+          </div>
+        </div>
+
         <details style="margin-bottom:12px">
           <summary style="font-size:12px;color:rgba(255,255,255,.4);cursor:pointer;margin-bottom:10px">▸ Advanced: Instagram Graph API (alternative to Ayrshare)</summary>
           <div style="margin-top:10px">
@@ -899,7 +917,7 @@ const Store = {
   setQueue:    v  => localStorage.setItem('cc_q', JSON.stringify(v)),
   getHistory:  () => JSON.parse(localStorage.getItem('cc_hist')||'[]'),
   setHistory:  v  => localStorage.setItem('cc_hist', JSON.stringify(v)),
-  getSettings:()=>{const s=JSON.parse(localStorage.getItem('cc_cfg')||'{}');return{clubName:'Champions',primary:'#152244',accent:'#17b8b8',leagueLogo:NACL_LOGO_B64,clubLogo:CHAMPIONS_LOGO_B64,groqKey:'',ayrshareKey:'',igToken:'',igAccountId:'',imgurClientId:'',...s};},
+  getSettings:()=>{const s=JSON.parse(localStorage.getItem('cc_cfg')||'{}');return{clubName:'Champions',primary:'#152244',accent:'#17b8b8',leagueLogo:NACL_LOGO_B64,clubLogo:CHAMPIONS_LOGO_B64,groqKey:'',ayrshareKey:'',igToken:'',igAccountId:'',imgurClientId:'',useDallE:false,dalleApiKey:'',...s};},
   setSettings:v=>{const s={...v};if(s.leagueLogo===NACL_LOGO_B64)delete s.leagueLogo;if(s.clubLogo===CHAMPIONS_LOGO_B64)delete s.clubLogo;try{localStorage.setItem('cc_cfg',JSON.stringify(s));}catch(e){console.warn('Settings:',e);}},
 };
 
@@ -1319,8 +1337,122 @@ async function drawMatchCard(ctx,d,cfg){
 //  2. FIXTURE / MATCH DAY
 // ═══════════════════════════════════════════════════════
 
-// AI Full Card generation
+// ═══════════════════════════════════════════════════════
+//  DALLE-3 INTEGRATION
+// ═══════════════════════════════════════════════════════
+async function generateFixtureAI_DALLE(d,cfg){
+  const club=(cfg.clubName||'Cricket Club').toUpperCase();
+  const opp=(d.opponent||'TBC').toUpperCase();
+  const venue=d.venue||'TBC';
+  const comp=d.competition||'Cricket';
+
+  // DALL-E 3 optimized prompt (it understands context much better)
+  const prompt=`Professional cricket match day Instagram story poster for ${club} vs ${opp}, ${comp} at ${venue}.
+
+Create a dramatic, cinematic sports photography style image of a cricket match:
+- Professional stadium at night with powerful floodlights
+- Championship atmosphere, intense competitive energy
+- Pristine green cricket field, perfectly maintained
+- Dark dramatic sky with golden floodlight illumination
+- High contrast, sharp focus, professional sports broadcast quality
+- Colors: Teal and gold accents (brand colors)
+- 9:16 vertical format, optimized for Instagram Story
+- Magazine-quality sports poster aesthetic`;
+
+  try{
+    console.log('🎨 Fetching AI image from DALL-E 3...');
+
+    const response=await fetch('https://api.openai.com/v1/images/generations',{
+      method:'POST',
+      headers:{
+        'Authorization':`Bearer ${cfg.dalleApiKey}`,
+        'Content-Type':'application/json'
+      },
+      body:JSON.stringify({
+        model:'dall-e-3',
+        prompt:prompt,
+        n:1,
+        size:'1024x1792', // 9:16 aspect ratio
+        quality:'standard',
+        style:'vivid'
+      }),
+      timeout:30000
+    });
+
+    if(!response.ok){
+      const err=await response.json();
+      console.error('❌ DALL-E API error:',err.error?.message);
+      throw new Error(err.error?.message||'DALL-E API failed');
+    }
+
+    const data=await response.json();
+    const imageUrl=data.data[0].url;
+    console.log('✅ DALL-E image URL received');
+
+    // Fetch the image and convert to canvas
+    const img=new Image();
+    return new Promise((res)=>{
+      const timeout=setTimeout(()=>{
+        console.warn('⏱️ Image download timeout');
+        res(null);
+      },15000);
+
+      img.onload=()=>{
+        clearTimeout(timeout);
+        console.log('✅ DALL-E image loaded successfully');
+        try{
+          const cv=document.createElement('canvas');
+          cv.width=1080;cv.height=1920;
+          const ctx=cv.getContext('2d');
+          ctx.drawImage(img,0,0);
+
+          // Add vignette effect for logos
+          const vignette=(x,y)=>{
+            const grad=ctx.createRadialGradient(x,y,0,x,y,180);
+            grad.addColorStop(0,'rgba(0,0,0,0)');
+            grad.addColorStop(0.7,'rgba(0,0,0,0.15)');
+            grad.addColorStop(1,'rgba(0,0,0,0.4)');
+            ctx.fillStyle=grad;ctx.fillRect(x-150,y-150,300,300);
+          };
+          vignette(100,100);vignette(980,100);
+
+          // Draw logos on top
+          drawClubLogo(ctx,cfg).then(()=>drawLeagueLogo(ctx,cfg)).then(()=>res(cv));
+        }catch(e){
+          console.error('Canvas error:',e);
+          res(null);
+        }
+      };
+
+      img.onerror=(err)=>{
+        clearTimeout(timeout);
+        console.error('❌ DALL-E image load failed:',err);
+        res(null);
+      };
+
+      img.crossOrigin='anonymous';
+      img.src=imageUrl;
+    });
+
+  }catch(e){
+    console.error('❌ DALL-E error:',e.message);
+    return null;
+  }
+}
+
+// AI Full Card generation - Router (chooses DALLE or Pollinations)
 async function generateFixtureAI(d,cfg){
+  // If DALL-E is enabled and has API key, use DALL-E 3
+  if(cfg.useDallE&&cfg.dalleApiKey){
+    console.log('Using DALL-E 3 for generation');
+    return await generateFixtureAI_DALLE(d,cfg);
+  }
+  // Otherwise fall back to Pollinations
+  return await generateFixtureAI_Pollinations(d,cfg);
+}
+
+// Pollinations.ai version
+async function generateFixtureAI_Pollinations(d,cfg){
   const club=(cfg.clubName||'Cricket Club').toUpperCase();
   const opp=(d.opponent||'TBC').toUpperCase();
   const venue=d.venue||'TBC';
