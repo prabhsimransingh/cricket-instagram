@@ -434,11 +434,17 @@
               <div style="font-size:13px;color:rgba(255,255,255,.4)" x-text="mf.photoName||'Add a photo as card background'"></div>
             </div>
           </div>
-          <div class="gen-row" style="display:flex;gap:10px;margin-top:16px">
-            <button class="btn btn-ghost" style="padding:12px 16px;font-size:14px;flex-shrink:0;white-space:nowrap" @click="loadSample('match')">📋 Sample</button>
-            <button class="btn btn-gold" style="flex:1;justify-content:center;padding:13px;font-size:15px" @click="submitMatch()" :disabled="creating||!mf.opponent">
-              <span x-show="!creating">✨ Generate Post</span>
-              <span x-show="creating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
+          <div class="gen-row" style="display:flex;flex-direction:column;gap:10px;margin-top:16px">
+            <div style="display:flex;gap:10px">
+              <button class="btn btn-ghost" style="padding:12px 16px;font-size:14px;flex-shrink:0;white-space:nowrap" @click="loadSample('match')">📋 Sample</button>
+              <button class="btn btn-gold" style="flex:1;justify-content:center;padding:13px;font-size:15px" @click="submitMatch()" :disabled="creating||aiGenerating||!mf.opponent">
+                <span x-show="!creating">✨ Generate Post</span>
+                <span x-show="creating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
+              </button>
+            </div>
+            <button class="btn btn-blue" style="width:100%;justify-content:center;padding:13px;font-size:15px;display:flex;align-items:center;gap:8px" @click="generateMatchAIOnly()" :disabled="aiGenerating||!mf.opponent">
+              <span x-show="!aiGenerating">🎨 Generate AI Card</span>
+              <span x-show="aiGenerating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
             </button>
           </div>
         </div>
@@ -543,11 +549,17 @@
               </template>
             </div>
           </div>
-          <div class="gen-row" style="display:flex;gap:10px;margin-top:16px">
-            <button class="btn btn-ghost" style="padding:12px 16px;font-size:14px;flex-shrink:0;white-space:nowrap" @click="loadSample('squad')">📋 Sample</button>
-            <button class="btn btn-gold" style="flex:1;justify-content:center;padding:13px;font-size:15px" @click="submitSquad()" :disabled="creating||!qf.opponent">
-              <span x-show="!creating">✨ Generate Squad Post</span>
-              <span x-show="creating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
+          <div class="gen-row" style="display:flex;flex-direction:column;gap:10px;margin-top:16px">
+            <div style="display:flex;gap:10px">
+              <button class="btn btn-ghost" style="padding:12px 16px;font-size:14px;flex-shrink:0;white-space:nowrap" @click="loadSample('squad')">📋 Sample</button>
+              <button class="btn btn-gold" style="flex:1;justify-content:center;padding:13px;font-size:15px" @click="submitSquad()" :disabled="creating||aiGenerating||!qf.opponent">
+                <span x-show="!creating">✨ Generate Squad Post</span>
+                <span x-show="creating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
+              </button>
+            </div>
+            <button class="btn btn-blue" style="width:100%;justify-content:center;padding:13px;font-size:15px;display:flex;align-items:center;gap:8px" @click="generateSquadAIOnly()" :disabled="aiGenerating||!qf.opponent">
+              <span x-show="!aiGenerating">🎨 Generate AI Card</span>
+              <span x-show="aiGenerating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
             </button>
           </div>
         </div>
@@ -591,11 +603,17 @@
               <div style="font-size:13px;color:rgba(255,255,255,.4)" x-text="gf.photoName||'📸 Add player photo (recommended)'"></div>
             </div>
           </div>
-          <div class="gen-row" style="display:flex;gap:10px;margin-top:16px">
-            <button class="btn btn-ghost" style="padding:12px 16px;font-size:14px;flex-shrink:0;white-space:nowrap" @click="loadSample('motm')">📋 Sample</button>
-            <button class="btn btn-gold" style="flex:1;justify-content:center;padding:13px;font-size:15px" @click="submitMOTM()" :disabled="creating||!gf.name">
-              <span x-show="!creating">🌟 Generate MOTM Post</span>
-              <span x-show="creating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
+          <div class="gen-row" style="display:flex;flex-direction:column;gap:10px;margin-top:16px">
+            <div style="display:flex;gap:10px">
+              <button class="btn btn-ghost" style="padding:12px 16px;font-size:14px;flex-shrink:0;white-space:nowrap" @click="loadSample('motm')">📋 Sample</button>
+              <button class="btn btn-gold" style="flex:1;justify-content:center;padding:13px;font-size:15px" @click="submitMOTM()" :disabled="creating||aiGenerating||!gf.name">
+                <span x-show="!creating">🌟 Generate MOTM Post</span>
+                <span x-show="creating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
+              </button>
+            </div>
+            <button class="btn btn-blue" style="width:100%;justify-content:center;padding:13px;font-size:15px;display:flex;align-items:center;gap:8px" @click="generateMOTMAIOnly()" :disabled="aiGenerating||!gf.name">
+              <span x-show="!aiGenerating">🎨 Generate AI Card</span>
+              <span x-show="aiGenerating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
             </button>
           </div>
         </div>
@@ -630,11 +648,17 @@
               <div style="font-size:13px;color:rgba(255,255,255,.4)" x-text="lf.photoName||'📸 Add photo background'"></div>
             </div>
           </div>
-          <div class="gen-row" style="display:flex;gap:10px;margin-top:16px">
-            <button class="btn btn-ghost" style="padding:12px 16px;font-size:14px;flex-shrink:0;white-space:nowrap" @click="loadSample('milestone')">📋 Sample</button>
-            <button class="btn btn-gold" style="flex:1;justify-content:center;padding:13px;font-size:15px" @click="submitMilestone()" :disabled="creating||!lf.title">
-              <span x-show="!creating">🎯 Generate Milestone Post</span>
-              <span x-show="creating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
+          <div class="gen-row" style="display:flex;flex-direction:column;gap:10px;margin-top:16px">
+            <div style="display:flex;gap:10px">
+              <button class="btn btn-ghost" style="padding:12px 16px;font-size:14px;flex-shrink:0;white-space:nowrap" @click="loadSample('milestone')">📋 Sample</button>
+              <button class="btn btn-gold" style="flex:1;justify-content:center;padding:13px;font-size:15px" @click="submitMilestone()" :disabled="creating||aiGenerating||!lf.title">
+                <span x-show="!creating">🎯 Generate Milestone Post</span>
+                <span x-show="creating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
+              </button>
+            </div>
+            <button class="btn btn-blue" style="width:100%;justify-content:center;padding:13px;font-size:15px;display:flex;align-items:center;gap:8px" @click="generateMilestoneAIOnly()" :disabled="aiGenerating||!lf.title">
+              <span x-show="!aiGenerating">🎨 Generate AI Card</span>
+              <span x-show="aiGenerating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
             </button>
           </div>
         </div>
@@ -666,11 +690,17 @@
             <input type="checkbox" x-model="pf.genCaption" style="accent-color:#f0b429"/>
             <span style="color:rgba(255,255,255,.65)">Generate caption with AI ✨</span>
           </label>
-          <button class="btn btn-gold" style="width:100%;justify-content:center;padding:13px;font-size:15px;margin-top:18px"
-            @click="submitPhoto()" :disabled="creating||!pf.photoDataURL">
-            <span x-show="!creating">📸 Add to Queue</span>
-            <span x-show="creating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Processing…</span>
-          </button>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-top:18px">
+            <button class="btn btn-gold" style="width:100%;justify-content:center;padding:13px;font-size:15px"
+              @click="submitPhoto()" :disabled="creating||aiGenerating||!pf.photoDataURL">
+              <span x-show="!creating">📸 Add to Queue</span>
+              <span x-show="creating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Processing…</span>
+            </button>
+            <button class="btn btn-blue" style="width:100%;justify-content:center;padding:13px;font-size:15px;display:flex;align-items:center;gap:8px" @click="generatePhotoAIOnly()" :disabled="aiGenerating||!pf.photoDataURL">
+              <span x-show="!aiGenerating">🎨 Enhance with AI</span>
+              <span x-show="aiGenerating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
+            </button>
+          </div>
         </div>
         <div class="prev-col" style="position:sticky;top:80px">
           <div class="sh">Live Preview</div>
@@ -1345,12 +1375,12 @@ Create a dramatic, cinematic sports photography style image of a cricket match:
 - Magazine-quality sports poster aesthetic`;
 
   try{
-    console.log('🎨 Fetching AI image from DALL-E 3...');
+    console.log('🎨 Fetching AI image from GPT Image 1.5...');
     console.log('API Key set:', cfg.dalleApiKey?'YES':'NO');
 
     // Use AbortController for timeout
     const controller=new AbortController();
-    const timeoutId=setTimeout(()=>controller.abort(),30000);
+    const timeoutId=setTimeout(()=>controller.abort(),120000);
 
     const response=await fetch('https://api.openai.com/v1/images/generations',{
       method:'POST',
@@ -1359,11 +1389,10 @@ Create a dramatic, cinematic sports photography style image of a cricket match:
         'Content-Type':'application/json'
       },
       body:JSON.stringify({
-        model:'dall-e-3',
+        model:'gpt-image-1.5',
         prompt:prompt,
         n:1,
-        size:'1024x1792',
-        quality:'standard'
+        size:'1024x1536'
       }),
       signal:controller.signal
     });
@@ -1379,11 +1408,26 @@ Create a dramatic, cinematic sports photography style image of a cricket match:
     }
 
     const data=await response.json();
-    if(!data.data||!data.data[0]||!data.data[0].url){
+    console.log('📥 Full API Response:', JSON.stringify(data, null, 2));
+    if(!data.data||!data.data[0]){
       console.error('❌ Invalid response format:',data);
-      throw new Error('No image URL in response');
+      throw new Error('No image data in response');
     }
-    const imageUrl=data.data[0].url;
+
+    // Handle both response formats:
+    // - GPT Image models return base64_json
+    // - DALL-E models return url
+    let imageUrl;
+    if(data.data[0].b64_json){
+      console.log('✅ Got base64 image from GPT Image model');
+      imageUrl=`data:image/png;base64,${data.data[0].b64_json}`;
+    } else if(data.data[0].url){
+      console.log('✅ Got URL image from DALL-E model');
+      imageUrl=data.data[0].url;
+    } else {
+      console.error('❌ No b64_json or url in response:',data.data[0]);
+      throw new Error('No image data (b64_json or url) in response');
+    }
     console.log('✅ DALL-E image URL received:',imageUrl.substring(0,80)+'...');
 
     // Fetch the image and convert to canvas
@@ -1449,11 +1493,11 @@ Create a dramatic, cinematic sports photography style image of a cricket match:
   }
 }
 
-// AI Full Card generation - Router (chooses DALLE or Pollinations)
+// AI Full Card generation - Router (chooses GPT Image or Pollinations)
 async function generateFixtureAI(d,cfg){
-  // If DALL-E is enabled and has API key, use DALL-E 3
+  // If GPT Image is enabled and has API key, use GPT Image 1.5
   if(cfg.useDallE&&cfg.dalleApiKey){
-    console.log('Using DALL-E 3 for generation');
+    console.log('Using GPT Image 1.5 for generation');
     return await generateFixtureAI_DALLE(d,cfg);
   }
   // Otherwise fall back to Pollinations
@@ -1535,6 +1579,222 @@ async function generateFixtureAI_Pollinations(d,cfg){
     });
   }catch(e){
     console.error('❌ generateFixtureAI error:', e);
+    return null;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// PROMPT BUILDERS FOR ALL POST TYPES
+// ═══════════════════════════════════════════════════════════════════════
+
+function buildPrompt_match(data, cfg) {
+  const club = (cfg.clubName || 'Champions Cricket Club').toUpperCase();
+  const opp = (data.opponent || 'Opposition').toUpperCase();
+  const score = data.result === 'won'
+    ? `${data.ourScore}/${data.theirScore} victory`
+    : `fell short at ${data.ourScore}/${data.theirScore}`;
+  const venue = data.venue || 'Cricket Ground';
+  const comp = data.competition || 'Match';
+
+  return `Professional cricket match result celebration poster. ${club} vs ${opp} at ${venue}.
+    Final score: ${score}. ${data.result === 'won' ? 'Victory celebration moment' : 'Intense match moment'}.
+    Professional sports photography, cinematic 8k photorealism, dramatic stadium floodlights,
+    cricket action shot, pristine grass field, competitive energy, championship aesthetic,
+    golden warm stadium lighting, high contrast sharp focus, dynamic composition.
+    9:16 vertical Instagram format, premium sports design, celebration ${data.result === 'won' ? 'energy' : 'drama'}.`;
+}
+
+function buildPrompt_fixture(data, cfg) {
+  const club = (cfg.clubName || 'Champions Cricket Club').toUpperCase();
+  const opp = (data.opponent || 'TBC').toUpperCase();
+  const venue = data.venue || 'Cricket Ground';
+  const comp = data.competition || 'Cricket';
+  const format = (data.format || 'T20').toUpperCase();
+
+  return `Professional cricket match day announcement poster. ${club} vs ${opp}, ${format} ${comp} at ${venue}.
+    Professional sports photography, cinematic 8k photorealism, dramatic stadium floodlights,
+    night cricket match, pristine grass cricket field, intense competitive energy,
+    championship event aesthetic, golden warm stadium lighting, high contrast sharp focus,
+    action-ready atmosphere, awaiting match energy.
+    9:16 vertical Instagram story format, premium sports poster design.`;
+}
+
+function buildPrompt_squad(data, cfg) {
+  const club = (cfg.clubName || 'Champions Cricket Club').toUpperCase();
+  const opp = (data.opponent || 'Opposition').toUpperCase();
+  const comp = data.competition || 'Tournament';
+  const playerCount = data.players.filter(p => p.name).length;
+
+  return `Professional cricket team squad announcement. ${club} vs ${opp} in ${comp}.
+    Display ${playerCount || '11'} players in playing XI formation with their positions highlighted.
+    Team squad photo, professional sports team portrait, players in cricket whites,
+    championship team aesthetic, pristine grass field background, dramatic stadium lighting,
+    professional group composition, unity and strength energy.
+    9:16 vertical Instagram format, high quality team photography, names visible.`;
+}
+
+function buildPrompt_motm(data, cfg) {
+  const club = (cfg.clubName || 'Champions Cricket Club').toUpperCase();
+  const opp = (data.opponent || 'Opposition').toUpperCase();
+  const venue = data.venue || 'Cricket Ground';
+  const playerStats = `${data.runs} runs${data.balls ? ` off ${data.balls} balls` : ''}${data.wkts ? `, ${data.wkts} wickets` : ''}`;
+
+  return `Man of the Match highlight graphic. ${data.name} for ${club} vs ${opp} at ${venue}.
+    Outstanding performance: ${playerStats}. Player portrait with match statistics display.
+    Professional cricket player action shot, championship moment, dramatic spotlight lighting,
+    celebration and excellence energy, premium sports photography, cinematic 8k quality,
+    victorious athletic energy, golden accent lighting, high contrast sharp focus.
+    9:16 vertical Instagram format, award-winning moment aesthetic.`;
+}
+
+function buildPrompt_milestone(data, cfg) {
+  const club = (cfg.clubName || 'Champions Cricket Club').toUpperCase();
+  const title = data.title || 'Milestone Achievement';
+  const season = data.season || 'Season';
+
+  return `Celebration graphic: ${club} ${title} - ${data.name} achieved ${data.number} ${title.toLowerCase()} in ${season}.
+    Championship milestone celebration, gold and bronze accent colors, trophy aesthetic,
+    celebration confetti energy, achievement highlight design, premium sports graphic,
+    victorious moment, cinematic lighting, dramatic composition, inspiring achievement energy.
+    9:16 vertical Instagram format, celebratory poster design, premium quality.`;
+}
+
+function buildPrompt_photo(data, cfg) {
+  const club = (cfg.clubName || 'Champions Cricket Club').toUpperCase();
+
+  return `Professional cricket club social media photo enhancement. ${club} action shot.
+    Enhance lighting and contrast, cinematic 8k quality, championship aesthetic,
+    professional sports photography, dramatic lighting, high impact visual design.
+    9:16 vertical Instagram format, premium photo quality.`;
+}
+
+// Generic AI generation function for all post types
+async function generateAI(type, data, cfg) {
+  let promptBuilder;
+  switch(type) {
+    case 'match': promptBuilder = buildPrompt_match; break;
+    case 'fixture': promptBuilder = buildPrompt_fixture; break;
+    case 'squad': promptBuilder = buildPrompt_squad; break;
+    case 'motm': promptBuilder = buildPrompt_motm; break;
+    case 'milestone': promptBuilder = buildPrompt_milestone; break;
+    case 'photo': promptBuilder = buildPrompt_photo; break;
+    default: return null;
+  }
+
+  const prompt = promptBuilder(data, cfg);
+
+  // Use GPT Image if available, otherwise Pollinations
+  if(cfg.useDallE && cfg.dalleApiKey) {
+    return await generateWithGPTImage(prompt, cfg);
+  }
+  return await generateWithPollinations(prompt, cfg);
+}
+
+// GPT Image generation wrapper
+async function generateWithGPTImage(prompt, cfg) {
+  const body = JSON.stringify({
+    model: 'gpt-image-1.5',
+    prompt: prompt,
+    n: 1,
+    size: '1024x1536'
+  });
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 120000);
+
+  try {
+    const response = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${cfg.dalleApiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: body,
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+    const data = await response.json();
+
+    if(!response.ok) {
+      console.error('❌ GPT Image API error:', data);
+      return null;
+    }
+
+    let imageUrl;
+    if(data.data[0].b64_json) {
+      imageUrl = `data:image/png;base64,${data.data[0].b64_json}`;
+    } else if(data.data[0].url) {
+      imageUrl = data.data[0].url;
+    } else {
+      return null;
+    }
+
+    const img = new Image();
+    return new Promise((res) => {
+      img.onload = () => {
+        const cv = document.createElement('canvas');
+        cv.width = 1080;
+        cv.height = 1536;
+        const ctx = cv.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        res(cv);
+      };
+      img.onerror = () => res(null);
+      img.src = imageUrl;
+    });
+  } catch(e) {
+    console.error('❌ GPT Image error:', e);
+    clearTimeout(timeoutId);
+    return null;
+  }
+}
+
+// Pollinations generation wrapper
+async function generateWithPollinations(prompt, cfg) {
+  const negPrompt = `text, watermark, logo, faces, people, blurry, cartoon, illustration,
+    CGI, low quality, generic stock photo, oversaturated, artificial, numbers, words`;
+  const seed = Math.floor(Math.random() * 1000000);
+
+  try {
+    const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?`
+      + `width=1080&height=1536&nologo=true&model=flux-pro&enhance=true`
+      + `&negative_prompt=${encodeURIComponent(negPrompt)}&seed=${seed}`;
+
+    console.log('🎨 Fetching AI image from Pollinations.ai...');
+
+    const img = new Image();
+    return new Promise((res) => {
+      const timeout = setTimeout(() => {
+        console.warn('⏱️ AI image timeout (20s)');
+        res(null);
+      }, 20000);
+
+      img.onload = () => {
+        clearTimeout(timeout);
+        try {
+          const cv = document.createElement('canvas');
+          cv.width = 1080;
+          cv.height = 1536;
+          const ctx = cv.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          res(cv);
+        } catch(e) {
+          console.error('Canvas error:', e);
+          res(null);
+        }
+      };
+
+      img.onerror = (err) => {
+        clearTimeout(timeout);
+        console.error('❌ AI image load failed:', err);
+        res(null);
+      };
+
+      img.src = url;
+    });
+  } catch(e) {
+    console.error('❌ Pollinations error:', e);
     return null;
   }
 }
@@ -2574,39 +2834,99 @@ function App(){return{
   async submitMOTM(){await this._createPost('motm',{...this.gf});},
   async submitMilestone(){await this._createPost('milestone',{...this.lf});},
 
-  async generateFixtureAIOnly(){
-    if(!this.ff.opponent){this.showToast('Enter opponent first',false);return;}
-    this.aiGenerating='ai-gen';
+  async generateAICardForType(type){
+    // Validation checks for each type
+    const typeChecks = {
+      match: () => !this.mf.opponent,
+      fixture: () => !this.ff.opponent,
+      squad: () => !this.qf.opponent,
+      motm: () => !this.gf.name,
+      milestone: () => !this.lf.title,
+      photo: () => !this.pf.photoDataURL
+    };
+
+    if(typeChecks[type]?.()) {
+      const fieldName = {match:'opponent',fixture:'opponent',squad:'opponent',motm:'player name',milestone:'title',photo:'photo'}[type];
+      this.showToast(`Enter ${fieldName} first`,false);
+      return;
+    }
+
+    this.aiGenerating=`ai-${type}`;
     this.aiGeneratingProgress=0;
-    this.aiGeneratingStatus='Generating image...';
+    this.aiGeneratingStatus='Generating AI image...';
+
     try{
-      const cv=document.createElement('canvas');cv.width=W;cv.height=H;
-      const post={type:'fixture',meta:{...this.ff},renderMode:'ai-full'};
+      // Get the appropriate data object
+      const dataMap = {match:this.mf, fixture:this.ff, squad:this.qf, motm:this.gf, milestone:this.lf, photo:this.pf};
+      const data = dataMap[type];
 
-      this.aiGeneratingProgress=50;
-      await renderCard(cv,post,this.settings);
+      // Generate AI image
+      this.aiGeneratingProgress=30;
+      console.log(`🎨 Generating AI card for ${type}...`);
+      const aiCanvas = await generateAI(type, data, this.settings);
 
-      this.aiGeneratingProgress=90;
-      const blob=await new Promise(res=>cv.toBlob(b=>res(b),'image/jpeg',0.92));
-      const blobUrl=URL.createObjectURL(blob);
+      if(!aiCanvas) {
+        this.showToast('⚠ AI generation failed - using canvas version', false);
+        const cv = document.createElement('canvas');
+        cv.width = W;
+        cv.height = H;
+        const post = {type, meta: data, renderMode:'canvas'};
+        await renderCard(cv, post, this.settings);
+        const blob = await new Promise(res => cv.toBlob(b => res(b), 'image/jpeg', 0.92));
+        this.aiPreviewUrl = URL.createObjectURL(blob);
+        this.aiPreviewPost = {type, meta: data, blob};
+      } else {
+        this.aiGeneratingProgress=60;
+        // Composite AI image with overlays (logos, text)
+        const ctx = aiCanvas.getContext('2d');
+        await drawClubLogo(ctx, this.settings);
+        await drawLeagueLogo(ctx, this.settings);
+
+        this.aiGeneratingProgress=90;
+        const blob = await new Promise(res => aiCanvas.toBlob(b => res(b), 'image/jpeg', 0.92));
+        this.aiPreviewUrl = URL.createObjectURL(blob);
+        this.aiPreviewPost = {type, meta: data, blob};
+      }
 
       this.aiGeneratingProgress=100;
-      this.aiPreviewUrl=blobUrl;
-      this.aiPreviewPost={type:'fixture',meta:{...this.ff},blob};
 
       // Auto-scroll to preview
       await this.$nextTick();
-      const preview=document.getElementById('ai-preview-img');
-      if(preview)preview.scrollIntoView({behavior:'smooth',block:'center'});
+      const preview = document.getElementById('ai-preview-img');
+      if(preview) preview.scrollIntoView({behavior:'smooth', block:'center'});
       this.showToast('✨ AI image generated! Ready to save or regenerate.');
-    }catch(e){
-      this.showToast('⚠ AI generation failed: '+e.message,false);
-      console.error('AI generation error:',e);
-    }finally{
-      this.aiGenerating=null;
-      this.aiGeneratingProgress=0;
-      this.aiGeneratingStatus='';
+    } catch(e) {
+      this.showToast('⚠ AI generation failed: '+e.message, false);
+      console.error('AI generation error:', e);
+    } finally {
+      this.aiGenerating = null;
+      this.aiGeneratingProgress = 0;
+      this.aiGeneratingStatus = '';
     }
+  },
+
+  async generateFixtureAIOnly(){
+    await this.generateAICardForType('fixture');
+  },
+
+  async generateMatchAIOnly(){
+    await this.generateAICardForType('match');
+  },
+
+  async generateSquadAIOnly(){
+    await this.generateAICardForType('squad');
+  },
+
+  async generateMOTMAIOnly(){
+    await this.generateAICardForType('motm');
+  },
+
+  async generateMilestoneAIOnly(){
+    await this.generateAICardForType('milestone');
+  },
+
+  async generatePhotoAIOnly(){
+    await this.generateAICardForType('photo');
   },
 
   resetAIGeneration(){
@@ -2616,9 +2936,19 @@ function App(){return{
 
   async saveAIPreviewAsPost(){
     if(!this.aiPreviewPost)return;
+    const type = this.aiPreviewPost.type;
     let captions=[];
-    if(this.settings.groqKey){try{captions=await generateCaptions('fixture',this.aiPreviewPost.meta,this.settings);}catch(e){}}
-    const post={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),type:'fixture',status:'draft',caption:captions[0]?.caption||'',captions,meta:this.aiPreviewPost.meta,renderMode:'ai-full',createdAt:new Date().toISOString()};
+    if(this.settings.groqKey){try{captions=await generateCaptions(type,this.aiPreviewPost.meta,this.settings);}catch(e){}}
+    const post={
+      id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),
+      type:type,
+      status:'draft',
+      caption:captions[0]?.caption||'',
+      captions,
+      meta:this.aiPreviewPost.meta,
+      renderMode:'ai-full',
+      createdAt:new Date().toISOString()
+    };
     this.posts.unshift(post);this.saveQueue();this.createdPost=post;
     await this.$nextTick();
     this.renderThumb(post,'created-thumb');
