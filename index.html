@@ -665,8 +665,23 @@
       </div>
     </div>
 
+    <!-- AI Generation Progress Overlay -->
+    <div x-show="aiGenerating" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:9999;backdrop-filter:blur(4px)">
+      <div style="text-align:center;padding:40px;background:rgba(20,20,30,.95);border-radius:16px;border:1px solid rgba(255,255,255,.1);max-width:300px">
+        <div style="font-size:32px;margin-bottom:16px">🎨</div>
+        <div style="font-size:16px;font-weight:700;margin-bottom:12px;color:#fff">Generating Image...</div>
+        <div style="margin-bottom:16px">
+          <div style="height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden">
+            <div style="height:100%;background:linear-gradient(90deg,#17b8b8,#ffd700);animation:pulse 2s infinite;width:60%"></div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:rgba(255,255,255,.5)">Pollinations.ai</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:8px">5-10 seconds</div>
+      </div>
+    </div>
+
     <!-- Created post confirmation -->
-    <div x-show="createdPost" style="margin-top:28px" class="glass" x-cloak>
+    <div x-show="createdPost&&!aiGenerating" style="margin-top:28px" class="glass" x-cloak>
       <div style="padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px">
         <span style="font-size:20px">✅</span>
         <span style="font-weight:700;font-size:16px">Post added to queue!</span>
@@ -2293,10 +2308,32 @@ function App(){return{
     try{
       let captions=[];
       if(this.settings.groqKey){try{captions=await generateCaptions(type,meta,this.settings);}catch(e){this.showToast('AI captions failed — post created without captions',false);}}
-      const post={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),type,status:'draft',caption:captions[0]?.caption||'',captions,meta,createdAt:new Date().toISOString()};
+      const renderMode=meta._renderMode||'canvas';
+      const post={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),type,status:'draft',caption:captions[0]?.caption||'',captions,meta,renderMode,createdAt:new Date().toISOString()};
       this.posts.unshift(post);this.saveQueue();this.createdPost=post;
       await this.$nextTick();
-      this.renderThumb(post,'created-thumb');
+
+      // AI Full Card mode: generate image with progress bar
+      if(renderMode==='ai-full'&&type==='fixture'){
+        this.aiGenerating=post.id;
+        try{
+          const cv=document.createElement('canvas');cv.width=W;cv.height=H;
+          await renderCard(cv,post,this.settings);
+          // Draw result on created-thumb canvas so user sees the image
+          const thumb=document.getElementById('created-thumb');
+          if(thumb){
+            const tctx=thumb.getContext('2d');
+            tctx.drawImage(cv,0,0,W,H,0,0,thumb.width,thumb.height);
+          }
+        }catch(e){
+          this.showToast('⚠ AI generation failed, showing canvas version',false);
+          this.renderThumb(post,'created-thumb');
+        }finally{
+          this.aiGenerating=null;
+        }
+      }else{
+        this.renderThumb(post,'created-thumb');
+      }
       this.showToast('✨ Post created!');return post;
     }catch(e){this.showToast(`Error: ${e.message}`,false);}
     finally{this.creating=false;}
