@@ -962,14 +962,13 @@ async function drawLeagueLogo(ctx,cfg){
   ctx.drawImage(img,wCx-wR,wCy-wR,wR*2,wR*2);
   ctx.restore();
   // Top-right circular badge
-  const r=58,cx=S-r-22,cy=r+18;
+  const r=68,cx=S-r-22,cy=r+18;
+  const zoom=1.3;
   ctx.save();
-  // White fill circle
   ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
   ctx.fillStyle='#ffffff';ctx.fill();
-  // Clip logo into circle
   ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.clip();
-  ctx.drawImage(img,cx-r,cy-r,r*2,r*2);
+  ctx.drawImage(img,cx-r*zoom,cy-r*zoom,r*2*zoom,r*2*zoom);
   ctx.restore();
   // Outer ring — red then thin gold
   ctx.save();
@@ -1000,13 +999,11 @@ async function drawClubLogo(ctx,cfg){
   if(!cfg||!cfg.clubLogo)return;
   const img=await loadImg(cfg.clubLogo);if(!img)return;
   // Top-left circular badge
-  const r=88,cx=r+18,cy=r+16;
-  const zoom=1.95; // draw image oversized so white padding is clipped away
+  const r=68,cx=r+18,cy=r+16;
+  const zoom=1.95;
   ctx.save();
-  // White fill circle
   ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
   ctx.fillStyle='#ffffff';ctx.fill();
-  // Clip logo into circle — draw at zoom scale so badge fills it
   ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.clip();
   ctx.drawImage(img,cx-r*zoom,cy-r*zoom,r*2*zoom,r*2*zoom);
   ctx.restore();
@@ -1041,7 +1038,7 @@ async function drawMatchCard(ctx,d,cfg){
   await drawLeagueLogo(ctx,cfg);
 
   // Header: club name + date
-  const hX=cfg.clubLogo?175:50;
+  const hX=cfg.clubLogo?172:50;
   ctx.font='700 20px "Inter"';ctx.fillStyle='rgba(255,255,255,.88)';
   ctx.shadowColor='rgba(0,0,0,.8)';ctx.shadowBlur=12;
   ctx.fillText(club,hX,58);ctx.shadowBlur=0;
@@ -1182,7 +1179,7 @@ async function drawFixtureCard(ctx,d,cfg){
   await drawLeagueLogo(ctx,cfg);
 
   // MATCH DAY label — gold, no double render
-  const hX=cfg.clubLogo?175:50;
+  const hX=cfg.clubLogo?172:50;
   ctx.font='900 54px "Oswald"';ctx.letterSpacing='.06em';
   const mdg=ctx.createLinearGradient(hX,40,hX,95);
   mdg.addColorStop(0,'#fff7aa');mdg.addColorStop(.4,'#ffd700');mdg.addColorStop(1,'#ff9800');
@@ -1332,20 +1329,24 @@ async function drawSquadCard(ctx,d,cfg){
   ctx.fillStyle=rgb(...A,.8);ctx.fillRect(0,10,6,S-10);
 
   // ── PLAYING XI header ──
+  // PLAYING XI — centred so it clears both side badges
   ctx.font='700 92px "Oswald"';
-  ctx.fillStyle='rgba(0,0,0,.42)';ctx.fillText('PLAYING XI',52,122);
+  const piW=ctx.measureText('PLAYING XI').width;
+  ctx.fillStyle='rgba(0,0,0,.42)';ctx.fillText('PLAYING XI',(S-piW)/2+2,122);
   ctx.fillStyle=rgb(...A);ctx.shadowColor=rgb(...A,.22);ctx.shadowBlur=22;
-  ctx.fillText('PLAYING XI',50,120);ctx.shadowBlur=0;
+  ctx.fillText('PLAYING XI',(S-piW)/2,120);ctx.shadowBlur=0;
 
-  // Subtitle + competition chip
+  // Subtitle
   const sub=`${club}${d.opponent?' · vs '+d.opponent.toUpperCase():''}${d.date?' · '+fmtD(d.date):''}`;
-  ctx.font='500 19px "Inter"';ctx.fillStyle='rgba(255,255,255,.38)';ctx.fillText(sub.slice(0,54),50,158);
+  const subW=ctx.measureText(sub.slice(0,54));
+  ctx.font='500 19px "Inter"';ctx.fillStyle='rgba(255,255,255,.38)';
+  ctx.fillText(sub.slice(0,54),(S-ctx.measureText(sub.slice(0,54)).width)/2,158);
   if(d.competition){
     ctx.font='600 14px "Inter"';
     const cw=ctx.measureText(d.competition.toUpperCase()).width;
-    rr(ctx,S-50-cw-20,134,cw+20,30,15);
+    rr(ctx,S-174-cw,134,cw+20,30,15);
     ctx.fillStyle=rgb(...A,.1);ctx.fill();ctx.strokeStyle=rgb(...A,.25);ctx.lineWidth=1;ctx.stroke();
-    ctx.fillStyle=rgb(...A,.72);ctx.fillText(d.competition.toUpperCase(),S-50-cw-10,153);
+    ctx.fillStyle=rgb(...A,.72);ctx.fillText(d.competition.toUpperCase(),S-164-cw,153);
   }
 
   ctx.beginPath();ctx.moveTo(50,174);ctx.lineTo(S-50,174);ctx.strokeStyle=rgb(...A,.2);ctx.lineWidth=1.5;ctx.stroke();
