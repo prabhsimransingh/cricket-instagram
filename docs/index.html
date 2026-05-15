@@ -2527,18 +2527,21 @@ async function renderCard(canvas,post,cfg){
   try{
     // AI Full Card mode
     if(post.type==='fixture'&&mode==='ai-full'){
+      console.log('🎨 Attempting AI full card for fixture');
       const img=await generateFixtureAI(d,cfg);
       if(img){ctx.drawImage(img,0,0,W,H);return;}
     }
     // AI Characters mode — disable for now, use canvas
     const aiChars=mode==='ai-chars';
+    console.log('🎨 Rendering',post.type,'card');
     if(post.type==='match')         await drawMatchCard(ctx,d,cfg);
     else if(post.type==='fixture'){cfg.aiCharacters=aiChars;await drawFixtureCard(ctx,d,cfg);}
     else if(post.type==='squad')    await drawSquadCard(ctx,d,cfg);
     else if(post.type==='motm')     await drawMOTMCard(ctx,d,cfg);
     else if(post.type==='milestone')await drawMilestoneCard(ctx,d,cfg);
     else if(post.type==='photo')    await drawPhotoCard(ctx,{photoDataURL:d.photoDataURL,caption:post.caption},cfg);
-  }catch(e){console.warn('Canvas error',e);}
+    console.log('🎨 Card rendered successfully');
+  }catch(e){console.error('❌ Canvas error:',e);throw e;}
 }
 
 // ═══════════════════════════════════════════════════════
@@ -2709,12 +2712,26 @@ function App(){return{
     this.downloading=post.id;
     try{
       const cv=document.createElement('canvas');cv.width=W;cv.height=H;
+      console.log('📥 Creating canvas',W,H);
       await renderCard(cv,post,this.settings);
+      console.log('📥 Card rendered successfully');
       const type=post.type||'post';
       const opp=(post.meta?.opponent||'').replace(/\s+/g,'-').toLowerCase();
       const fname=`wicketgram-${type}${opp?'-'+opp:''}-${Date.now()}.jpg`;
+      console.log('📥 Converting to blob...');
       // toBlob — memory-safe (no giant data URL string that OOM-crashes mobile tabs)
-      const blob=await new Promise((res,rej)=>cv.toBlob(b=>b?res(b):rej(new Error('Canvas toBlob failed')),'image/jpeg',0.92));
+      const blob=await new Promise((res,rej)=>{
+        try{
+          cv.toBlob(b=>{
+            console.log('📥 toBlob callback fired, blob:',b);
+            if(b)res(b);
+            else rej(new Error('toBlob returned null'));
+          },'image/jpeg',0.92);
+          // Timeout in case toBlob hangs
+          setTimeout(()=>rej(new Error('toBlob timeout')),10000);
+        }catch(e){rej(e);}
+      });
+      console.log('📥 Blob created:',blob.size);
       // Always do a direct file download — blob URL works on Samsung/Android Chrome
       // and triggers the native "save to Downloads/Gallery" flow without a share sheet
       const url=URL.createObjectURL(blob);
@@ -2725,8 +2742,8 @@ function App(){return{
       setTimeout(()=>URL.revokeObjectURL(url),30000);
       this.showToast('⬇ Saving to Gallery / Downloads…');
     }catch(e){
+      console.error('❌ downloadPost error:',e);
       this.showToast('Download failed: '+e.message,false);
-      console.error('downloadPost',e);
     }
     finally{this.downloading=null;}
   },
@@ -2737,8 +2754,20 @@ function App(){return{
     try{
       // Render card → blob (memory-safe, no OOM crash)
       const cv=document.createElement('canvas');cv.width=W;cv.height=H;
+      console.log('📤 Creating canvas for publish',W,H);
       await renderCard(cv,post,s);
-      const blob=await new Promise((res,rej)=>cv.toBlob(b=>b?res(b):rej(new Error('Canvas failed')),'image/jpeg',0.92));
+      console.log('📤 Card rendered, converting to blob...');
+      const blob=await new Promise((res,rej)=>{
+        try{
+          cv.toBlob(b=>{
+            console.log('📤 toBlob callback fired, blob:',b);
+            if(b)res(b);
+            else rej(new Error('toBlob returned null'));
+          },'image/jpeg',0.92);
+          setTimeout(()=>rej(new Error('toBlob timeout')),10000);
+        }catch(e){rej(e);}
+      });
+      console.log('📤 Blob created:',blob.size);
       const igFile=new File([blob],'instagram-post.jpg',{type:'image/jpeg'});
 
       // ── PATH A: Mobile (Android/iOS) — Web Share API opens Instagram app directly ──
