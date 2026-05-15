@@ -2913,13 +2913,25 @@ function App(){return{
       const aiCanvas = await generateAI(type, data, this.settings);
 
       if(!aiCanvas) {
+        console.log('⚠ AI canvas not available, using canvas fallback');
         this.showToast('⚠ AI generation failed - using canvas version', false);
         const cv = document.createElement('canvas');
         cv.width = W;
         cv.height = H;
         const post = {type, meta: data, renderMode:'canvas'};
         await renderCard(cv, post, this.settings);
-        const blob = await new Promise(res => cv.toBlob(b => res(b), 'image/jpeg', 0.92));
+        console.log('📝 Canvas rendered, converting to blob...');
+        const blob = await new Promise((res,rej) => {
+          try{
+            cv.toBlob(b => {
+              console.log('📝 toBlob callback:', b ? 'success' : 'null');
+              if(b) res(b);
+              else rej(new Error('toBlob returned null'));
+            }, 'image/jpeg', 0.92);
+            setTimeout(() => rej(new Error('toBlob timeout')), 10000);
+          }catch(e){rej(e);}
+        });
+        console.log('📝 Blob created, URL:', blob.size);
         this.aiPreviewUrl = URL.createObjectURL(blob);
         this.aiPreviewPost = {type, meta: data, blob};
       } else {
@@ -2930,7 +2942,18 @@ function App(){return{
         await drawLeagueLogo(ctx, this.settings);
 
         this.aiGeneratingProgress=90;
-        const blob = await new Promise(res => aiCanvas.toBlob(b => res(b), 'image/jpeg', 0.92));
+        console.log('🎨 AI canvas ready, converting to blob...');
+        const blob = await new Promise((res,rej) => {
+          try{
+            aiCanvas.toBlob(b => {
+              console.log('🎨 toBlob callback:', b ? 'success' : 'null');
+              if(b) res(b);
+              else rej(new Error('toBlob returned null'));
+            }, 'image/jpeg', 0.92);
+            setTimeout(() => rej(new Error('toBlob timeout')), 10000);
+          }catch(e){rej(e);}
+        });
+        console.log('🎨 Blob created:', blob.size);
         this.aiPreviewUrl = URL.createObjectURL(blob);
         this.aiPreviewPost = {type, meta: data, blob};
       }
