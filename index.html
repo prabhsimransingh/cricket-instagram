@@ -2176,6 +2176,20 @@ function App(){return{
     }finally{this.creating=false;}
   },
 
+  loadSample(type){
+    const s=SAMPLES[type];if(!s)return;
+    if(type==='match'){Object.assign(this.mf,s);}
+    else if(type==='fixture'){Object.assign(this.ff,s);}
+    else if(type==='squad'){
+      this.qf.opponent=s.opponent;this.qf.date=s.date;this.qf.competition=s.competition;
+      this.qf.players=s.players.map(p=>({...p}));
+    }
+    else if(type==='motm'){Object.assign(this.gf,s);}
+    else if(type==='milestone'){Object.assign(this.lf,s);}
+    this.debouncedPreview(type);
+    this.showToast('📋 Sample data loaded!');
+  },
+
   handleClubLogo(ev){
     const file=ev.target?.files[0];if(!file)return;
     const reader=new FileReader();
