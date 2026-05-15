@@ -165,8 +165,14 @@
           <!-- Action buttons -->
           <div style="display:flex;flex-wrap:wrap;gap:8px;padding-top:4px;border-top:1px solid rgba(255,255,255,.06)">
             <button class="btn btn-green" x-show="post.status!=='approved'" @click="approvePost(post)" style="font-size:13px">✓ Approve</button>
-            <button class="btn btn-gold" @click="publishNow(post)" :disabled="publishing===post.id" style="font-size:13px">
-              <span x-show="publishing!==post.id">🚀 Post Now</span>
+            <button class="btn" @click="downloadPost(post)" :disabled="downloading===post.id"
+              style="font-size:13px;background:linear-gradient(135deg,#17b8b8,#0e8f8f);color:#fff;border:none">
+              <span x-show="downloading!==post.id">⬇ Download</span>
+              <span x-show="downloading===post.id" style="display:flex;align-items:center;gap:6px"><span class="spin"></span>Saving…</span>
+            </button>
+            <button class="btn btn-gold" @click="publishNow(post)" :disabled="publishing===post.id" style="font-size:13px"
+              :title="settings.ayrshareKey?'Post via Ayrshare':'Add Ayrshare key in Settings to post directly'">
+              <span x-show="publishing!==post.id">📱 Post to Instagram</span>
               <span x-show="publishing===post.id" style="display:flex;align-items:center;gap:6px"><span class="spin"></span>Posting…</span>
             </button>
             <button class="btn btn-ghost" @click="regenCaptions(post)" :disabled="!settings.groqKey" style="font-size:13px">✨ AI Captions</button>
@@ -532,8 +538,16 @@
               No AI captions generated — edit the caption field in the queue, or add a Groq key in Settings.
             </div>
           </div>
-          <div style="display:flex;gap:10px;margin-top:14px">
-            <button class="btn btn-gold" @click="publishNow(createdPost)" :disabled="publishing===createdPost?.id">🚀 Post Now</button>
+          <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+            <button class="btn" @click="downloadPost(createdPost)" :disabled="downloading===createdPost?.id"
+              style="font-size:13px;background:linear-gradient(135deg,#17b8b8,#0e8f8f);color:#fff;border:none">
+              <span x-show="downloading!==createdPost?.id">⬇ Download PNG</span>
+              <span x-show="downloading===createdPost?.id" style="display:flex;align-items:center;gap:6px"><span class="spin"></span>Saving…</span>
+            </button>
+            <button class="btn btn-gold" @click="publishNow(createdPost)" :disabled="publishing===createdPost?.id" style="font-size:13px">
+              <span x-show="publishing!==createdPost?.id">📱 Post to Instagram</span>
+              <span x-show="publishing===createdPost?.id" style="display:flex;align-items:center;gap:6px"><span class="spin"></span>Posting…</span>
+            </button>
             <button class="btn btn-ghost" @click="approvePost(createdPost)">✓ Approve for later</button>
           </div>
         </div>
@@ -1683,7 +1697,7 @@ async function publishToInstagram(url,caption,cfg){
 function App(){return{
   tab:'queue', newTab:'match',
   posts:[], history:[], settings:Store.getSettings(),
-  toast:{show:false,msg:'',ok:true}, publishing:null, creating:false,
+  toast:{show:false,msg:'',ok:true}, publishing:null, downloading:null, creating:false,
   igStatus:'', igOk:false, createdPost:null,
   // forms
   mf:{opponent:'',result:'won',ourScore:'',theirScore:'',margin:'',venue:'',date:'',competition:'',batterName:'',batterRuns:0,batterBalls:0,batterFours:0,batterSixes:0,bowlerName:'',bowlerWkts:0,bowlerRuns:0,bowlerOvers:'',photoDataURL:'',photoName:''},
@@ -1722,6 +1736,23 @@ function App(){return{
   saveQueue(){Store.setQueue(this.posts);},
   approvePost(p){p.status='approved';this.saveQueue();this.showToast('✓ Approved');},
   rejectPost(p){this.posts=this.posts.filter(x=>x.id!==p.id);this.saveQueue();this.showToast('Removed');},
+
+  async downloadPost(post){
+    if(!post)return;
+    this.downloading=post.id;
+    try{
+      const cv=document.createElement('canvas');cv.width=cv.height=S;
+      await renderCard(cv,post,this.settings);
+      const a=document.createElement('a');
+      const type=post.type||'post';
+      const opp=(post.meta?.opponent||'').replace(/\s+/g,'-').toLowerCase();
+      a.download=`wicketgram-${type}${opp?'-'+opp:''}-${Date.now()}.png`;
+      a.href=cv.toDataURL('image/png');
+      a.click();
+      this.showToast('⬇ Image saved!');
+    }catch(e){this.showToast('Download failed: '+e.message,false);}
+    finally{this.downloading=null;}
+  },
 
   async publishNow(post){
     const s=this.settings;
