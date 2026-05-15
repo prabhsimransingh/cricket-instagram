@@ -2067,25 +2067,18 @@ function App(){return{
       const type=post.type||'post';
       const opp=(post.meta?.opponent||'').replace(/\s+/g,'-').toLowerCase();
       const fname=`wicketgram-${type}${opp?'-'+opp:''}-${Date.now()}.jpg`;
-      // toBlob is async + memory-safe (avoids giant data URL string that crashes mobile tabs)
+      // toBlob — memory-safe (no giant data URL string that OOM-crashes mobile tabs)
       const blob=await new Promise((res,rej)=>cv.toBlob(b=>b?res(b):rej(new Error('Canvas toBlob failed')),'image/jpeg',0.92));
-      // iOS / modern Android: Web Share API → saves to Photos / Gallery directly
-      const file=new File([blob],fname,{type:'image/jpeg'});
-      if(navigator.canShare&&navigator.canShare({files:[file]})){
-        await navigator.share({files:[file],title:'WicketGram Cricket'});
-        this.showToast('📸 Saved to Photos!');
-        return;
-      }
-      // Desktop + Android fallback: blob URL → browser download
+      // Always do a direct file download — blob URL works on Samsung/Android Chrome
+      // and triggers the native "save to Downloads/Gallery" flow without a share sheet
       const url=URL.createObjectURL(blob);
       const a=document.createElement('a');
-      a.href=url;a.download=fname;
+      a.href=url;a.download=fname;a.type='image/jpeg';
       document.body.appendChild(a);a.click();
       document.body.removeChild(a);
-      setTimeout(()=>URL.revokeObjectURL(url),15000);
-      this.showToast('⬇ Saved! Check Downloads / Files.');
+      setTimeout(()=>URL.revokeObjectURL(url),30000);
+      this.showToast('⬇ Saving to Gallery / Downloads…');
     }catch(e){
-      if(e.name==='AbortError')return; // user cancelled share sheet
       this.showToast('Download failed: '+e.message,false);
       console.error('downloadPost',e);
     }
@@ -2094,44 +2087,74 @@ function App(){return{
 
   async publishNow(post){
     const s=this.settings;
-    const useAyrshare=!!s.ayrshareKey;
-    const useIG=!!s.igToken&&!!s.igAccountId;
-    if(!useAyrshare&&!useIG)return this.showToast('Add your Ayrshare API key in Settings to post',false);
     this.publishing=post.id;
     try{
-      // Render card to canvas
+      // Render card → blob (memory-safe, no OOM crash)
       const cv=document.createElement('canvas');cv.width=cv.height=S;
       await renderCard(cv,post,s);
-      const b64=cv.toDataURL('image/jpeg',.92).split(',')[1];
-      // Upload image
+      const blob=await new Promise((res,rej)=>cv.toBlob(b=>b?res(b):rej(new Error('Canvas failed')),'image/jpeg',0.92));
+      const igFile=new File([blob],'instagram-post.jpg',{type:'image/jpeg'});
+
+      // ── PATH A: Mobile (Android/iOS) — Web Share API opens Instagram app directly ──
+      // navigator.share with files opens the native share sheet → user taps Instagram
+      // → Instagram Story/Feed composer opens with the image pre-loaded. No API key needed.
+      if(navigator.canShare&&navigator.canShare({files:[igFile]})){
+        this.showToast('📱 Opening Instagram…');
+        await navigator.share({
+          files:[igFile],
+          title:s.clubName||'Cricket Post',
+          text:post.caption||''
+        });
+        // Mark as posted after share sheet closes (user picked Instagram)
+        const done={...post,status:'posted',postedAt:new Date().toISOString(),mediaId:'shared-'+Date.now()};
+        const h=Store.getHistory();h.unshift(done);Store.setHistory(h.slice(0,100));
+        this.history=Store.getHistory();
+        this.posts=this.posts.filter(p=>p.id!==post.id);this.saveQueue();
+        if(this.createdPost?.id===post.id)this.createdPost=null;
+        this.showToast('🎉 Choose Instagram in the share sheet!');
+        return;
+      }
+
+      // ── PATH B: Desktop — Ayrshare / Instagram Graph API ──
+      const useAyrshare=!!s.ayrshareKey;
+      const useIG=!!s.igToken&&!!s.igAccountId;
+      if(!useAyrshare&&!useIG){
+        // Last resort on desktop: download the image so user can post manually
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement('a');a.href=url;a.download='instagram-post.jpg';
+        document.body.appendChild(a);a.click();document.body.removeChild(a);
+        setTimeout(()=>URL.revokeObjectURL(url),15000);
+        return this.showToast('📥 Image downloaded — open Instagram on your phone to post. Add Ayrshare key in Settings for auto-posting.',false);
+      }
+      const b64=await blob.arrayBuffer().then(ab=>{
+        let bin='';new Uint8Array(ab).forEach(b=>bin+=String.fromCharCode(b));return btoa(bin);
+      });
       this.showToast('⬆ Uploading image…');
       let imageUrl;
-      // Always try Imgur first if key is set (more reliable image host), else Ayrshare upload
       if(s.imgurClientId){
         try{imageUrl=await uploadToImgur(b64,s.imgurClientId);}
         catch(e){
-          this.showToast('⚠ Imgur upload failed, trying Ayrshare…');
+          this.showToast('⚠ Imgur failed, trying Ayrshare…');
           if(!useAyrshare)throw new Error('Image upload failed: '+e.message);
           imageUrl=await uploadViaAyrshare(b64,s.ayrshareKey);
         }
       }else if(useAyrshare){
         imageUrl=await uploadViaAyrshare(b64,s.ayrshareKey);
-      }else{
-        throw new Error('No image host configured — add Imgur Client ID or Ayrshare key in Settings');
       }
-      // Publish
       this.showToast('📤 Publishing to Instagram…');
       let mid;
       if(useAyrshare){mid=await publishViaAyrshare(imageUrl,post.caption,s.ayrshareKey);}
       else{mid=await publishToInstagram(imageUrl,post.caption,s);}
-      // Move to history
       const done={...post,status:'posted',postedAt:new Date().toISOString(),mediaId:mid};
       const h=Store.getHistory();h.unshift(done);Store.setHistory(h.slice(0,100));
       this.history=Store.getHistory();
       this.posts=this.posts.filter(p=>p.id!==post.id);this.saveQueue();
       if(this.createdPost?.id===post.id)this.createdPost=null;
       this.showToast('🎉 Posted to Instagram!');
-    }catch(e){this.showToast('❌ '+e.message,false);console.error(e);}
+    }catch(e){
+      if(e.name==='AbortError')return; // user dismissed share sheet
+      this.showToast('❌ '+e.message,false);console.error(e);
+    }
     finally{this.publishing=null;}
   },
 
