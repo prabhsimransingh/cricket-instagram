@@ -1326,54 +1326,76 @@ async function generateFixtureAI(d,cfg){
   const venue=d.venue||'TBC';
   const comp=d.competition||'Cricket';
 
-  // Tier 1 Improvement: Better structured prompt (avoids conflicting instructions)
+  // Better structured prompt (avoids conflicting instructions)
   const prompt=`Professional cricket match day poster. ${club} vs ${opp}, ${comp} at ${venue}.
     Professional sports photography, cinematic 8k photorealism, dramatic stadium floodlights,
     night cricket match, pristine grass cricket field, intense competitive energy,
     championship event aesthetic, golden warm stadium lighting, high contrast sharp focus,
     9:16 vertical Instagram story format, premium sports poster design.`;
 
-  // Tier 1 Improvement: Negative prompt (tell AI what NOT to generate)
+  // Negative prompt (tell AI what NOT to generate)
   const negPrompt=`text, watermark, logo, faces, people, blurry, cartoon, illustration,
     CGI, low quality, generic stock photo, oversaturated, artificial, numbers, words`;
 
-  // Tier 1 Improvement: Seed for reproducibility
+  // Seed for reproducibility
   const seed=Math.floor(Math.random()*1000000);
 
   try{
-    // Tier 1 Improvement: Add negative_prompt and seed parameters
+    // Add negative_prompt and seed parameters
     const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?`
       +`width=1080&height=1920&nologo=true&model=flux-pro&enhance=true`
       +`&negative_prompt=${encodeURIComponent(negPrompt)}&seed=${seed}`;
 
+    console.log('🎨 Fetching AI image from Pollinations.ai...');
+
     const img=new Image();
     return new Promise((res)=>{
-      const timeout=setTimeout(()=>res(null),15000);
+      const timeout=setTimeout(()=>{
+        console.warn('⏱️ AI image timeout (20s)');
+        res(null);
+      },20000); // Increased from 15s to 20s
+
       img.onload=()=>{
         clearTimeout(timeout);
-        const cv=document.createElement('canvas');
-        cv.width=1080;cv.height=1920;
-        const ctx=cv.getContext('2d');
-        ctx.drawImage(img,0,0);
+        console.log('✅ AI image loaded successfully');
+        try{
+          const cv=document.createElement('canvas');
+          cv.width=1080;cv.height=1920;
+          const ctx=cv.getContext('2d');
+          ctx.drawImage(img,0,0);
 
-        // Tier 1 Improvement: Add vignette effect where logos will be placed
-        // Dark vignette in top corners for better logo visibility
-        const vignette=(x,y)=>{
-          const grad=ctx.createRadialGradient(x,y,0,x,y,180);
-          grad.addColorStop(0,'rgba(0,0,0,0)');
-          grad.addColorStop(0.7,'rgba(0,0,0,0.15)');
-          grad.addColorStop(1,'rgba(0,0,0,0.4)');
-          ctx.fillStyle=grad;ctx.fillRect(x-150,y-150,300,300);
-        };
-        vignette(100,100);vignette(980,100); // Top-left and top-right
+          // Add vignette effect where logos will be placed
+          // Dark vignette in top corners for better logo visibility
+          const vignette=(x,y)=>{
+            const grad=ctx.createRadialGradient(x,y,0,x,y,180);
+            grad.addColorStop(0,'rgba(0,0,0,0)');
+            grad.addColorStop(0.7,'rgba(0,0,0,0.15)');
+            grad.addColorStop(1,'rgba(0,0,0,0.4)');
+            ctx.fillStyle=grad;ctx.fillRect(x-150,y-150,300,300);
+          };
+          vignette(100,100);vignette(980,100); // Top-left and top-right
 
-        // Draw logos on top
-        drawClubLogo(ctx,cfg).then(()=>drawLeagueLogo(ctx,cfg)).then(()=>res(cv));
+          // Draw logos on top
+          drawClubLogo(ctx,cfg).then(()=>drawLeagueLogo(ctx,cfg)).then(()=>res(cv));
+        }catch(e){
+          console.error('Canvas error:', e);
+          res(null);
+        }
       };
-      img.onerror=()=>{clearTimeout(timeout);res(null);};
-      img.crossOrigin='anonymous';img.src=url;
+
+      img.onerror=(err)=>{
+        clearTimeout(timeout);
+        console.error('❌ AI image load failed:', err);
+        res(null);
+      };
+
+      img.crossOrigin='anonymous';
+      img.src=url;
     });
-  }catch(e){return null;}
+  }catch(e){
+    console.error('❌ generateFixtureAI error:', e);
+    return null;
+  }
 }
 
 async function drawFixtureCard(ctx,d,cfg){
@@ -2436,7 +2458,11 @@ function App(){return{
         if(i<2)await new Promise(r=>setTimeout(r,500));
       }
 
-      if(variations.length===0){this.showToast('⚠ All variations failed',false);return;}
+      if(variations.length===0){
+        this.showToast('⚠ AI generation failed - Check browser console (F12) for errors. Try again or use Canvas mode.',false);
+        console.error('All AI variations failed. Check if Pollinations.ai is accessible.');
+        return;
+      }
 
       this.aiVariations=variations;
       this.selectedVariationIdx=0;
