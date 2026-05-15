@@ -1970,10 +1970,11 @@ async function uploadViaAyrshare(b64,key){
   const r=await fetch('https://app.ayrshare.com/api/media/upload',{method:'POST',
     headers:{'Authorization':`Bearer ${key}`,'Content-Type':'application/json'},
     body:JSON.stringify({fileName:'wicketgram.jpg',data:b64,contentType:'image/jpeg'})});
-  if(!r.ok){const e=await r.json();throw new Error(e.message||'Ayrshare media upload failed');}
-  const d=await r.json();
-  if(d.url)return d.url;
-  throw new Error(d.message||'No URL returned from Ayrshare');
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error('Ayrshare upload failed ('+r.status+'): '+(d.message||d.error||JSON.stringify(d).slice(0,120)));
+  const url=d.url||d.mediaUrl||(d.urls&&d.urls[0]);
+  if(url)return url;
+  throw new Error('Ayrshare upload: no URL in response — '+JSON.stringify(d).slice(0,120));
 }
 
 // Ayrshare — post to Instagram
@@ -1981,9 +1982,16 @@ async function publishViaAyrshare(imageUrl,caption,key){
   const r=await fetch('https://app.ayrshare.com/api/post',{method:'POST',
     headers:{'Authorization':`Bearer ${key}`,'Content-Type':'application/json'},
     body:JSON.stringify({post:caption,platforms:['instagram'],mediaUrls:[imageUrl]})});
-  const d=await r.json();
-  if(d.status==='success'||d.id||d.postIds)return d.id||d.postIds?.[0]||'ok';
-  throw new Error(d.message||d.error||'Ayrshare posting failed');
+  const d=await r.json().catch(()=>({}));
+  // success: status==='success', or postIds array, or id field
+  const igResult=d.postIds?.instagram||d.postIds?.[0];
+  if(d.status==='success'||igResult||d.id)return igResult||d.id||'ok';
+  // surface actionable errors
+  const msg=d.message||d.error||JSON.stringify(d).slice(0,200);
+  if(/instagram/i.test(msg)&&/not connected|not linked|not found/i.test(msg))
+    throw new Error('Instagram not connected in Ayrshare — go to app.ayrshare.com → Social Accounts → Connect Instagram');
+  if(r.status===401)throw new Error('Invalid Ayrshare API key — check Settings');
+  throw new Error('Ayrshare posting failed: '+msg);
 }
 
 // Instagram Graph API — legacy fallback
@@ -2081,17 +2089,18 @@ function App(){return{
       // Upload image
       this.showToast('⬆ Uploading image…');
       let imageUrl;
-      if(useAyrshare){
-        try{imageUrl=await uploadViaAyrshare(b64,s.ayrshareKey);}
+      // Always try Imgur first if key is set (more reliable image host), else Ayrshare upload
+      if(s.imgurClientId){
+        try{imageUrl=await uploadToImgur(b64,s.imgurClientId);}
         catch(e){
-          // Ayrshare media upload failed — try Imgur as backup
-          if(!s.imgurClientId)throw new Error('Image upload failed ('+e.message+'). Add Imgur Client ID as backup in Settings.');
-          this.showToast('⚠ Ayrshare upload failed, trying Imgur…');
-          imageUrl=await uploadToImgur(b64,s.imgurClientId);
+          this.showToast('⚠ Imgur upload failed, trying Ayrshare…');
+          if(!useAyrshare)throw new Error('Image upload failed: '+e.message);
+          imageUrl=await uploadViaAyrshare(b64,s.ayrshareKey);
         }
+      }else if(useAyrshare){
+        imageUrl=await uploadViaAyrshare(b64,s.ayrshareKey);
       }else{
-        if(!s.imgurClientId)throw new Error('Imgur Client ID not set');
-        imageUrl=await uploadToImgur(b64,s.imgurClientId);
+        throw new Error('No image host configured — add Imgur Client ID or Ayrshare key in Settings');
       }
       // Publish
       this.showToast('📤 Publishing to Instagram…');
@@ -2199,8 +2208,8 @@ function App(){return{
         if(d.email||d.activeSocialAccounts){
           const plats=(d.activeSocialAccounts||[]).join(', ')||'connected';
           const hasIG=(d.activeSocialAccounts||[]).some(p=>p.toLowerCase().includes('instagram'));
-          this.igStatus=`✅ Ayrshare connected (${d.email||'active'}) · Platforms: ${plats}${hasIG?'':' — ⚠ Instagram not connected yet'}`;
-          this.igOk=true;
+          this.igStatus=`${hasIG?'✅':'⚠'} Ayrshare connected (${d.email||'active'}) · Platforms: ${plats||'none'}${hasIG?'':' — Instagram not connected! Go to app.ayrshare.com → Social Accounts → Connect Instagram'}`;
+          this.igOk=hasIG;
         }else throw new Error(d.message||d.error||'Auth failed');
       }catch(e){this.igStatus='❌ Ayrshare: '+e.message;this.igOk=false;}
       return;
