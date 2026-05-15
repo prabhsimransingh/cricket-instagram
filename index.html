@@ -2421,6 +2421,8 @@ function App(){return{
   async renderThumb(post,id){const c=document.getElementById(id||'thumb-'+post.id);if(c)await renderCard(c,post,this.settings);},
 
   saveQueue(){Store.setQueue(this.posts);},
+  saveSettings(){Store.setSettings(this.settings);this.showToast('⚙ Settings saved!');},
+  showToast(msg,ok=true){this.toast={show:true,msg,ok};setTimeout(()=>{this.toast.show=false;},3000);},
   approvePost(p){p.status='approved';this.saveQueue();this.showToast('✓ Approved');},
   rejectPost(p){this.posts=this.posts.filter(x=>x.id!==p.id);this.saveQueue();this.showToast('Removed');},
 
