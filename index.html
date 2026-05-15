@@ -824,7 +824,7 @@ const Store = {
   setQueue:    v  => localStorage.setItem('cc_q', JSON.stringify(v)),
   getHistory:  () => JSON.parse(localStorage.getItem('cc_hist')||'[]'),
   setHistory:  v  => localStorage.setItem('cc_hist', JSON.stringify(v)),
-  getSettings:()=>{const s=JSON.parse(localStorage.getItem('cc_cfg')||'{}');return{clubName:'Champions',primary:'#152244',accent:'#17b8b8',leagueLogo:NACL_LOGO_B64,clubLogo:CHAMPIONS_LOGO_B64,groqKey:'',ayrshareKey:'',igToken:'',igAccountId:'',imgurClientId:'',aiCharacters:false,aiCharCache:{},...s};},
+  getSettings:()=>{const s=JSON.parse(localStorage.getItem('cc_cfg')||'{}');return{clubName:'Champions',primary:'#152244',accent:'#17b8b8',leagueLogo:NACL_LOGO_B64,clubLogo:CHAMPIONS_LOGO_B64,groqKey:'',ayrshareKey:'',igToken:'',igAccountId:'',imgurClientId:'',aiCharacters:false,...s};},
   setSettings:v=>{const s={...v};if(s.leagueLogo===NACL_LOGO_B64)delete s.leagueLogo;if(s.clubLogo===CHAMPIONS_LOGO_B64)delete s.clubLogo;try{localStorage.setItem('cc_cfg',JSON.stringify(s));}catch(e){console.warn('Settings:',e);}},
 };
 
@@ -832,21 +832,24 @@ const Store = {
 // ═══════════════════════════════════════════════════════
 //  POLLINATIONS.AI — AI Character Generation
 // ═══════════════════════════════════════════════════════
+// In-memory cache for generated character images
+const CharCache={};
 async function generateCharacter(teamName,side='home'){
   const s=Store.getSettings();if(!s.aiCharacters)return null;
   const cacheKey=`${teamName}-${side}`;
-  if(s.aiCharCache?.[cacheKey])return s.aiCharCache[cacheKey];
+  if(CharCache[cacheKey])return CharCache[cacheKey];
   const isBatsman=side==='home';
   const prompt=isBatsman?
-    `cricket batsman dramatic action pose, ${teamName}, blue electric aura, dynamic lighting, dark background, PNG transparent, 8k`:
-    `${teamName} warrior mascot cricket team, fire orange aura, dynamic action pose, dark background, PNG transparent, 8k`;
+    `cricket batsman dramatic action pose, ${teamName}, blue electric aura, dramatic lighting, dark background, PNG transparent, 8k`:
+    `${teamName} warrior mascot, fire orange aura, dynamic action pose, dark background, PNG transparent, 8k`;
   try{
-    const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=512&height=896&nologo=true&seed=${teamName}-${side}`;
+    const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=512&height=896&nologo=true&seed=${teamName.slice(0,8)}-${side}`;
     const img=new Image();
-    return new Promise((res,rej)=>{
-      img.onload=()=>{const cached={...s.aiCharCache,[cacheKey]:url};s.aiCharCache=cached;Store.setSettings(s);res(url);};
-      img.onerror=()=>res(null);
-      img.src=url;
+    return new Promise((res)=>{
+      const timeout=setTimeout(()=>{CharCache[cacheKey]='';res(null);},8000);
+      img.onload=()=>{clearTimeout(timeout);CharCache[cacheKey]=url;res(url);};
+      img.onerror=()=>{clearTimeout(timeout);res(null);};
+      img.crossOrigin='anonymous';img.src=url;
     });
   }catch(e){return null;}
 }
