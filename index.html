@@ -954,18 +954,29 @@ function jerseyBg(ctx,P,A,postType){
 async function drawLeagueLogo(ctx,cfg){
   if(!cfg||!cfg.leagueLogo)return;
   const img=await loadImg(cfg.leagueLogo);if(!img)return;
-  // Large watermark
-  const wSz=320;
-  ctx.save();ctx.globalAlpha=0.06;
-  ctx.drawImage(img,(S-wSz)/2,(S-wSz)/2,wSz,wSz);
-  ctx.restore();
-  // Top-right badge
-  const sz=120,x=S-sz-26,y=20;
+  // Circular watermark (centre, clipped)
+  const wR=140,wCx=S/2,wCy=S/2;
   ctx.save();
-  ctx.beginPath();ctx.arc(x+sz/2,y+sz/2,sz/2+11,0,Math.PI*2);
-  ctx.fillStyle='rgba(0,0,0,.5)';ctx.fill();
-  ctx.strokeStyle='rgba(255,255,255,.18)';ctx.lineWidth=2;ctx.stroke();
-  ctx.globalAlpha=0.95;ctx.drawImage(img,x,y,sz,sz);
+  ctx.beginPath();ctx.arc(wCx,wCy,wR,0,Math.PI*2);ctx.clip();
+  ctx.globalAlpha=0.05;
+  ctx.drawImage(img,wCx-wR,wCy-wR,wR*2,wR*2);
+  ctx.restore();
+  // Top-right circular badge
+  const r=58,cx=S-r-22,cy=r+18;
+  ctx.save();
+  // White fill circle
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
+  ctx.fillStyle='#ffffff';ctx.fill();
+  // Clip logo into circle
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.clip();
+  ctx.drawImage(img,cx-r,cy-r,r*2,r*2);
+  ctx.restore();
+  // Outer ring — red then thin gold
+  ctx.save();
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
+  ctx.strokeStyle='#cc1e1e';ctx.lineWidth=4;ctx.stroke();
+  ctx.beginPath();ctx.arc(cx,cy,r+5,0,Math.PI*2);
+  ctx.strokeStyle='rgba(255,185,0,0.7)';ctx.lineWidth=2;ctx.stroke();
   ctx.restore();
 }
 
@@ -988,12 +999,22 @@ async function drawJersey(ctx){
 async function drawClubLogo(ctx,cfg){
   if(!cfg||!cfg.clubLogo)return;
   const img=await loadImg(cfg.clubLogo);if(!img)return;
-  const sz=120,x=26,y=20;
+  // Top-left circular badge
+  const r=58,cx=r+22,cy=r+18;
   ctx.save();
-  ctx.beginPath();ctx.arc(x+sz/2,y+sz/2,sz/2+11,0,Math.PI*2);
-  ctx.fillStyle='rgba(0,0,0,.5)';ctx.fill();
-  ctx.strokeStyle='rgba(20,184,166,.4)';ctx.lineWidth=2;ctx.stroke();
-  ctx.globalAlpha=0.95;ctx.drawImage(img,x,y,sz,sz);
+  // White fill circle
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
+  ctx.fillStyle='#ffffff';ctx.fill();
+  // Clip logo into circle
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.clip();
+  ctx.drawImage(img,cx-r,cy-r,r*2,r*2);
+  ctx.restore();
+  // Outer ring — teal then thin lime
+  ctx.save();
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
+  ctx.strokeStyle='#14b8a6';ctx.lineWidth=4;ctx.stroke();
+  ctx.beginPath();ctx.arc(cx,cy,r+5,0,Math.PI*2);
+  ctx.strokeStyle='rgba(139,196,0,0.7)';ctx.lineWidth=2;ctx.stroke();
   ctx.restore();
 }
 
