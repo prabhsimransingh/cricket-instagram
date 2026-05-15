@@ -1778,7 +1778,7 @@ function App(){return{
       if(d.error)throw new Error(d.error.message);
       this.igStatus=`✅ Instagram Graph API: ${d.name} (${d.id})`;this.igOk=true;
     }catch(e){this.igStatus='❌ Instagram: '+e.message;this.igOk=false;}
-  },,
+  },
 
   playPreview(t){
     const c=document.getElementById(t+'-preview');if(!c)return;
