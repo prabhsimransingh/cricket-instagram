@@ -1,1 +1,0 @@
-GitHub Pages v2 directory test file - if you can see this, the /v2 path works correctly.
