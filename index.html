@@ -162,6 +162,94 @@
             </div>
           </div>
 
+          <!-- ── EDIT PANEL ── -->
+          <div x-show="post._editing" style="background:rgba(0,0,0,.35);border:1px solid rgba(20,184,166,.25);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px">
+            <div style="font-size:13px;font-weight:700;color:#17b8b8;margin-bottom:2px">✏ Edit Post Details</div>
+
+            <!-- MATCH fields -->
+            <template x-if="post.type==='match'">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <div><label class="lbl" style="font-size:11px">Opponent</label><input class="inp" style="font-size:13px" x-model="post.meta.opponent" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Result</label>
+                  <select class="inp" style="font-size:13px" x-model="post.meta.result" @change="debouncedThumb(post)">
+                    <option>won</option><option>lost</option><option>tie</option>
+                  </select></div>
+                <div><label class="lbl" style="font-size:11px">Our Score</label><input class="inp" style="font-size:13px" x-model="post.meta.ourScore" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Their Score</label><input class="inp" style="font-size:13px" x-model="post.meta.theirScore" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Won/Lost By</label><input class="inp" style="font-size:13px" x-model="post.meta.margin" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Venue</label><input class="inp" style="font-size:13px" x-model="post.meta.venue" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Top Batter</label><input class="inp" style="font-size:13px" x-model="post.meta.batterName" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Runs (balls)</label>
+                  <div style="display:flex;gap:4px">
+                    <input class="inp" style="font-size:13px;width:50%" x-model.number="post.meta.batterRuns" @input="debouncedThumb(post)" placeholder="Runs"/>
+                    <input class="inp" style="font-size:13px;width:50%" x-model.number="post.meta.batterBalls" @input="debouncedThumb(post)" placeholder="Balls"/>
+                  </div></div>
+                <div><label class="lbl" style="font-size:11px">Top Bowler</label><input class="inp" style="font-size:13px" x-model="post.meta.bowlerName" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Wkts / Runs</label>
+                  <div style="display:flex;gap:4px">
+                    <input class="inp" style="font-size:13px;width:50%" x-model.number="post.meta.bowlerWkts" @input="debouncedThumb(post)" placeholder="Wkts"/>
+                    <input class="inp" style="font-size:13px;width:50%" x-model.number="post.meta.bowlerRuns" @input="debouncedThumb(post)" placeholder="Runs"/>
+                  </div></div>
+              </div>
+            </template>
+
+            <!-- FIXTURE fields -->
+            <template x-if="post.type==='fixture'">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <div><label class="lbl" style="font-size:11px">Opponent</label><input class="inp" style="font-size:13px" x-model="post.meta.opponent" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Date & Time</label><input class="inp" type="datetime-local" style="font-size:13px" x-model="post.meta.datetime" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Venue</label><input class="inp" style="font-size:13px" x-model="post.meta.venue" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Competition</label><input class="inp" style="font-size:13px" x-model="post.meta.competition" @input="debouncedThumb(post)"/></div>
+              </div>
+            </template>
+
+            <!-- MOTM fields -->
+            <template x-if="post.type==='motm'">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <div><label class="lbl" style="font-size:11px">Player Name</label><input class="inp" style="font-size:13px" x-model="post.meta.name" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Opponent</label><input class="inp" style="font-size:13px" x-model="post.meta.opponent" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Runs</label><input class="inp" style="font-size:13px" x-model.number="post.meta.runs" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Wickets</label><input class="inp" style="font-size:13px" x-model.number="post.meta.wkts" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Strike Rate</label><input class="inp" style="font-size:13px" x-model="post.meta.sr" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Fielding</label><input class="inp" style="font-size:13px" x-model="post.meta.fielding" @input="debouncedThumb(post)"/></div>
+              </div>
+            </template>
+
+            <!-- MILESTONE fields -->
+            <template x-if="post.type==='milestone'">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <div><label class="lbl" style="font-size:11px">Title</label><input class="inp" style="font-size:13px" x-model="post.meta.title" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Player/Team</label><input class="inp" style="font-size:13px" x-model="post.meta.name" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Number</label><input class="inp" style="font-size:13px" x-model="post.meta.number" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Season</label><input class="inp" style="font-size:13px" x-model="post.meta.season" @input="debouncedThumb(post)"/></div>
+                <div style="grid-column:1/-1"><label class="lbl" style="font-size:11px">Subtitle</label><input class="inp" style="font-size:13px" x-model="post.meta.subtitle" @input="debouncedThumb(post)"/></div>
+              </div>
+            </template>
+
+            <!-- SQUAD — edit players -->
+            <template x-if="post.type==='squad'">
+              <div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+                  <div><label class="lbl" style="font-size:11px">Opponent</label><input class="inp" style="font-size:13px" x-model="post.meta.opponent" @input="debouncedThumb(post)"/></div>
+                  <div><label class="lbl" style="font-size:11px">Competition</label><input class="inp" style="font-size:13px" x-model="post.meta.competition" @input="debouncedThumb(post)"/></div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+                  <template x-for="(pl,pi) in (post.meta.players||[])" :key="pi">
+                    <div style="display:flex;gap:4px;align-items:center">
+                      <span style="font-size:11px;color:rgba(255,255,255,.35);width:16px" x-text="pi+1+'.'"></span>
+                      <input class="inp" style="font-size:12px;flex:2" x-model="pl.name" @input="debouncedThumb(post)" placeholder="Name"/>
+                      <select class="inp" style="font-size:12px;flex:1;padding:4px" x-model="pl.role" @change="debouncedThumb(post)">
+                        <option value="">Role</option><option>Captain</option><option>Batter</option><option>Bowler</option><option>All-rounder</option><option>WK</option>
+                      </select>
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </template>
+
+            <button class="btn btn-green" style="font-size:13px;align-self:flex-start" @click="post._editing=false;saveQueue();showToast('✅ Saved!')">✓ Done Editing</button>
+          </div>
+
           <!-- Action buttons -->
           <div style="display:flex;flex-wrap:wrap;gap:8px;padding-top:4px;border-top:1px solid rgba(255,255,255,.06)">
             <button class="btn btn-green" x-show="post.status!=='approved'" @click="approvePost(post)" style="font-size:13px">✓ Approve</button>
@@ -176,6 +264,7 @@
               <span x-show="publishing===post.id" style="display:flex;align-items:center;gap:6px"><span class="spin"></span>Posting…</span>
             </button>
             <button class="btn btn-ghost" @click="regenCaptions(post)" :disabled="!settings.groqKey" style="font-size:13px">✨ AI Captions</button>
+            <button class="btn btn-ghost" @click="post._editing=!post._editing;$nextTick(()=>{})" style="font-size:13px">✏ Edit Details</button>
             <button class="btn btn-red" @click="rejectPost(post)" style="font-size:13px;margin-left:auto">✕ Remove</button>
           </div>
         </div>
@@ -684,7 +773,7 @@ const Store = {
   setQueue:    v  => localStorage.setItem('cc_q', JSON.stringify(v)),
   getHistory:  () => JSON.parse(localStorage.getItem('cc_hist')||'[]'),
   setHistory:  v  => localStorage.setItem('cc_hist', JSON.stringify(v)),
-  getSettings: () => ({clubName:'Cricket Club',primary:'#152244',accent:'#17b8b8',leagueLogo:'',clubLogo:'',groqKey:'',ayrshareKey:'',igToken:'',igAccountId:'',imgurClientId:'',...JSON.parse(localStorage.getItem('cc_cfg')||'{}')}),
+  getSettings: () => {const raw=JSON.parse(localStorage.getItem('cc_cfg')||'{}');return {clubName:'Cricket Club',primary:'#152244',accent:'#17b8b8',leagueLogo:raw.leagueLogo||NACL_LOGO_URL,clubLogo:raw.clubLogo||CLUB_LOGO_URL,groqKey:raw.groqKey||'',ayrshareKey:raw.ayrshareKey||'',igToken:raw.igToken||'',igAccountId:raw.igAccountId||'',imgurClientId:raw.imgurClientId||''};},
   setSettings: v  => localStorage.setItem('cc_cfg', JSON.stringify(v)),
 };
 
@@ -719,6 +808,52 @@ const JKT={
   gold:[255,185,0],       // trophy / celebration gold
   white:[255,255,255],
 };
+
+// ─── Pre-loaded logo SVGs (no upload required) ──────────────
+function svgURL(svg){return 'data:image/svg+xml;base64,'+btoa(svg);}
+
+const NACL_LOGO_URL=svgURL(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 270">
+  <circle cx="120" cy="128" r="96" fill="#1a3564"/>
+  <path d="M120,32 A96,96 0 0,1 120,224 Z" fill="#c41e1e"/>
+  <circle cx="120" cy="128" r="96" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="2.5"/>
+  <circle cx="166" cy="74" r="18" fill="white" opacity="0.92"/>
+  <path d="M118,58 C130,48 148,50 158,62 L164,72 C155,65 142,62 133,68 Z" fill="white" opacity="0.85"/>
+  <ellipse cx="108" cy="150" rx="26" ry="52" fill="white" opacity="0.88"/>
+  <circle cx="103" cy="92" r="17" fill="white" opacity="0.88"/>
+  <path d="M113,118 Q135,90 155,72" stroke="white" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <path d="M97,195 L86,232" stroke="white" stroke-width="8" stroke-linecap="round"/>
+  <path d="M118,196 L124,233" stroke="white" stroke-width="8" stroke-linecap="round"/>
+  <line x1="88" y1="116" x2="78" y2="148" stroke="white" stroke-width="9" stroke-linecap="round"/>
+  <text x="120" y="260" font-family="Arial Black,Impact,sans-serif" font-weight="900" font-size="40" fill="#c41e1e" text-anchor="middle" letter-spacing="4">NACL</text>
+</svg>`);
+
+const CLUB_LOGO_URL=svgURL(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 245">
+  <path d="M110,6 L198,36 L198,128 Q198,194 110,232 Q22,194 22,128 L22,36 Z" fill="#152244"/>
+  <path d="M110,20 L184,46 L184,126 Q184,182 110,216 Q36,182 36,126 L36,46 Z" fill="#17b8b8"/>
+  <path d="M110,34 L170,55 L170,124 Q170,168 110,200 Q50,168 50,124 L50,55 Z" fill="#152244"/>
+  <path d="M36,84 L14,74 L20,90 L10,97 L22,103 L18,118 L36,106 Z" fill="#17b8b8"/>
+  <path d="M184,84 L206,74 L200,90 L210,97 L198,103 L202,118 L184,106 Z" fill="#17b8b8"/>
+  <g transform="rotate(-28,90,105)">
+    <rect x="84" y="58" width="11" height="70" rx="4" fill="#c8a855"/>
+    <rect x="82" y="118" width="15" height="28" rx="5" fill="#a07030"/>
+  </g>
+  <g transform="rotate(28,130,105)">
+    <rect x="125" y="58" width="11" height="70" rx="4" fill="#c8a855"/>
+    <rect x="123" y="118" width="15" height="28" rx="5" fill="#a07030"/>
+  </g>
+  <rect x="104" y="52" width="5" height="44" rx="2" fill="#e8dbb0"/>
+  <rect x="111" y="52" width="5" height="44" rx="2" fill="#e8dbb0"/>
+  <rect x="118" y="52" width="5" height="44" rx="2" fill="#e8dbb0"/>
+  <rect x="101" y="51" width="7" height="4" rx="1" fill="#e8dbb0"/>
+  <rect x="112" y="51" width="7" height="4" rx="1" fill="#e8dbb0"/>
+  <text x="110" y="148" font-family="Arial Black,Impact,sans-serif" font-weight="900" font-size="17" fill="white" text-anchor="middle" letter-spacing="1">CHAMPIONS</text>
+  <circle cx="110" cy="178" r="16" fill="#17b8b8"/>
+  <path d="M102,174 Q110,184 118,174" stroke="white" stroke-width="1.5" fill="none"/>
+  <path d="M102,182 Q110,172 118,182" stroke="white" stroke-width="1.5" fill="none"/>
+  <text x="72" y="185" font-family="monospace" font-size="9" fill="#17b8b8" opacity="0.8">&lt;&lt;&lt;&lt;</text>
+  <text x="134" y="185" font-family="monospace" font-size="9" fill="#17b8b8" opacity="0.8">&gt;&gt;&gt;&gt;</text>
+</svg>`);
+
 
 // ─── Floodlight beam (single cone from a corner) ────────────
 function floodBeam(ctx,ox,oy,angleRange,spread,col,alpha){
@@ -1855,6 +1990,15 @@ function App(){return{
   },
 
   debouncedPreview(t){clearTimeout(this._pt);this._pt=setTimeout(()=>this.drawPreview(t),200);},
+
+  debouncedThumb(post){
+    clearTimeout(post._tt);
+    post._tt=setTimeout(()=>{
+      this.saveQueue();
+      const el=document.getElementById('thumb-'+post.id);
+      if(el)renderCard(el,post,this.settings).catch(()=>{});
+    },350);
+  },
 
   async drawPreview(type){
     const canvas=document.getElementById(type+'-preview');if(!canvas)return;
