@@ -295,6 +295,14 @@
           </div>
 
           <!-- Action buttons -->
+          <div style="display:flex;gap:8px;align-items:center;padding-top:8px;border-top:1px solid rgba(255,255,255,.06);font-size:11px;color:rgba(255,255,255,.5)">
+            <span>Render:</span>
+            <select @change="post.renderMode=$event.target.value" :value="post.renderMode||'canvas'" style="padding:6px 8px;border-radius:6px;background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.2);font-size:11px;font-family:Inter;cursor:pointer">
+              <option value="canvas">Canvas</option>
+              <option value="ai-chars">+ AI Characters</option>
+              <option value="ai-full">🎨 AI Full Card</option>
+            </select>
+          </div>
           <div class="act-btns" style="display:flex;flex-wrap:wrap;gap:8px;padding-top:4px;border-top:1px solid rgba(255,255,255,.06)">
             <button class="btn btn-green" x-show="post.status!=='approved'" @click="approvePost(post)" style="font-size:13px">✓ Approve</button>
             <button class="btn" @click="downloadPost(post)" :disabled="downloading===post.id"
@@ -670,6 +678,14 @@
             <div x-show="!createdPost?.captions?.length" style="font-size:13px;color:rgba(255,255,255,.3)">
               No AI captions generated — edit the caption field in the queue, or add a Groq key in Settings.
             </div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;margin-top:12px;font-size:11px;color:rgba(255,255,255,.5)">
+            <span>Render:</span>
+            <select @change="createdPost.renderMode=$event.target.value" :value="createdPost?.renderMode||'canvas'" style="padding:6px 8px;border-radius:6px;background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.2);font-size:11px;font-family:Inter;cursor:pointer">
+              <option value="canvas">Canvas</option>
+              <option value="ai-chars">+ AI Characters</option>
+              <option value="ai-full">🎨 AI Full Card</option>
+            </select>
           </div>
           <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
             <button class="btn" @click="downloadPost(createdPost)" :disabled="downloading===createdPost?.id"
