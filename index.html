@@ -2064,14 +2064,31 @@ function App(){return{
     try{
       const cv=document.createElement('canvas');cv.width=cv.height=S;
       await renderCard(cv,post,this.settings);
-      const a=document.createElement('a');
       const type=post.type||'post';
       const opp=(post.meta?.opponent||'').replace(/\s+/g,'-').toLowerCase();
-      a.download=`wicketgram-${type}${opp?'-'+opp:''}-${Date.now()}.png`;
-      a.href=cv.toDataURL('image/png');
-      a.click();
-      this.showToast('⬇ Image saved!');
-    }catch(e){this.showToast('Download failed: '+e.message,false);}
+      const fname=`wicketgram-${type}${opp?'-'+opp:''}-${Date.now()}.jpg`;
+      // toBlob is async + memory-safe (avoids giant data URL string that crashes mobile tabs)
+      const blob=await new Promise((res,rej)=>cv.toBlob(b=>b?res(b):rej(new Error('Canvas toBlob failed')),'image/jpeg',0.92));
+      // iOS / modern Android: Web Share API → saves to Photos / Gallery directly
+      const file=new File([blob],fname,{type:'image/jpeg'});
+      if(navigator.canShare&&navigator.canShare({files:[file]})){
+        await navigator.share({files:[file],title:'WicketGram Cricket'});
+        this.showToast('📸 Saved to Photos!');
+        return;
+      }
+      // Desktop + Android fallback: blob URL → browser download
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url;a.download=fname;
+      document.body.appendChild(a);a.click();
+      document.body.removeChild(a);
+      setTimeout(()=>URL.revokeObjectURL(url),15000);
+      this.showToast('⬇ Saved! Check Downloads / Files.');
+    }catch(e){
+      if(e.name==='AbortError')return; // user cancelled share sheet
+      this.showToast('Download failed: '+e.message,false);
+      console.error('downloadPost',e);
+    }
     finally{this.downloading=null;}
   },
 
