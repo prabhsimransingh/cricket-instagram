@@ -132,6 +132,10 @@
       <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.35)">
         <span class="hdr-badge" x-show="posts.filter(p=>p.status==='approved').length" style="background:rgba(63,185,80,.15);color:#3fb950;padding:2px 10px;border-radius:20px;font-weight:600" x-text="posts.filter(p=>p.status==='approved').length+' ready'"></span>
       </div>
+      <div style="display:flex;gap:4px;border-radius:8px;background:rgba(255,255,255,.05);padding:2px">
+        <button style="padding:6px 12px;font-size:11px;font-weight:600;border:none;border-radius:6px;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)" :style="version==='main'?'background:rgba(240,180,41,.15);color:#f0b429':''" @click="switchVersion('main')">Main</button>
+        <button style="padding:6px 12px;font-size:11px;font-weight:600;border:none;border-radius:6px;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)" :style="version==='v2'?'background:rgba(240,180,41,.15);color:#f0b429':''" @click="switchVersion('v2')">V2</button>
+      </div>
       <button class="btn btn-ghost" style="padding:7px 14px;font-size:12px" @click="tab='settings'">⚙ Settings</button>
     </div>
   </div>
@@ -443,7 +447,7 @@
               </button>
             </div>
             <button class="btn btn-blue" style="width:100%;justify-content:center;padding:13px;font-size:15px;display:flex;align-items:center;gap:8px" @click="generateMatchAIOnly()" :disabled="aiGenerating||!mf.opponent">
-              <span x-show="!aiGenerating">🎨 Generate AI Card</span>
+              <span x-show="!aiGenerating && version==='v2'">🎨 Generate AI Card</span>
               <span x-show="aiGenerating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
             </button>
           </div>
@@ -497,7 +501,7 @@
               </button>
             </div>
             <button class="btn btn-blue" style="width:100%;justify-content:center;padding:13px;font-size:15px;display:flex;align-items:center;gap:8px" @click="generateFixtureAIOnly()" :disabled="aiGenerating||!ff.opponent">
-              <span x-show="!aiGenerating">🎨 Generate AI Card</span>
+              <span x-show="!aiGenerating && version==='v2'">🎨 Generate AI Card</span>
               <span x-show="aiGenerating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
             </button>
           </div>
@@ -558,7 +562,7 @@
               </button>
             </div>
             <button class="btn btn-blue" style="width:100%;justify-content:center;padding:13px;font-size:15px;display:flex;align-items:center;gap:8px" @click="generateSquadAIOnly()" :disabled="aiGenerating||!qf.opponent">
-              <span x-show="!aiGenerating">🎨 Generate AI Card</span>
+              <span x-show="!aiGenerating && version==='v2'">🎨 Generate AI Card</span>
               <span x-show="aiGenerating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
             </button>
           </div>
@@ -612,7 +616,7 @@
               </button>
             </div>
             <button class="btn btn-blue" style="width:100%;justify-content:center;padding:13px;font-size:15px;display:flex;align-items:center;gap:8px" @click="generateMOTMAIOnly()" :disabled="aiGenerating||!gf.name">
-              <span x-show="!aiGenerating">🎨 Generate AI Card</span>
+              <span x-show="!aiGenerating && version==='v2'">🎨 Generate AI Card</span>
               <span x-show="aiGenerating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
             </button>
           </div>
@@ -657,7 +661,7 @@
               </button>
             </div>
             <button class="btn btn-blue" style="width:100%;justify-content:center;padding:13px;font-size:15px;display:flex;align-items:center;gap:8px" @click="generateMilestoneAIOnly()" :disabled="aiGenerating||!lf.title">
-              <span x-show="!aiGenerating">🎨 Generate AI Card</span>
+              <span x-show="!aiGenerating && version==='v2'">🎨 Generate AI Card</span>
               <span x-show="aiGenerating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
             </button>
           </div>
@@ -2633,7 +2637,7 @@ async function publishToInstagram(url,caption,cfg){
 //  ALPINE APP
 // ═══════════════════════════════════════════════════════
 function App(){return{
-  tab:'queue', newTab:'match',
+  tab:'queue', newTab:'match', version:'v2',
   posts:[], history:[], settings:Store.getSettings(),
   toast:{show:false,msg:'',ok:true}, publishing:null, downloading:null, creating:false, aiGenerating:null, aiGeneratingProgress:0, aiGeneratingStatus:'', aiPreviewUrl:null, aiPreviewPost:null,
   igStatus:'', igOk:false, createdPost:null,
@@ -2647,6 +2651,13 @@ function App(){return{
   _pt:null,
 
   async init(){
+    // Detect version from URL parameter
+    const params = new URLSearchParams(window.location.search);
+    const versionParam = params.get('version');
+    if(versionParam === 'main' || versionParam === 'v2') {
+      this.version = versionParam;
+    }
+
     this.posts=Store.getQueue();this.history=Store.getHistory();
     await this.$nextTick();
     ['match','fixture','squad','motm','milestone'].forEach(t=>this.drawPreview(t));
@@ -2679,6 +2690,13 @@ function App(){return{
   },
 
   async renderThumb(post,id){const c=document.getElementById(id||'thumb-'+post.id);if(c)await renderCard(c,post,this.settings);},
+
+  switchVersion(v){
+    this.version = v;
+    const url = new URL(window.location);
+    url.searchParams.set('version', v);
+    window.history.replaceState({}, '', url);
+  },
 
   saveQueue(){Store.setQueue(this.posts);},
   saveSettings(){Store.setSettings(this.settings);this.showToast('⚙ Settings saved!');},
