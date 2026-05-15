@@ -702,14 +702,15 @@
     <div x-show="aiGenerating" @click="if(!aiGenerating)return" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.90);display:flex !important;align-items:center;justify-content:center;z-index:99999;backdrop-filter:blur(5px);">
       <div style="text-align:center;padding:50px 40px;background:rgba(15,15,25,.98);border-radius:20px;border:2px solid rgba(23,184,184,.3);max-width:320px;box-shadow:0 20px 60px rgba(0,0,0,.9)">
         <div style="font-size:48px;margin-bottom:20px;animation:bounce 1.5s ease-in-out infinite">🎨</div>
-        <div style="font-size:18px;font-weight:700;margin-bottom:16px;color:#fff;letter-spacing:.5px">Generating Image...</div>
+        <div style="font-size:18px;font-weight:700;margin-bottom:16px;color:#fff;letter-spacing:.5px" x-text="aiGeneratingStatus||'Generating Images...'"></div>
         <div style="margin-bottom:20px">
           <div style="height:8px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden;box-shadow:inset 0 2px 4px rgba(0,0,0,.5)">
-            <div style="height:100%;background:linear-gradient(90deg,#17b8b8 0%,#1ddddd 50%,#ffd700 100%);animation:pulse 2.5s ease-in-out infinite;width:0%;box-shadow:0 0 20px rgba(23,184,184,.8)"></div>
+            <div style="height:100%;background:linear-gradient(90deg,#17b8b8 0%,#1ddddd 50%,#ffd700 100%);transition:width .3s ease;box-shadow:0 0 20px rgba(23,184,184,.8)" :style="`width:${aiGeneratingProgress}%`"></div>
           </div>
         </div>
+        <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:8px" x-text="`${aiGeneratingProgress}%`"></div>
         <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:8px;font-weight:500">Pollinations.ai</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.4)">⏱️ 5-10 seconds</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.4)">⏱️ 15-30 seconds total</div>
       </div>
     </div>
     <style>
@@ -2211,7 +2212,7 @@ async function publishToInstagram(url,caption,cfg){
 function App(){return{
   tab:'queue', newTab:'match',
   posts:[], history:[], settings:Store.getSettings(),
-  toast:{show:false,msg:'',ok:true}, publishing:null, downloading:null, creating:false, aiGenerating:null, aiPreviewUrl:null, aiPreviewPost:null, aiVariations:[], selectedVariationIdx:null,
+  toast:{show:false,msg:'',ok:true}, publishing:null, downloading:null, creating:false, aiGenerating:null, aiGeneratingProgress:0, aiGeneratingStatus:'', aiPreviewUrl:null, aiPreviewPost:null, aiVariations:[], selectedVariationIdx:null,
   igStatus:'', igOk:false, createdPost:null,
   // forms
   mf:{opponent:'',result:'won',ourScore:'',theirScore:'',margin:'',venue:'',date:'',competition:'',batterName:'',batterRuns:0,batterBalls:0,batterFours:0,batterSixes:0,bowlerName:'',bowlerWkts:0,bowlerRuns:0,bowlerOvers:'',photoDataURL:'',photoName:''},
@@ -2411,14 +2412,17 @@ function App(){return{
   async generateFixtureAIOnly(){
     if(!this.ff.opponent){this.showToast('Enter opponent first',false);return;}
     this.aiGenerating='ai-gen';
+    this.aiGeneratingProgress=0;
+    this.aiGeneratingStatus='Starting...';
     this.aiVariations=[];
     this.selectedVariationIdx=null;
     try{
-      this.showToast('🎨 Generating 3 variations...');
       const variations=[];
 
       // Generate 3 variations with different seeds
       for(let i=0;i<3;i++){
+        this.aiGeneratingStatus=`Generating variation ${i+1}/3...`;
+        this.aiGeneratingProgress=Math.round((i/3)*100);
         try{
           const cv=document.createElement('canvas');cv.width=W;cv.height=H;
           const post={type:'fixture',meta:{...this.ff},renderMode:'ai-full'};
@@ -2426,9 +2430,10 @@ function App(){return{
           const blob=await new Promise(res=>cv.toBlob(b=>res(b),'image/jpeg',0.92));
           const blobUrl=URL.createObjectURL(blob);
           variations.push({blob,blobUrl,index:i});
+          this.aiGeneratingProgress=Math.round(((i+1)/3)*100);
         }catch(e){console.warn(`Variation ${i} failed`,e);}
         // Small delay between generations to avoid rate limiting
-        await new Promise(r=>setTimeout(r,500));
+        if(i<2)await new Promise(r=>setTimeout(r,500));
       }
 
       if(variations.length===0){this.showToast('⚠ All variations failed',false);return;}
@@ -2447,6 +2452,8 @@ function App(){return{
       this.showToast('⚠ AI generation failed: '+e.message,false);
     }finally{
       this.aiGenerating=null;
+      this.aiGeneratingProgress=0;
+      this.aiGeneratingStatus='';
     }
   },
 
