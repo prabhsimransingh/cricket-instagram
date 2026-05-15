@@ -590,6 +590,19 @@
           <div style="flex:1" :style="`background:${settings.primary}`"></div>
           <div style="flex:1" :style="`background:${settings.accent}`"></div>
         </div>
+        <div style="margin-top:18px"><label class="lbl">League / Competition Logo</label>
+          <div style="display:flex;align-items:center;gap:12px;margin-top:8px">
+            <div x-show="settings.leagueLogo" style="width:60px;height:60px;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.18);flex-shrink:0;background:#111;display:flex;align-items:center;justify-content:center">
+              <img :src="settings.leagueLogo" style="width:100%;height:100%;object-fit:contain"/>
+            </div>
+            <div>
+              <input type="file" accept="image/*" x-ref="leagueLogoBtn" class="hidden" @change="handleLeagueLogo($event)"/>
+              <button class="btn btn-ghost" style="font-size:13px;padding:8px 18px" @click="$refs.leagueLogoBtn.click()">📷 Upload League Logo</button>
+              <button x-show="settings.leagueLogo" class="btn btn-red" style="font-size:12px;padding:6px 12px;margin-left:8px" @click="settings.leagueLogo='';saveSettings()">Remove</button>
+            </div>
+          </div>
+          <p style="font-size:11px;color:rgba(255,255,255,.3);margin-top:6px">Shown in top-right corner of every post</p>
+        </div>
       </div>
       <div class="glass" style="padding:24px">
         <div class="sh">🔑 API Keys</div>
@@ -627,7 +640,7 @@ const Store = {
   setQueue:    v  => localStorage.setItem('cc_q', JSON.stringify(v)),
   getHistory:  () => JSON.parse(localStorage.getItem('cc_hist')||'[]'),
   setHistory:  v  => localStorage.setItem('cc_hist', JSON.stringify(v)),
-  getSettings: () => ({clubName:'Cricket Club',primary:'#1a472a',accent:'#f0b429',groqKey:'',igToken:'',igAccountId:'',imgurClientId:'',...JSON.parse(localStorage.getItem('cc_cfg')||'{}')}),
+  getSettings: () => ({clubName:'Cricket Club',primary:'#1a472a',accent:'#f0b429',leagueLogo:'',groqKey:'',igToken:'',igAccountId:'',imgurClientId:'',...JSON.parse(localStorage.getItem('cc_cfg')||'{}')}),
   setSettings: v  => localStorage.setItem('cc_cfg', JSON.stringify(v)),
 };
 
@@ -652,142 +665,194 @@ function footerBar(ctx,A,left,right,club){const g=ctx.createLinearGradient(0,S-9
 
 function fmtD(s){if(!s)return'';try{return new Date(s).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}catch{return s;}}
 
+// Jersey-inspired full-bleed background — diagonal colour zones + dot matrix + speed lines
+function jerseyBg(ctx,P,A){
+  ctx.fillStyle='#060a12';ctx.fillRect(0,0,S,S);
+  // Primary colour diagonal zone (top-left to lower-right)
+  ctx.save();
+  ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(S*.70,0);ctx.lineTo(S*.33,S);ctx.lineTo(0,S);ctx.closePath();
+  const zg=ctx.createLinearGradient(0,0,S*.65,S);
+  zg.addColorStop(0,rgb(...P));zg.addColorStop(.55,rgb(...P,.75));zg.addColorStop(1,rgb(...P,.22));
+  ctx.fillStyle=zg;ctx.fill();ctx.restore();
+  // Dark right zone
+  ctx.save();
+  ctx.beginPath();ctx.moveTo(S*.60,0);ctx.lineTo(S,0);ctx.lineTo(S,S);ctx.lineTo(S*.25,S);ctx.closePath();
+  ctx.fillStyle='rgba(0,0,0,.76)';ctx.fill();ctx.restore();
+  // Accent slash stripe between zones
+  ctx.save();
+  ctx.beginPath();ctx.moveTo(S*.60,0);ctx.lineTo(S*.72,0);ctx.lineTo(S*.35,S);ctx.lineTo(S*.25,S);ctx.closePath();
+  const ag=ctx.createLinearGradient(S*.66,0,S*.30,S);
+  ag.addColorStop(0,rgb(...A,.94));ag.addColorStop(.45,rgb(...A,.55));ag.addColorStop(1,rgb(...A,.07));
+  ctx.fillStyle=ag;ctx.fill();ctx.restore();
+  // Triangle halftone dot-matrix on dark zone (jersey pattern)
+  ctx.save();ctx.fillStyle='rgba(255,255,255,.052)';
+  const gs=38;
+  for(let row=0;row<Math.ceil(S/gs)+2;row++){
+    for(let col=0;col<Math.ceil(S/gs)+2;col++){
+      const px=col*gs+(row%2)*gs*.5,py=row*gs;
+      if(px>S*.22){ctx.beginPath();ctx.arc(px,py,2,0,Math.PI*2);ctx.fill();}
+    }
+  }ctx.restore();
+  // Horizontal speed lines over dark zone
+  ctx.save();ctx.strokeStyle=rgb(...A,.07);ctx.lineWidth=1.5;
+  for(let ly=70;ly<S-50;ly+=32){
+    ctx.beginPath();ctx.moveTo(S*.22+(ly/S)*S*.15,ly);ctx.lineTo(S*.98,ly);ctx.stroke();
+  }ctx.restore();
+  // Fine diagonal texture across whole card
+  ctx.save();ctx.strokeStyle='rgba(255,255,255,.014)';ctx.lineWidth=1;
+  for(let i=-S;i<S*2;i+=50){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i+S*.60,S);ctx.stroke();}ctx.restore();
+  // Bottom vignette
+  const bv=ctx.createLinearGradient(0,S*.62,0,S);
+  bv.addColorStop(0,'transparent');bv.addColorStop(1,'rgba(0,0,0,.90)');
+  ctx.fillStyle=bv;ctx.fillRect(0,0,S,S);
+}
+
+// League/competition logo — top-right corner on every post
+async function drawLeagueLogo(ctx,cfg){
+  if(!cfg||!cfg.leagueLogo)return;
+  const img=await loadImg(cfg.leagueLogo);if(!img)return;
+  const sz=108,x=S-sz-26,y=22;
+  ctx.save();
+  ctx.beginPath();ctx.arc(x+sz/2,y+sz/2,sz/2+10,0,Math.PI*2);
+  ctx.fillStyle='rgba(0,0,0,.42)';ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.14)';ctx.lineWidth=1.5;ctx.stroke();
+  ctx.globalAlpha=0.94;
+  ctx.drawImage(img,x,y,sz,sz);
+  ctx.restore();
+}
+
 // ═══════════════════════════════════════════════════════
-//  1. MATCH RESULT  — ICC/IPL broadcast-scorecard style
+//  1. MATCH RESULT  — full-bleed jersey broadcast style
 // ═══════════════════════════════════════════════════════
 async function drawMatchCard(ctx,d,cfg){
   const P=hexRGB(cfg.primary||'#1a472a'),A=hexRGB(cfg.accent||'#f0b429');
   const club=(cfg.clubName||'Cricket Club').toUpperCase();
   const won=d.result?.toLowerCase()==='won',lost=d.result?.toLowerCase()==='lost';
 
-  // ── Background: strong club-colour top triangle + dark base ──
-  if(d.photoDataURL){await drawPhoto(ctx,d.photoDataURL,0.8);}
-  else{
-    ctx.fillStyle='#050810';ctx.fillRect(0,0,S,S);
-    // Top colour fill: diagonal sweep ≈ top 55% of canvas
-    ctx.save();
-    ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(S,0);ctx.lineTo(S,S*.44);ctx.lineTo(0,S*.58);ctx.closePath();
-    const tf=ctx.createLinearGradient(0,0,S*.7,S*.55);
-    tf.addColorStop(0,rgb(...P));tf.addColorStop(.65,rgb(...P,.55));tf.addColorStop(1,'transparent');
-    ctx.fillStyle=tf;ctx.fill();ctx.restore();
-    // Gold diagonal slash accent
-    ctx.save();ctx.beginPath();ctx.moveTo(S*.71,0);ctx.lineTo(S*.79,0);ctx.lineTo(S*.01,S*.57);ctx.lineTo(0,S*.49);ctx.closePath();
-    ctx.fillStyle=rgb(...A,.24);ctx.fill();ctx.restore();
-    // Fine diagonal stripe texture
-    ctx.save();ctx.strokeStyle=rgb(...A,.022);ctx.lineWidth=1;
-    for(let i=-S;i<S*2;i+=58){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i+S*.68,S);ctx.stroke();}ctx.restore();
-    // Bottom ambient warm glow
-    const bg=ctx.createRadialGradient(S*.5,S,0,S*.5,S,S*.55);
-    bg.addColorStop(0,rgb(...A,.07));bg.addColorStop(1,'transparent');
-    ctx.fillStyle=bg;ctx.fillRect(0,0,S,S);
-  }
+  if(d.photoDataURL){await drawPhoto(ctx,d.photoDataURL,0.78);}
+  else{jerseyBg(ctx,P,A);}
 
-  // ── Gold top bar ──
-  const tb=ctx.createLinearGradient(0,0,S,0);
-  tb.addColorStop(0,rgb(...A));tb.addColorStop(.55,rgb(...darken(A,.72)));tb.addColorStop(1,rgb(...P,.75));
-  ctx.fillStyle=tb;ctx.fillRect(0,0,S,10);
+  // Accent bars
+  ctx.fillStyle=rgb(...A);ctx.fillRect(0,0,S,12);
+  ctx.fillStyle=rgb(...A,.6);ctx.fillRect(0,12,6,S-12);
 
-  // ── HEADER ──
-  ctx.font='600 20px "Inter"';ctx.fillStyle='rgba(255,255,255,.9)';
-  ctx.shadowColor='rgba(0,0,0,.5)';ctx.shadowBlur=8;ctx.fillText(club,50,56);ctx.shadowBlur=0;
-  if(d.date){ctx.font='500 13px "Inter"';ctx.fillStyle='rgba(255,255,255,.42)';ctx.fillText(fmtD(d.date),50,76);}
+  // Club name top-left
+  ctx.font='700 20px "Inter"';ctx.fillStyle='rgba(255,255,255,.9)';
+  ctx.shadowColor='rgba(0,0,0,.6)';ctx.shadowBlur=10;ctx.fillText(club,50,52);ctx.shadowBlur=0;
+  if(d.date){ctx.font='400 13px "Inter"';ctx.fillStyle='rgba(255,255,255,.38)';ctx.fillText(fmtD(d.date),50,72);}
+  // Competition chip — left of league logo
   if(d.competition){
     ctx.font='600 13px "Inter"';const cw=ctx.measureText(d.competition.toUpperCase()).width;
-    rr(ctx,S-46-cw-20,32,cw+20,30,15);ctx.fillStyle='rgba(0,0,0,.42)';ctx.fill();
+    const chipX=cfg.leagueLogo?S-cw-162:S-cw-56;
+    rr(ctx,chipX-10,28,cw+20,32,16);ctx.fillStyle='rgba(0,0,0,.5)';ctx.fill();
     ctx.strokeStyle=rgb(...A,.55);ctx.lineWidth=1.5;ctx.stroke();
-    ctx.fillStyle=rgb(...A);ctx.fillText(d.competition.toUpperCase(),S-46-cw-10,51);
+    ctx.fillStyle=rgb(...A);ctx.fillText(d.competition.toUpperCase(),chipX,49);
   }
 
-  // ── HERO RESULT WORD: vivid, real colour, NOT a watermark ──
+  // ── RESULT WORD — huge, fills top third ──
   const word=won?'VICTORY':lost?'DEFEAT':(d.result||'RESULT').toUpperCase();
-  const fz=word.length>7?148:186;
-  ctx.font=`700 ${fz}px "Oswald"`;
-  ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillText(word,53,283);// shadow pass
-  if(won){const wg=ctx.createLinearGradient(50,112,50,288);wg.addColorStop(0,'#ffffff');wg.addColorStop(.65,rgb(...A));ctx.fillStyle=wg;}
-  else if(lost)ctx.fillStyle='#ff4f4f';
-  else ctx.fillStyle='rgba(255,255,255,.78)';
-  ctx.shadowColor=won?rgb(...A,.32):lost?'rgba(255,79,79,.28)':'transparent';ctx.shadowBlur=26;
-  ctx.fillText(word,50,279);ctx.shadowBlur=0;
-  // Accent underline, fades right
-  const ulW=Math.min(ctx.measureText(word).width*.48,360);
-  const ulG=ctx.createLinearGradient(50,0,50+ulW,0);
-  ulG.addColorStop(0,rgb(...A));ulG.addColorStop(1,rgb(...A,0));
-  ctx.fillStyle=ulG;ctx.fillRect(50,290,ulW,7);
-  // "vs" sub-line
-  if(d.opponent){ctx.font='600 19px "Inter"';ctx.fillStyle='rgba(255,255,255,.48)';
-    ctx.shadowColor='rgba(0,0,0,.4)';ctx.shadowBlur=6;
-    ctx.fillText(`vs ${d.opponent.toUpperCase()}`,50,320);ctx.shadowBlur=0;}
+  const fz=word.length>7?156:198;
+  ctx.font=`900 ${fz}px "Oswald"`;
+  // Ghost depth layer
+  ctx.fillStyle='rgba(255,255,255,.024)';
+  const ghostW=ctx.measureText(word).width;
+  ctx.fillText(word,Math.max(50,(S-ghostW)/2-20),330);
+  // Shadow
+  ctx.fillStyle='rgba(0,0,0,.52)';ctx.fillText(word,54,294);
+  // Main fill
+  const wg=ctx.createLinearGradient(50,100,50,298);
+  if(won){wg.addColorStop(0,'#ffffff');wg.addColorStop(.68,rgb(...A));}
+  else if(lost){wg.addColorStop(0,'#ff6060');wg.addColorStop(1,'#cc2020');}
+  ctx.fillStyle=won||lost?wg:'rgba(255,255,255,.84)';
+  ctx.shadowColor=won?rgb(...A,.52):lost?'rgba(255,55,55,.38)':'transparent';ctx.shadowBlur=30;
+  ctx.fillText(word,50,290);ctx.shadowBlur=0;
+  // Bold underline
+  const ulW=Math.min(ctx.measureText(word).width*.62,460);
+  const ulG=ctx.createLinearGradient(50,0,50+ulW,0);ulG.addColorStop(0,rgb(...A));ulG.addColorStop(1,rgb(...A,0));
+  ctx.fillStyle=ulG;ctx.fillRect(50,300,ulW,9);
+  // vs line
+  if(d.opponent){ctx.font='700 24px "Inter"';ctx.fillStyle='rgba(255,255,255,.5)';
+    ctx.shadowColor='rgba(0,0,0,.5)';ctx.shadowBlur=6;
+    ctx.fillText('vs '+d.opponent.toUpperCase(),50,336);ctx.shadowBlur=0;}
 
-  // ── SCORE PANEL ──
-  const spY=338,spH=218;
-  rr(ctx,36,spY,S-72,spH,18);
-  ctx.fillStyle='rgba(0,0,0,.55)';ctx.fill();
-  ctx.strokeStyle='rgba(255,255,255,.1)';ctx.lineWidth=1.5;ctx.stroke();
-  // Left result-colour strip
-  rr(ctx,36,spY,8,spH,3);
+  // ── SCORE PANEL — full width ──
+  const spY=354,spH=236;
+  rr(ctx,32,spY,S-64,spH,18);
+  const pg=ctx.createLinearGradient(32,spY,S-32,spY+spH);
+  pg.addColorStop(0,'rgba(0,0,0,.66)');pg.addColorStop(1,'rgba(0,0,0,.46)');
+  ctx.fillStyle=pg;ctx.fill();ctx.strokeStyle='rgba(255,255,255,.09)';ctx.lineWidth=1.5;ctx.stroke();
+  // Left result strip
+  rr(ctx,32,spY,11,spH,4);
   if(won){const sg=ctx.createLinearGradient(0,spY,0,spY+spH);sg.addColorStop(0,rgb(...A));sg.addColorStop(1,rgb(...darken(A,.52)));ctx.fillStyle=sg;}
-  else ctx.fillStyle=lost?'rgb(220,55,55)':'rgba(200,200,200,.28)';ctx.fill();
-
-  // Our team
-  ctx.font='600 15px "Inter"';ctx.fillStyle='rgba(255,255,255,.42)';ctx.fillText(club.slice(0,14),60,spY+30);
+  else ctx.fillStyle=lost?'rgb(200,38,38)':'rgba(170,170,170,.28)';ctx.fill();
+  // Our score
+  ctx.font='700 15px "Inter"';ctx.fillStyle='rgba(255,255,255,.36)';ctx.fillText(club.slice(0,16),58,spY+30);
   const ourSc=d.ourScore||'—';
-  ctx.font=`700 ${ourSc.length>6?84:102}px "Oswald"`;
-  ctx.fillStyle=won?rgb(...A):lost?'rgba(255,100,100,.9)':'rgba(255,255,255,.9)';
-  ctx.fillText(ourSc,60,spY+spH-22);
-
+  ctx.font=`900 ${ourSc.length>6?92:114}px "Oswald"`;
+  ctx.fillStyle=won?rgb(...A):lost?'rgba(255,88,88,.9)':'rgba(255,255,255,.9)';
+  ctx.shadowColor=won?rgb(...A,.3):'transparent';ctx.shadowBlur=18;
+  ctx.fillText(ourSc,58,spY+spH-18);ctx.shadowBlur=0;
   // VS divider
-  ctx.beginPath();ctx.moveTo(S/2,spY+16);ctx.lineTo(S/2,spY+spH-16);
-  ctx.strokeStyle='rgba(255,255,255,.09)';ctx.lineWidth=1.5;ctx.stroke();
-  ctx.font='700 24px "Oswald"';ctx.fillStyle='rgba(255,255,255,.2)';
-  const vsw=ctx.measureText('VS').width;ctx.fillText('VS',S/2-vsw/2,spY+spH/2+9);
-
-  // Opponent
+  ctx.beginPath();ctx.moveTo(S/2,spY+20);ctx.lineTo(S/2,spY+spH-20);
+  ctx.strokeStyle='rgba(255,255,255,.07)';ctx.lineWidth=1.5;ctx.stroke();
+  ctx.font='900 28px "Oswald"';ctx.fillStyle='rgba(255,255,255,.17)';
+  const vsw=ctx.measureText('VS').width;ctx.fillText('VS',S/2-vsw/2,spY+spH/2+11);
+  // Opponent score
   const opp=(d.opponent||'OPP').toUpperCase();
-  ctx.font='600 15px "Inter"';ctx.fillStyle='rgba(255,255,255,.3)';
-  const oW=ctx.measureText(opp.slice(0,13)).width;ctx.fillText(opp.slice(0,13),S-52-oW,spY+30);
+  ctx.font='700 15px "Inter"';ctx.fillStyle='rgba(255,255,255,.28)';
+  const oW=ctx.measureText(opp.slice(0,14)).width;ctx.fillText(opp.slice(0,14),S-54-oW,spY+30);
   const thSc=d.theirScore||'—';
-  ctx.font=`700 ${thSc.length>6?84:102}px "Oswald"`;ctx.fillStyle='rgba(255,255,255,.52)';
-  const thW=ctx.measureText(thSc).width;ctx.fillText(thSc,S-52-thW,spY+spH-22);
+  ctx.font=`900 ${thSc.length>6?92:114}px "Oswald"`;ctx.fillStyle='rgba(255,255,255,.52)';
+  const thW=ctx.measureText(thSc).width;ctx.fillText(thSc,S-54-thW,spY+spH-18);
 
   // ── MARGIN PILL ──
   if(d.margin){
-    const mt=won?`WON BY ${d.margin.toUpperCase()}`:lost?`LOST BY ${d.margin.toUpperCase()}`:d.margin.toUpperCase();
-    ctx.font='700 18px "Inter"';
-    const mw=ctx.measureText(mt).width,pX=(S-mw-52)/2,pY2=spY+spH+18;
-    rr(ctx,pX,pY2,mw+52,44,22);
-    if(won){const pg=ctx.createLinearGradient(pX,pY2,pX+mw+52,pY2+44);pg.addColorStop(0,rgb(...A));pg.addColorStop(1,rgb(...darken(A,.68)));ctx.fillStyle=pg;}
-    else ctx.fillStyle=lost?'rgba(220,55,55,.32)':'rgba(255,255,255,.12)';
-    ctx.fill();ctx.fillStyle=won?'#050810':lost?'#ff7070':'#fff';ctx.fillText(mt,pX+26,pY2+30);
+    const mt=won?'WON BY '+d.margin.toUpperCase():lost?'LOST BY '+d.margin.toUpperCase():d.margin.toUpperCase();
+    ctx.font='700 20px "Inter"';
+    const mw=ctx.measureText(mt).width,pX=(S-mw-60)/2,pY2=spY+spH+16;
+    rr(ctx,pX,pY2,mw+60,46,23);
+    if(won){const mpg=ctx.createLinearGradient(pX,0,pX+mw+60,0);mpg.addColorStop(0,rgb(...A));mpg.addColorStop(1,rgb(...darken(A,.68)));ctx.fillStyle=mpg;}
+    else ctx.fillStyle=lost?'rgba(200,38,38,.35)':'rgba(255,255,255,.1)';
+    ctx.fill();ctx.fillStyle=won?'#040810':lost?'#ff7070':'#fff';ctx.fillText(mt,pX+30,pY2+31);
   }
 
-  // ── TOP PERFORMERS ──
-  const pBase=spY+spH+(d.margin?78:28);
-  ctx.beginPath();ctx.moveTo(46,pBase);ctx.lineTo(S-46,pBase);ctx.strokeStyle='rgba(255,255,255,.07)';ctx.lineWidth=1.5;ctx.stroke();
-  ctx.font='700 11px "Inter"';ctx.fillStyle=rgb(...A,.5);
-  ctx.letterSpacing='.13em';ctx.fillText('TOP PERFORMERS',46,pBase+18);ctx.letterSpacing='0';
-
-  function pCard(name,stat,lbl,sub,x,y,w){
-    rr(ctx,x,y,w,170,12);ctx.fillStyle='rgba(255,255,255,.04)';ctx.fill();ctx.strokeStyle='rgba(255,255,255,.07)';ctx.lineWidth=1;ctx.stroke();
-    ctx.beginPath();ctx.moveTo(x+10,y+2);ctx.lineTo(x+72,y+2);ctx.strokeStyle=rgb(...A,.78);ctx.lineWidth=3.5;ctx.stroke();
-    ctx.font='600 12px "Inter"';ctx.fillStyle='rgba(255,255,255,.36)';ctx.fillText(name.toUpperCase().slice(0,18),x+14,y+28);
-    ctx.font='700 66px "Oswald"';ctx.fillStyle=rgb(...A,.95);ctx.fillText(stat,x+14,y+110);
-    ctx.font='700 11px "Inter"';ctx.fillStyle='rgba(255,255,255,.26)';
-    ctx.letterSpacing='.08em';ctx.fillText(lbl,x+14,y+132);ctx.letterSpacing='0';
-    if(sub){ctx.font='400 12px "Inter"';ctx.fillStyle='rgba(255,255,255,.28)';ctx.fillText(sub,x+14,y+152);}
+  // ── TOP PERFORMERS — scale to fill remaining space ──
+  const hasBat=!!d.batterName,hasBwl=!!d.bowlerName;
+  const pBase=spY+spH+(d.margin?78:26);
+  if(hasBat||hasBwl){
+    ctx.beginPath();ctx.moveTo(46,pBase);ctx.lineTo(S-46,pBase);ctx.strokeStyle='rgba(255,255,255,.07)';ctx.lineWidth=1.5;ctx.stroke();
+    ctx.font='700 11px "Inter"';ctx.fillStyle=rgb(...A,.48);
+    ctx.letterSpacing='.14em';ctx.fillText('TOP PERFORMERS',46,pBase+22);ctx.letterSpacing='0';
+    const pYY=pBase+36;
+    const cardH=Math.max(160,S-100-pYY);// dynamic height fills canvas
+    function pCard(name,stat,lbl,sub,x,y,w,h){
+      rr(ctx,x,y,w,h,14);
+      const cg=ctx.createLinearGradient(x,y,x+w,y+h);
+      cg.addColorStop(0,'rgba(255,255,255,.07)');cg.addColorStop(1,'rgba(255,255,255,.02)');
+      ctx.fillStyle=cg;ctx.fill();ctx.strokeStyle='rgba(255,255,255,.07)';ctx.lineWidth=1;ctx.stroke();
+      // Jersey top accent bar
+      rr(ctx,x,y,Math.min(w*.5,200),5,2);ctx.fillStyle=rgb(...A);ctx.fill();
+      ctx.font='600 13px "Inter"';ctx.fillStyle='rgba(255,255,255,.38)';ctx.fillText(name.toUpperCase().slice(0,20),x+16,y+32);
+      const sf=stat.length>4?62:80;
+      ctx.font=`900 ${sf}px "Oswald"`;ctx.fillStyle=rgb(...A,.96);ctx.shadowColor=rgb(...A,.25);ctx.shadowBlur=12;
+      ctx.fillText(stat,x+16,y+Math.round(h*.55));ctx.shadowBlur=0;
+      ctx.font='700 12px "Inter"';ctx.fillStyle='rgba(255,255,255,.3)';
+      ctx.letterSpacing='.09em';ctx.fillText(lbl,x+16,y+Math.round(h*.65));ctx.letterSpacing='0';
+      if(sub){ctx.font='400 13px "Inter"';ctx.fillStyle='rgba(255,255,255,.32)';ctx.fillText(sub,x+16,y+Math.round(h*.79));}
+    }
+    if(hasBat&&hasBwl){const hw=(S-96-14)/2;
+      pCard(d.batterName,String(d.batterRuns||0),'RUNS',[d.batterBalls&&d.batterBalls+'b',d.batterFours&&d.batterFours+'×4',d.batterSixes&&d.batterSixes+'×6'].filter(Boolean).join('  '),46,pYY,hw,cardH);
+      pCard(d.bowlerName,(d.bowlerWkts||0)+'/'+(d.bowlerRuns||0),'WKTS',d.bowlerOvers?d.bowlerOvers+' overs':'',46+hw+14,pYY,hw,cardH);
+    }else if(hasBat)pCard(d.batterName,String(d.batterRuns||0),'RUNS',[d.batterBalls&&d.batterBalls+'b',d.batterFours&&d.batterFours+'×4',d.batterSixes&&d.batterSixes+'×6'].filter(Boolean).join('  '),46,pYY,S-92,cardH);
+    else if(hasBwl)pCard(d.bowlerName,(d.bowlerWkts||0)+'/'+(d.bowlerRuns||0),'WKTS',d.bowlerOvers?d.bowlerOvers+' overs':'',46,pYY,S-92,cardH);
   }
 
-  const hasBat=!!d.batterName,hasBwl=!!d.bowlerName,pYY=pBase+28;
-  if(hasBat&&hasBwl){const hw=(S-96-14)/2;
-    pCard(d.batterName,String(d.batterRuns||0),'RUNS',[d.batterBalls&&`${d.batterBalls}b`,d.batterFours&&`${d.batterFours}×4`,d.batterSixes&&`${d.batterSixes}×6`].filter(Boolean).join('  '),46,pYY,hw);
-    pCard(d.bowlerName,`${d.bowlerWkts||0}/${d.bowlerRuns||0}`,'WKTS',d.bowlerOvers?`${d.bowlerOvers} overs`:'',46+hw+14,pYY,hw);
-  }else if(hasBat)pCard(d.batterName,String(d.batterRuns||0),'RUNS',[d.batterBalls&&`${d.batterBalls}b`,d.batterFours&&`${d.batterFours}×4`,d.batterSixes&&`${d.batterSixes}×6`].filter(Boolean).join('  '),46,pYY,S-92);
-  else if(hasBwl)pCard(d.bowlerName,`${d.bowlerWkts||0}/${d.bowlerRuns||0}`,'WKTS',d.bowlerOvers?`${d.bowlerOvers} overs`:'',46,pYY,S-92);
-
-  footerBar(ctx,A,d.venue,'',club);
+  await drawLeagueLogo(ctx,cfg);
+  footerBar(ctx,A,d.venue,club,club);
 }
 
 // ═══════════════════════════════════════════════════════
-//  2. MATCH DAY / FIXTURE  — IPL match-preview diagonal
+//  2. MATCH DAY / FIXTURE  — full-bleed jersey style
 // ═══════════════════════════════════════════════════════
 async function drawFixtureCard(ctx,d,cfg){
   const P=hexRGB(cfg.primary||'#1a472a'),A=hexRGB(cfg.accent||'#f0b429');
@@ -795,81 +860,81 @@ async function drawFixtureCard(ctx,d,cfg){
   const opp=(d.opponent||'TBC').toUpperCase();
 
   if(d.photoDataURL){await drawPhoto(ctx,d.photoDataURL,0.75);}
-  else{
-    ctx.fillStyle='#080c10';ctx.fillRect(0,0,S,S);
-    // Strong diagonal sweep — left = club color, right = very dark
-    const lg=ctx.createLinearGradient(0,0,S*.65,S);
-    lg.addColorStop(0,rgb(...P,.95));lg.addColorStop(.7,rgb(...lerpC(P,[8,12,18],.62),.8));lg.addColorStop(1,'transparent');
-    ctx.fillStyle=lg;
-    ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(S*.64,0);ctx.lineTo(S*.44,S);ctx.lineTo(0,S);ctx.closePath();ctx.fill();
-    ctx.fillStyle='#060910';
-    ctx.beginPath();ctx.moveTo(S*.56,0);ctx.lineTo(S,0);ctx.lineTo(S,S);ctx.lineTo(S*.38,S);ctx.closePath();ctx.fill();
-    // slash glow
-    const sg=ctx.createLinearGradient(S*.52,0,S*.47,S);
-    sg.addColorStop(0,rgb(...A,.38));sg.addColorStop(.5,rgb(...A,.14));sg.addColorStop(1,rgb(...A,.04));
-    ctx.fillStyle=sg;
-    ctx.beginPath();ctx.moveTo(S*.56,0);ctx.lineTo(S*.65,0);ctx.lineTo(S*.46,S);ctx.lineTo(S*.37,S);ctx.closePath();ctx.fill();
-    // subtle dot-grid on right dark half
-    ctx.fillStyle='rgba(255,255,255,.022)';
-    for(let gx=S*.58;gx<S-.03*S;gx+=48)for(let gy=48;gy<S-48;gy+=48){ctx.beginPath();ctx.arc(gx,gy,1.5,0,Math.PI*2);ctx.fill();}
+  else{jerseyBg(ctx,P,A);}
+
+  // Accent bars
+  ctx.fillStyle=rgb(...A);ctx.fillRect(0,0,S,12);
+  ctx.fillStyle=rgb(...A,.6);ctx.fillRect(0,12,6,S-12);
+
+  // MATCH DAY — large label top
+  ctx.font='900 56px "Oswald"';ctx.fillStyle=rgb(...A);
+  ctx.letterSpacing='.08em';
+  const mdW=ctx.measureText('MATCH DAY').width;
+  ctx.fillText('MATCH DAY',50,90);ctx.letterSpacing='0';
+  // T20 badge right of MATCH DAY
+  ctx.font='900 26px "Oswald"';
+  rr(ctx,50+mdW+22,55,82,38,19);ctx.fillStyle=rgb(...A);ctx.fill();
+  ctx.fillStyle='#040810';const t20W=ctx.measureText('T20').width;ctx.fillText('T20',50+mdW+22+(82-t20W)/2,83);
+  // Horizontal rule
+  ctx.beginPath();ctx.moveTo(50,108);ctx.lineTo(S-50,108);ctx.strokeStyle='rgba(255,255,255,.1)';ctx.lineWidth=1.5;ctx.stroke();
+  // Competition chip
+  if(d.competition){
+    ctx.font='600 14px "Inter"';const cw=ctx.measureText(d.competition.toUpperCase()).width;
+    rr(ctx,50,118,cw+22,32,16);ctx.fillStyle='rgba(0,0,0,.45)';ctx.fill();
+    ctx.strokeStyle=rgb(...A,.42);ctx.lineWidth=1.5;ctx.stroke();
+    ctx.fillStyle=rgb(...A,.9);ctx.fillText(d.competition.toUpperCase(),61,137);
   }
 
-  // Gold top bar
-  ctx.fillStyle=rgb(...A);ctx.fillRect(0,0,S,10);
+  // ── OUR CLUB NAME — hero ──
+  const clubFz=club.length>14?78:club.length>10?98:124;
+  ctx.font=`900 ${clubFz}px "Oswald"`;
+  ctx.fillStyle='rgba(0,0,0,.48)';ctx.fillText(club.slice(0,15),53,282);
+  ctx.fillStyle='#ffffff';ctx.shadowColor='rgba(0,0,0,.6)';ctx.shadowBlur=24;
+  ctx.fillText(club.slice(0,15),50,279);ctx.shadowBlur=0;
 
-  // ── MATCH DAY label — bold and vivid at the top ──
-  ctx.font='700 24px "Inter"';ctx.fillStyle=rgb(...A);
-  ctx.letterSpacing='.14em';ctx.fillText('⚡  MATCH DAY',50,58);ctx.letterSpacing='0';
-  // Competition + format
-  if(d.competition){ctx.font='600 14px "Inter"';const cw=ctx.measureText(d.competition.toUpperCase()).width;
-    rr(ctx,S-52-cw-20,34,cw+20,32,16);ctx.fillStyle='rgba(0,0,0,.5)';ctx.fill();
-    ctx.strokeStyle=rgb(...A,.48);ctx.lineWidth=1.5;ctx.stroke();
-    ctx.fillStyle=rgb(...A,.94);ctx.letterSpacing='.02em';ctx.fillText(d.competition.toUpperCase(),S-52-cw-10,55);ctx.letterSpacing='0';}
-  if(d.format){ctx.font='700 15px "Inter"';ctx.fillStyle='rgba(255,255,255,.5)';ctx.fillText(d.format,50,80);}
-
-  // Rule below header
-  ctx.beginPath();ctx.moveTo(50,94);ctx.lineTo(S-50,94);ctx.strokeStyle='rgba(255,255,255,.1)';ctx.lineWidth=1.5;ctx.stroke();
-
-  // ── OUR CLUB NAME — hero element ──
-  ctx.font=`700 ${club.length>11?90:114}px "Oswald"`;
-  ctx.fillStyle='rgba(0,0,0,.42)';ctx.fillText(club.slice(0,13),52,252);
-  ctx.fillStyle='#ffffff';ctx.shadowColor='rgba(0,0,0,.55)';ctx.shadowBlur=22;
-  ctx.fillText(club.slice(0,13),50,250);ctx.shadowBlur=0;
-
-  // ── VS ──
-  const vsY=300;
-  const vsCX=S*.43;
-  ctx.beginPath();ctx.moveTo(50,vsY);ctx.lineTo(vsCX-52,vsY);
-  ctx.strokeStyle=rgb(...A,.42);ctx.lineWidth=2;ctx.stroke();
-  ctx.font='700 56px "Oswald"';ctx.fillStyle=rgb(...A);
-  const vsW=ctx.measureText('VS').width;ctx.fillText('VS',vsCX-vsW/2,vsY+18);
-  ctx.beginPath();ctx.moveTo(vsCX+vsW/2+52,vsY);ctx.lineTo(S-50,vsY);ctx.stroke();
+  // ── VS block ──
+  const vsY=318;
+  ctx.beginPath();ctx.moveTo(50,vsY);ctx.lineTo(S*.38,vsY);ctx.strokeStyle=rgb(...A,.45);ctx.lineWidth=2.5;ctx.stroke();
+  ctx.font='900 72px "Oswald"';ctx.fillStyle=rgb(...A);ctx.shadowColor=rgb(...A,.4);ctx.shadowBlur=20;
+  const vsW2=ctx.measureText('VS').width;ctx.fillText('VS',S/2-vsW2/2,vsY+52);ctx.shadowBlur=0;
+  ctx.beginPath();ctx.moveTo(S*.62,vsY);ctx.lineTo(S-50,vsY);ctx.strokeStyle=rgb(...A,.45);ctx.lineWidth=2.5;ctx.stroke();
 
   // ── OPPONENT NAME ──
-  ctx.font=`700 ${opp.length>11?82:102}px "Oswald"`;
-  ctx.fillStyle='rgba(255,255,255,.72)';
-  const oppTW=ctx.measureText(opp.slice(0,13)).width;ctx.fillText(opp.slice(0,13),S-56-oppTW,392);
-  ctx.fillStyle=rgb(...A,.45);ctx.fillRect(S-56-Math.min(oppTW*.58,340),399,Math.min(oppTW*.58,340),4);
+  const oppFz=opp.length>14?72:opp.length>10?92:114;
+  ctx.font=`900 ${oppFz}px "Oswald"`;
+  const oppTW=ctx.measureText(opp.slice(0,15)).width;
+  ctx.fillStyle='rgba(0,0,0,.4)';ctx.fillText(opp.slice(0,15),S-52-oppTW+3,456);
+  ctx.fillStyle='rgba(255,255,255,.78)';ctx.shadowColor='rgba(0,0,0,.55)';ctx.shadowBlur=20;
+  ctx.fillText(opp.slice(0,15),S-52-oppTW,453);ctx.shadowBlur=0;
+  ctx.fillStyle=rgb(...A,.45);ctx.fillRect(S-52-Math.min(oppTW*.62,400),463,Math.min(oppTW*.62,400),5);
 
-  // ── INFO SECTION ──
-  const infoY=438;
-  ctx.beginPath();ctx.moveTo(50,infoY);ctx.lineTo(S-50,infoY);ctx.strokeStyle='rgba(255,255,255,.08)';ctx.lineWidth=1.5;ctx.stroke();
+  // ── INFO PANEL — fills the middle belt, no whitespace ──
+  const infoY=496,infoH=220;
+  rr(ctx,32,infoY,S-64,infoH,14);
+  const ipg=ctx.createLinearGradient(32,infoY,S-32,infoY+infoH);
+  ipg.addColorStop(0,'rgba(0,0,0,.64)');ipg.addColorStop(1,'rgba(0,0,0,.44)');
+  ctx.fillStyle=ipg;ctx.fill();ctx.strokeStyle='rgba(255,255,255,.08)';ctx.lineWidth=1.5;ctx.stroke();
+  // left accent strip
+  rr(ctx,32,infoY,10,infoH,4);ctx.fillStyle=rgb(...A);ctx.fill();
 
-  function infoBlock2(icon,lbl,val,x,y){
-    ctx.font='700 11px "Inter"';ctx.fillStyle=rgb(...A,.52);
-    ctx.letterSpacing='.1em';ctx.fillText(icon+'  '+lbl,x,y+24);ctx.letterSpacing='0';
-    ctx.font='700 42px "Oswald"';ctx.fillStyle='#ffffff';ctx.fillText(val.slice(0,22),x,y+74);
+  function infoChunk(icon,lbl,val,sub,x,y){
+    ctx.font='700 12px "Inter"';ctx.fillStyle=rgb(...A,.52);
+    ctx.letterSpacing='.12em';ctx.fillText(icon+'  '+lbl,x,y+26);ctx.letterSpacing='0';
+    const vfz=val.length>20?30:val.length>13?38:46;
+    ctx.font=`900 ${vfz}px "Oswald"`;ctx.fillStyle='#ffffff';ctx.fillText(val.slice(0,24),x,y+86);
+    if(sub){ctx.font='600 24px "Inter"';ctx.fillStyle=rgb(...A,.72);ctx.fillText(sub,x,y+124);}
   }
-  const dtStr=d.datetime?new Date(d.datetime).toLocaleString('en-GB',{weekday:'short',day:'numeric',month:'short'}):(d.date?fmtD(d.date):'');
-  const tmStr=d.datetime?new Date(d.datetime).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'';
-  if(dtStr&&d.venue){
-    infoBlock2('📅','DATE',dtStr,50,infoY+10);
-    if(tmStr){ctx.font='600 22px "Inter"';ctx.fillStyle=rgb(...A,.72);ctx.fillText(tmStr,50,infoY+108);}
-    infoBlock2('📍','VENUE',d.venue.slice(0,20),S/2+24,infoY+10);
-  }else if(dtStr){infoBlock2('📅','DATE & TIME',dtStr+(tmStr?' · '+tmStr:''),50,infoY+10);}
-  else if(d.venue){infoBlock2('📍','VENUE',d.venue.slice(0,28),50,infoY+10);}
 
-  ctx.font='500 20px "Inter"';ctx.fillStyle='rgba(255,255,255,.28)';ctx.fillText('Come support the lads! 🏏',50,S-92);
+  const dtStr=d.datetime?new Date(d.datetime).toLocaleString('en-GB',{weekday:'long',day:'numeric',month:'short'}):(d.date?fmtD(d.date):'TBC');
+  const tmStr=d.datetime?new Date(d.datetime).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'';
+  infoChunk('📅','DATE',dtStr,tmStr?'⏰ '+tmStr:null,58,infoY+10);
+  if(d.venue)infoChunk('📍','VENUE',d.venue.slice(0,22),null,S/2+20,infoY+10);
+
+  // Come support line
+  ctx.font='600 26px "Inter"';ctx.fillStyle='rgba(255,255,255,.34)';
+  ctx.fillText('🏏  Come support the lads!',50,infoY+infoH+56);
+
+  await drawLeagueLogo(ctx,cfg);
   footerBar(ctx,A,'',club,club);
 }
 
@@ -960,6 +1025,7 @@ async function drawSquadCard(ctx,d,cfg){
   col1.forEach((p,i)=>drawPlayer2(p,i,50,startY+i*rowH));
   col2.forEach((p,i)=>drawPlayer2(p,i+6,50+colW+20,startY+i*rowH));
 
+  await drawLeagueLogo(ctx,cfg);
   footerBar(ctx,A,'',club,club);
 }
 
@@ -1059,6 +1125,7 @@ async function drawMOTMCard(ctx,d,cfg){
   // Match context
   const mc=[d.opponent&&`vs ${d.opponent}`,fmtD(d.date)].filter(Boolean).join('  ·  ');
   if(mc){ctx.font='500 19px "Inter"';ctx.fillStyle='rgba(255,255,255,.35)';const mcW=ctx.measureText(mc).width;ctx.fillText(mc,(S-mcW)/2,S-90);}
+  await drawLeagueLogo(ctx,cfg);
   footerBar(ctx,A,'',club,club);
 }
 
@@ -1129,6 +1196,7 @@ async function drawMilestoneCard(ctx,d,cfg){
 
   // Season tag
   if(d.season){ctx.font='700 19px "Inter"';ctx.fillStyle='rgba(200,130,255,.55)';const sW=ctx.measureText(d.season.toUpperCase()).width;ctx.fillText(d.season.toUpperCase(),(S-sW)/2,S-90);}
+  await drawLeagueLogo(ctx,cfg);
   footerBar(ctx,PUR,'',club,club);
 }
 
@@ -1585,6 +1653,13 @@ function App(){return{
       await this.$nextTick();this.renderThumb(post,'created-thumb');
       this.showToast('📸 Photo post created!');
     }finally{this.creating=false;}
+  },
+
+  handleLeagueLogo(ev){
+    const file=ev.target?.files[0];if(!file)return;
+    const reader=new FileReader();
+    reader.onload=e=>{this.settings.leagueLogo=e.target.result;this.saveSettings();this.refreshPreviews();};
+    reader.readAsDataURL(file);
   },
 
   handlePhotoUpload(ev,fk,isDrop){
