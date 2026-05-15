@@ -384,6 +384,14 @@
             </div>
           </div>
           <div class="glass" style="padding:24px">
+            <div style="margin-bottom:16px;padding:12px;background:rgba(139,196,0,.08);border-radius:8px;border:1px solid rgba(139,196,0,.25);display:flex;gap:12px;align-items:center">
+              <span style="font-size:12px;font-weight:600;color:rgba(139,196,0,.95)">🎨 Render Style:</span>
+              <select x-model="mf._renderMode" style="flex:1;padding:8px 12px;border-radius:6px;background:rgba(255,255,255,.05);color:#fff;border:1px solid rgba(255,255,255,.15);font-size:12px;font-family:Inter">
+                <option value="canvas">Canvas</option>
+                <option value="ai-chars" selected>+ AI Characters</option>
+                <option value="ai-full">🎨 AI Full Card</option>
+              </select>
+            </div>
             <div class="fg2" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
               <div><label class="lbl">Opponent *</label><input class="inp" x-model="mf.opponent" @input="debouncedPreview('match')" placeholder="Brick Lane CC"/></div>
               <div><label class="lbl">Result *</label>
@@ -451,6 +459,14 @@
       <div style="display:grid;grid-template-columns:1fr 340px;gap:28px;align-items:start" class="rg2">
         <div>
           <div class="glass" style="padding:24px">
+            <div style="margin-bottom:16px;padding:12px;background:rgba(255,139,196,.08);border-radius:8px;border:1px solid rgba(255,139,196,.25);display:flex;gap:12px;align-items:center">
+              <span style="font-size:12px;font-weight:600;color:rgba(255,139,196,.95)">🎨 Render Style:</span>
+              <select x-model="ff._renderMode" style="flex:1;padding:8px 12px;border-radius:6px;background:rgba(255,255,255,.05);color:#fff;border:1px solid rgba(255,255,255,.15);font-size:12px;font-family:Inter">
+                <option value="canvas">Canvas</option>
+                <option value="ai-chars" selected>+ AI Characters</option>
+                <option value="ai-full">🎨 AI Full Card</option>
+              </select>
+            </div>
             <div class="fg2" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
               <div><label class="lbl">Opponent *</label><input class="inp" x-model="ff.opponent" @input="debouncedPreview('fixture')" placeholder="Hackney Hawks"/></div>
               <div><label class="lbl">Match Date & Time *</label><input class="inp" type="datetime-local" x-model="ff.datetime" @input="debouncedPreview('fixture')"/></div>
