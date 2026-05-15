@@ -1273,17 +1273,24 @@ async function generateFixtureAI(d,cfg){
   const opp=(d.opponent||'TBC').toUpperCase();
   const dateStr=d.datetime?new Date(d.datetime).toLocaleDateString('en-GB'):'';
   const timeStr=d.datetime?new Date(d.datetime).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'';
-  const prompt=`Professional cricket match day poster: ${club} vs ${opp}, ${dateStr} ${timeStr} at ${d.venue||'TBC'}. 
-${d.competition||''} T20. Epic, cinematic, stadium background, dramatic lighting, 1080x1920 vertical portrait.
-${club} batsman in blue electric aura on left side, ${opp} warrior/mascot in orange fire aura on right side.
-VS lightning bolt center. NACL cricket league logo top. Match day announcement. Dark night time stadium atmosphere.
-Professional esports style, high quality, dramatic, energetic.`;
+  const venue=d.venue||'TBC';
+  // Minimal prompt - just describe the match, let Pollinations create the scene
+  const prompt=`Cricket match day poster. ${club} vs ${opp}, ${dateStr} at ${venue}. Epic stadium background, dark dramatic night time, floodlights, professional sports photography, 1080x1920 vertical.`;
   try{
     const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1080&height=1920&nologo=true`;
     const img=new Image();
     return new Promise((res)=>{
       const timeout=setTimeout(()=>res(null),12000);
-      img.onload=()=>{clearTimeout(timeout);res(img);};
+      img.onload=()=>{
+        clearTimeout(timeout);
+        // Composite the real logos on top of the generated image
+        const cv=document.createElement('canvas');
+        cv.width=1080;cv.height=1920;
+        const ctx=cv.getContext('2d');
+        ctx.drawImage(img,0,0);
+        // Draw logos on top (using existing logo drawing functions)
+        drawClubLogo(ctx,cfg).then(()=>drawLeagueLogo(ctx,cfg)).then(()=>res(cv));
+      };
       img.onerror=()=>{clearTimeout(timeout);res(null);};
       img.crossOrigin='anonymous';img.src=url;
     });
