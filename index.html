@@ -1392,9 +1392,9 @@ Create a dramatic, cinematic sports photography style image of a cricket match:
     const img=new Image();
     return new Promise((res)=>{
       const timeout=setTimeout(()=>{
-        console.warn('⏱️ Image download timeout');
+        console.warn('⏱️ Image download timeout (30s)');
         res(null);
-      },15000);
+      },30000); // Increased to 30 seconds
 
       img.onload=()=>{
         clearTimeout(timeout);
@@ -1404,7 +1404,7 @@ Create a dramatic, cinematic sports photography style image of a cricket match:
           cv.width=1080;cv.height=1920;
           const ctx=cv.getContext('2d');
           ctx.drawImage(img,0,0);
-          console.log('Image drawn to canvas');
+          console.log('✅ Image drawn to canvas ('+img.width+'x'+img.height+')');
 
           // Add vignette effect for logos
           const vignette=(x,y)=>{
@@ -1415,30 +1415,31 @@ Create a dramatic, cinematic sports photography style image of a cricket match:
             ctx.fillStyle=grad;ctx.fillRect(x-150,y-150,300,300);
           };
           vignette(100,100);vignette(980,100);
-          console.log('Vignette applied');
+          console.log('✅ Vignette applied');
 
           // Draw logos on top
-          drawClubLogo(ctx,cfg).then(()=>{console.log('Club logo drawn');return drawLeagueLogo(ctx,cfg);}).then(()=>{console.log('League logo drawn');res(cv);}).catch(e=>{console.warn('Logo drawing failed:',e);res(cv);});
+          drawClubLogo(ctx,cfg).then(()=>{console.log('✅ Club logo drawn');return drawLeagueLogo(ctx,cfg);}).then(()=>{console.log('✅ League logo drawn');res(cv);}).catch(e=>{console.warn('⚠ Logo drawing failed:',e);res(cv);});
         }catch(e){
-          console.error('Canvas error:',e);
+          console.error('❌ Canvas error:',e);
           res(null);
         }
       };
 
       img.onerror=(err)=>{
         clearTimeout(timeout);
-        console.error('❌ DALL-E image load failed:',err);
+        console.error('❌ DALL-E image load FAILED - Check CORS or URL expiration',err);
+        console.log('Image URL was:',imageUrl.substring(0,100)+'...');
         res(null);
       };
 
       img.onabort=()=>{
         clearTimeout(timeout);
-        console.error('❌ Image load aborted');
+        console.error('❌ Image load ABORTED (network issue?)');
         res(null);
       };
 
       img.crossOrigin='anonymous';
-      console.log('Setting image src to:',imageUrl.substring(0,80)+'...');
+      console.log('📥 Loading DALL-E image from:',imageUrl.substring(0,100)+'...');
       img.src=imageUrl;
     });
 
