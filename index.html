@@ -990,7 +990,7 @@ async function drawJersey(ctx){
   const dh=S*0.62,dw=dh*(cropW/ih);
   const dx=S-dw+dw*0.18,dy=S-dh-20;
   ctx.save();
-  ctx.globalAlpha=0.13;
+  ctx.globalAlpha=0.04;
   // flip horizontally so jersey faces inward
   ctx.translate(dx+dw,dy);ctx.scale(-1,1);
   ctx.drawImage(img,0,0,cropW,ih,0,0,dw,dh);
@@ -1000,7 +1000,7 @@ async function drawClubLogo(ctx,cfg){
   if(!cfg||!cfg.clubLogo)return;
   const img=await loadImg(cfg.clubLogo);if(!img)return;
   // Top-left circular badge
-  const r=58,cx=r+22,cy=r+18;
+  const r=72,cx=r+22,cy=r+18;
   ctx.save();
   // White fill circle
   ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
@@ -1250,8 +1250,57 @@ async function drawFixtureCard(ctx,d,cfg){
   chunk('📅','DATE',dtStr,tmStr?'⏰ '+tmStr:null,56,infoY+12);
   if(d.venue)chunk('📍','VENUE',d.venue.slice(0,22),null,S/2+18,infoY+12);
 
-  ctx.font='600 24px "Inter"';ctx.fillStyle='rgba(255,255,255,.32)';
-  ctx.fillText('🏏  Come support the lads!',50,infoY+infoH+56);
+  // ── CRICKET ATMOSPHERE BOTTOM SCENE ─────────────────────
+  const atmY=infoY+infoH+10;
+  // Dark sky-to-pitch gradient
+  const ag=ctx.createLinearGradient(0,atmY,0,S-90);
+  ag.addColorStop(0,'rgba(0,0,30,0)');ag.addColorStop(1,'rgba(0,0,20,0.72)');
+  ctx.fillStyle=ag;ctx.fillRect(0,atmY,S,S-90-atmY);
+
+  // Floodlight beams — bottom-left tower
+  floodBeam(ctx,60,S-85,[-1.48,-0.82],0,'20,184,166',0.055);
+  // bottom-right tower
+  floodBeam(ctx,S-60,S-85,[-2.32,-1.66],0,'255,185,0',0.048);
+
+  // Stadium arc (green outfield hint)
+  ctx.save();
+  ctx.beginPath();ctx.ellipse(S/2,S-90,220,55,0,Math.PI,0);
+  const fieldG=ctx.createLinearGradient(0,S-145,0,S-90);
+  fieldG.addColorStop(0,'rgba(20,80,40,0)');fieldG.addColorStop(1,'rgba(20,80,40,0.28)');
+  ctx.fillStyle=fieldG;ctx.fill();
+  ctx.beginPath();ctx.ellipse(S/2,S-90,220,55,0,Math.PI,0);
+  ctx.strokeStyle='rgba(20,184,166,0.12)';ctx.lineWidth=2;ctx.stroke();
+  // Pitch rectangle
+  ctx.strokeStyle='rgba(255,255,255,0.07)';ctx.lineWidth=1.5;
+  ctx.strokeRect(S/2-28,S-175,56,95);
+  ctx.restore();
+
+  // Crossed bats (coat-of-arms style)
+  drawBat(ctx,S/2-38,S-148,180,-0.42,0.28);
+  drawBat(ctx,S/2+38,S-148,180,0.42,0.28);
+
+  // Three stumps centred
+  drawStumps(ctx,S/2,S-106,72,0.38,teal.join(','));
+
+  // Cricket ball on top
+  drawBall(ctx,S/2,S-155,20,0.55);
+
+  // Floodlight towers (simple shapes left & right)
+  ctx.save();ctx.fillStyle='rgba(255,255,255,0.06)';
+  ctx.fillRect(40,S-210,8,130);ctx.fillRect(30,S-218,28,10); // left tower
+  ctx.fillRect(S-48,S-210,8,130);ctx.fillRect(S-58,S-218,28,10); // right tower
+  ctx.restore();
+
+  // Call to action text
+  ctx.save();
+  ctx.textAlign='center';
+  ctx.font='700 21px "Inter"';
+  ctx.fillStyle='rgba(255,255,255,0.72)';
+  ctx.shadowColor='rgba(0,0,0,0.9)';ctx.shadowBlur=14;
+  ctx.fillText('🏏  COME SUPPORT THE LADS!  🏏',S/2,atmY+46);
+  ctx.shadowBlur=0;ctx.textAlign='left';
+  ctx.restore();
+
   footerBar(ctx,teal,'',club,club);
 }
 // ═══════════════════════════════════════════════════════
