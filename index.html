@@ -1305,27 +1305,51 @@ async function drawMatchCard(ctx,d,cfg){
 async function generateFixtureAI(d,cfg){
   const club=(cfg.clubName||'Cricket Club').toUpperCase();
   const opp=(d.opponent||'TBC').toUpperCase();
-  const dateStr=d.datetime?new Date(d.datetime).toLocaleDateString('en-GB'):'';
-  const timeStr=d.datetime?new Date(d.datetime).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'';
   const venue=d.venue||'TBC';
   const comp=d.competition||'Cricket';
 
-  // High-quality prompt with specific cricket imagery and composition
-  const prompt=`EPIC PROFESSIONAL CRICKET MATCH DAY POSTER. ${club} vs ${opp}, ${comp} at ${venue}. Cinematic ultra high-quality 8k, photorealistic, dramatic stadium lighting with powerful floodlights, night cricket match, grass cricket field in perfect condition, intense competitive energy, professional sports photography, vibrant colors, sharp focus, composition with action and movement, dynamic dramatic sky, golden and teal accent lighting, championship event aesthetic. Instagram story 9:16 vertical format, premium sports poster design.`;
+  // Tier 1 Improvement: Better structured prompt (avoids conflicting instructions)
+  const prompt=`Professional cricket match day poster. ${club} vs ${opp}, ${comp} at ${venue}.
+    Professional sports photography, cinematic 8k photorealism, dramatic stadium floodlights,
+    night cricket match, pristine grass cricket field, intense competitive energy,
+    championship event aesthetic, golden warm stadium lighting, high contrast sharp focus,
+    9:16 vertical Instagram story format, premium sports poster design.`;
+
+  // Tier 1 Improvement: Negative prompt (tell AI what NOT to generate)
+  const negPrompt=`text, watermark, logo, faces, people, blurry, cartoon, illustration,
+    CGI, low quality, generic stock photo, oversaturated, artificial, numbers, words`;
+
+  // Tier 1 Improvement: Seed for reproducibility
+  const seed=Math.floor(Math.random()*1000000);
 
   try{
-    const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1080&height=1920&nologo=true&model=flux-pro&enhance=true`;
+    // Tier 1 Improvement: Add negative_prompt and seed parameters
+    const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?`
+      +`width=1080&height=1920&nologo=true&model=flux-pro&enhance=true`
+      +`&negative_prompt=${encodeURIComponent(negPrompt)}&seed=${seed}`;
+
     const img=new Image();
     return new Promise((res)=>{
       const timeout=setTimeout(()=>res(null),15000);
       img.onload=()=>{
         clearTimeout(timeout);
-        // Composite the real logos on top of the generated image
         const cv=document.createElement('canvas');
         cv.width=1080;cv.height=1920;
         const ctx=cv.getContext('2d');
         ctx.drawImage(img,0,0);
-        // Draw logos on top (using existing logo drawing functions)
+
+        // Tier 1 Improvement: Add vignette effect where logos will be placed
+        // Dark vignette in top corners for better logo visibility
+        const vignette=(x,y)=>{
+          const grad=ctx.createRadialGradient(x,y,0,x,y,180);
+          grad.addColorStop(0,'rgba(0,0,0,0)');
+          grad.addColorStop(0.7,'rgba(0,0,0,0.15)');
+          grad.addColorStop(1,'rgba(0,0,0,0.4)');
+          ctx.fillStyle=grad;ctx.fillRect(x-150,y-150,300,300);
+        };
+        vignette(100,100);vignette(980,100); // Top-left and top-right
+
+        // Draw logos on top
         drawClubLogo(ctx,cfg).then(()=>drawLeagueLogo(ctx,cfg)).then(()=>res(cv));
       };
       img.onerror=()=>{clearTimeout(timeout);res(null);};
