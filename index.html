@@ -320,11 +320,7 @@
               <div><label class="lbl">Venue</label><input class="inp" x-model="ff.venue" @input="debouncedPreview('fixture')" placeholder="Victoria Park"/></div>
               <div><label class="lbl">Competition</label><input class="inp" x-model="ff.competition" @input="debouncedPreview('fixture')" placeholder="Sunday League"/></div>
             </div>
-            <div style="margin-top:14px"><label class="lbl">Format</label>
-              <select class="inp" x-model="ff.format" @change="debouncedPreview('fixture')">
-                <option value="">Select format</option><option>T20</option><option>40-Over</option><option>50-Over</option><option>T10</option>
-              </select>
-            </div>
+
             <div class="divider"></div>
             <div class="drop-zone" @click="$refs.fixPhoto.click()" style="padding:16px">
               <input type="file" accept="image/*" x-ref="fixPhoto" class="hidden" @change="handlePhotoUpload($event,'ff')"/>
@@ -1490,7 +1486,7 @@ function App(){return{
   igStatus:'', igOk:false, createdPost:null,
   // forms
   mf:{opponent:'',result:'won',ourScore:'',theirScore:'',margin:'',venue:'',date:'',competition:'',batterName:'',batterRuns:0,batterBalls:0,batterFours:0,batterSixes:0,bowlerName:'',bowlerWkts:0,bowlerRuns:0,bowlerOvers:'',photoDataURL:'',photoName:''},
-  ff:{opponent:'',datetime:'',venue:'',competition:'',format:'',photoDataURL:'',photoName:''},
+  ff:{opponent:'',datetime:'',venue:'',competition:'',format:'T20',photoDataURL:'',photoName:''},
   qf:{opponent:'',date:'',competition:'',players:Array.from({length:11},()=>({name:'',role:''}))},
   gf:{name:'',opponent:'',date:'',runs:0,balls:0,sr:'',wkts:0,conc:0,overs:'',fielding:'',photoDataURL:'',photoName:''},
   lf:{title:'',name:'',number:'',season:'',subtitle:'',photoDataURL:'',photoName:''},
