@@ -1000,14 +1000,15 @@ async function drawClubLogo(ctx,cfg){
   if(!cfg||!cfg.clubLogo)return;
   const img=await loadImg(cfg.clubLogo);if(!img)return;
   // Top-left circular badge
-  const r=72,cx=r+22,cy=r+18;
+  const r=88,cx=r+18,cy=r+16;
+  const zoom=1.95; // draw image oversized so white padding is clipped away
   ctx.save();
   // White fill circle
   ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
   ctx.fillStyle='#ffffff';ctx.fill();
-  // Clip logo into circle
+  // Clip logo into circle — draw at zoom scale so badge fills it
   ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.clip();
-  ctx.drawImage(img,cx-r,cy-r,r*2,r*2);
+  ctx.drawImage(img,cx-r*zoom,cy-r*zoom,r*2*zoom,r*2*zoom);
   ctx.restore();
   // Outer ring — teal then thin lime
   ctx.save();
