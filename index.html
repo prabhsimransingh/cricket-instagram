@@ -63,8 +63,52 @@
   .type-motm{background:rgba(255,170,0,.15);color:#ffaa00}
   .type-milestone{background:rgba(160,80,240,.12);color:#c084fc}
   .type-photo{background:rgba(236,72,153,.12);color:#f472b6}
-  @media(max-width:860px){.rg2{grid-template-columns:1fr!important}.rg3{grid-template-columns:1fr 1fr!important}}
-  @media(max-width:640px){.post-card{grid-template-columns:1fr!important}.post-card>div:first-child{aspect-ratio:1;width:100%!important}}
+  /* ── TABLET ─────────────────────────────────────────────── */
+  @media(max-width:860px){
+    .rg2{grid-template-columns:1fr!important}
+    .rg3{grid-template-columns:1fr 1fr!important}
+    .fg5{grid-template-columns:1fr 1fr 1fr!important}
+    .fg4{grid-template-columns:1fr 1fr!important}
+    .fg3{grid-template-columns:1fr 1fr!important}
+  }
+  /* ── MOBILE ─────────────────────────────────────────────── */
+  @media(max-width:640px){
+    .page{padding:0 12px!important;padding-bottom:80px!important}
+    /* Header */
+    .hdr-sub{display:none!important}
+    .hdr-badge{display:none!important}
+    header .page{gap:8px}
+    /* Tabs: horizontal scroll, no wrap */
+    .tab-bar{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:0;flex-wrap:nowrap}
+    .tab-bar::-webkit-scrollbar{display:none}
+    .tab{padding:10px 12px;font-size:12px;flex-shrink:0}
+    /* Queue post card: stack vertically */
+    .post-card{grid-template-columns:1fr!important;min-height:0!important}
+    .post-thumb{border-right:none!important;border-bottom:1px solid rgba(255,255,255,.06)!important}
+    .post-content{padding:14px!important}
+    /* Collapse ALL multi-column form grids */
+    .fg2,.fg3,.fg5,.fg4,.fg2s{grid-template-columns:1fr!important}
+    /* Squad player row: tighter but 3-col */
+    .pl-row{grid-template-columns:24px 1fr 86px!important;gap:5px!important}
+    /* Action button row */
+    .act-btns{gap:6px!important}
+    .act-btns .btn{font-size:12px!important;padding:8px 10px!important}
+    /* Preview column: un-stick, show below form */
+    .prev-col{position:static!important;margin-top:20px}
+    /* New post type picker: 2 cols */
+    .type-grid{grid-template-columns:1fr 1fr!important}
+    /* Settings inner grid */
+    .sg2{grid-template-columns:1fr!important}
+    /* Toast: full width at bottom */
+    .toast{left:12px!important;right:12px!important;bottom:16px!important;font-size:13px!important}
+    /* Drop zone padding */
+    .drop-zone{padding:20px 14px!important}
+    /* Glass card padding */
+    .glass{padding:16px!important}
+    /* Generate button full width */
+    .gen-row{flex-direction:column!important}
+    .gen-row .btn{width:100%!important;justify-content:center!important}
+  }
 </style>
 </head>
 <body x-data="App()" x-init="init()">
@@ -81,12 +125,12 @@
       <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#1a472a,#0d2a18);display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 0 0 1px rgba(240,180,41,.2)">🏏</div>
       <div>
         <div style="font-size:18px;font-weight:800;letter-spacing:-.3px;background:linear-gradient(90deg,#f0b429,#ffe580);-webkit-background-clip:text;-webkit-text-fill-color:transparent">WicketGram</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.05em;text-transform:uppercase" x-text="(settings.clubName||'Cricket Club') + ' · Social Media'"></div>
+        <div class="hdr-sub" style="font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.05em;text-transform:uppercase" x-text="(settings.clubName||'Cricket Club') + ' · Social Media'"></div>
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:12px">
       <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.35)">
-        <span x-show="posts.filter(p=>p.status==='approved').length" style="background:rgba(63,185,80,.15);color:#3fb950;padding:2px 10px;border-radius:20px;font-weight:600" x-text="posts.filter(p=>p.status==='approved').length+' ready'"></span>
+        <span class="hdr-badge" x-show="posts.filter(p=>p.status==='approved').length" style="background:rgba(63,185,80,.15);color:#3fb950;padding:2px 10px;border-radius:20px;font-weight:600" x-text="posts.filter(p=>p.status==='approved').length+' ready'"></span>
       </div>
       <button class="btn btn-ghost" style="padding:7px 14px;font-size:12px" @click="tab='settings'">⚙ Settings</button>
     </div>
@@ -122,7 +166,7 @@
       <div class="post-card" style="display:grid;grid-template-columns:200px 1fr;min-height:200px">
 
         <!-- LEFT: square graphic preview with type overlay -->
-        <div style="position:relative;aspect-ratio:1;background:#060a0e;overflow:hidden;border-right:1px solid rgba(255,255,255,.06)">
+        <div class="post-thumb" style="position:relative;aspect-ratio:1;background:#060a0e;overflow:hidden;border-right:1px solid rgba(255,255,255,.06)">
           <canvas :id="'thumb-'+post.id" width="400" height="400" style="width:100%;height:100%;display:block;object-fit:cover" x-init="$nextTick(()=>renderThumb(post))"></canvas>
           <!-- type badge overlaid bottom-left of thumbnail -->
           <div style="position:absolute;bottom:10px;left:10px">
@@ -137,7 +181,7 @@
         </div>
 
         <!-- RIGHT: meta + caption + actions -->
-        <div style="padding:18px 22px;display:flex;flex-direction:column;gap:10px;min-width:0">
+        <div class="post-content" style="padding:18px 22px;display:flex;flex-direction:column;gap:10px;min-width:0">
 
           <!-- Title row -->
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
@@ -168,7 +212,7 @@
 
             <!-- MATCH fields -->
             <template x-if="post.type==='match'">
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div class="fg2s" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
                 <div><label class="lbl" style="font-size:11px">Opponent</label><input class="inp" style="font-size:13px" x-model="post.meta.opponent" @input="debouncedThumb(post)"/></div>
                 <div><label class="lbl" style="font-size:11px">Result</label>
                   <select class="inp" style="font-size:13px" x-model="post.meta.result" @change="debouncedThumb(post)">
@@ -195,7 +239,7 @@
 
             <!-- FIXTURE fields -->
             <template x-if="post.type==='fixture'">
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div class="fg2s" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
                 <div><label class="lbl" style="font-size:11px">Opponent</label><input class="inp" style="font-size:13px" x-model="post.meta.opponent" @input="debouncedThumb(post)"/></div>
                 <div><label class="lbl" style="font-size:11px">Date & Time</label><input class="inp" type="datetime-local" style="font-size:13px" x-model="post.meta.datetime" @input="debouncedThumb(post)"/></div>
                 <div><label class="lbl" style="font-size:11px">Venue</label><input class="inp" style="font-size:13px" x-model="post.meta.venue" @input="debouncedThumb(post)"/></div>
@@ -205,7 +249,7 @@
 
             <!-- MOTM fields -->
             <template x-if="post.type==='motm'">
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div class="fg2s" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
                 <div><label class="lbl" style="font-size:11px">Player Name</label><input class="inp" style="font-size:13px" x-model="post.meta.name" @input="debouncedThumb(post)"/></div>
                 <div><label class="lbl" style="font-size:11px">Opponent</label><input class="inp" style="font-size:13px" x-model="post.meta.opponent" @input="debouncedThumb(post)"/></div>
                 <div><label class="lbl" style="font-size:11px">Runs</label><input class="inp" style="font-size:13px" x-model.number="post.meta.runs" @input="debouncedThumb(post)"/></div>
@@ -217,7 +261,7 @@
 
             <!-- MILESTONE fields -->
             <template x-if="post.type==='milestone'">
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div class="fg2s" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
                 <div><label class="lbl" style="font-size:11px">Title</label><input class="inp" style="font-size:13px" x-model="post.meta.title" @input="debouncedThumb(post)"/></div>
                 <div><label class="lbl" style="font-size:11px">Player/Team</label><input class="inp" style="font-size:13px" x-model="post.meta.name" @input="debouncedThumb(post)"/></div>
                 <div><label class="lbl" style="font-size:11px">Number</label><input class="inp" style="font-size:13px" x-model="post.meta.number" @input="debouncedThumb(post)"/></div>
@@ -251,7 +295,7 @@
           </div>
 
           <!-- Action buttons -->
-          <div style="display:flex;flex-wrap:wrap;gap:8px;padding-top:4px;border-top:1px solid rgba(255,255,255,.06)">
+          <div class="act-btns" style="display:flex;flex-wrap:wrap;gap:8px;padding-top:4px;border-top:1px solid rgba(255,255,255,.06)">
             <button class="btn btn-green" x-show="post.status!=='approved'" @click="approvePost(post)" style="font-size:13px">✓ Approve</button>
             <button class="btn" @click="downloadPost(post)" :disabled="downloading===post.id"
               style="font-size:13px;background:linear-gradient(135deg,#17b8b8,#0e8f8f);color:#fff;border:none">
@@ -278,7 +322,7 @@
   <div x-show="tab==='new'" style="padding-top:28px">
     <h2 style="font-size:20px;font-weight:700;margin-bottom:20px">Create New Post</h2>
     <!-- Post type picker — card style -->
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px" class="rg3">
+    <div class="rg3 type-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px">
       <div @click="newTab='match'" :class="newTab==='match'?'active':''"
         style="cursor:pointer;border-radius:14px;padding:16px 18px;border:1px solid rgba(255,255,255,.08);background:rgba(22,27,34,.6);transition:all .15s"
         :style="newTab==='match'?'border-color:rgba(63,185,80,.5);background:rgba(63,185,80,.08)':''">
@@ -340,7 +384,7 @@
             </div>
           </div>
           <div class="glass" style="padding:24px">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div class="fg2" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
               <div><label class="lbl">Opponent *</label><input class="inp" x-model="mf.opponent" @input="debouncedPreview('match')" placeholder="Brick Lane CC"/></div>
               <div><label class="lbl">Result *</label>
                 <select class="inp" x-model="mf.result" @change="debouncedPreview('match')">
@@ -360,7 +404,7 @@
             <div style="margin-top:14px"><label class="lbl">Competition</label><input class="inp" x-model="mf.competition" @input="debouncedPreview('match')" placeholder="East London T20 League"/></div>
             <div class="divider"></div>
             <div class="sh">🏏 Top Batter</div>
-            <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:12px">
+            <div class="fg5" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:12px">
               <div><label class="lbl">Name</label><input class="inp" x-model="mf.batterName" @input="debouncedPreview('match')" placeholder="Ravinder Singh"/></div>
               <div><label class="lbl">Runs</label><input class="inp" type="number" x-model.number="mf.batterRuns" @input="debouncedPreview('match')" placeholder="72" min="0"/></div>
               <div><label class="lbl">Balls</label><input class="inp" type="number" x-model.number="mf.batterBalls" @input="debouncedPreview('match')" placeholder="48" min="0"/></div>
@@ -369,7 +413,7 @@
             </div>
             <div class="divider"></div>
             <div class="sh">🎳 Top Bowler</div>
-            <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:12px">
+            <div class="fg4" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:12px">
               <div><label class="lbl">Name</label><input class="inp" x-model="mf.bowlerName" @input="debouncedPreview('match')" placeholder="Harpreet Dhaliwal"/></div>
               <div><label class="lbl">Wickets</label><input class="inp" type="number" x-model.number="mf.bowlerWkts" @input="debouncedPreview('match')" placeholder="3" min="0"/></div>
               <div><label class="lbl">Runs</label><input class="inp" type="number" x-model.number="mf.bowlerRuns" placeholder="22" min="0"/></div>
@@ -382,7 +426,7 @@
               <div style="font-size:13px;color:rgba(255,255,255,.4)" x-text="mf.photoName||'Add a photo as card background'"></div>
             </div>
           </div>
-          <div style="display:flex;gap:10px;margin-top:16px">
+          <div class="gen-row" style="display:flex;gap:10px;margin-top:16px">
             <button class="btn btn-ghost" style="padding:12px 16px;font-size:14px;flex-shrink:0;white-space:nowrap" @click="loadSample('match')">📋 Sample</button>
             <button class="btn btn-gold" style="flex:1;justify-content:center;padding:13px;font-size:15px" @click="submitMatch()" :disabled="creating||!mf.opponent">
               <span x-show="!creating">✨ Generate Post</span>
@@ -390,7 +434,7 @@
             </button>
           </div>
         </div>
-        <div style="position:sticky;top:80px">
+        <div class="prev-col" style="position:sticky;top:80px">
           <div class="sh">Live Preview</div>
           <div class="preview-wrap"><canvas id="match-preview" width="1080" height="1080" style="width:100%;height:auto;display:block"></canvas></div>
           <div style="display:flex;gap:8px;margin-top:10px">
@@ -407,7 +451,7 @@
       <div style="display:grid;grid-template-columns:1fr 340px;gap:28px;align-items:start" class="rg2">
         <div>
           <div class="glass" style="padding:24px">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div class="fg2" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
               <div><label class="lbl">Opponent *</label><input class="inp" x-model="ff.opponent" @input="debouncedPreview('fixture')" placeholder="Hackney Hawks"/></div>
               <div><label class="lbl">Match Date & Time *</label><input class="inp" type="datetime-local" x-model="ff.datetime" @input="debouncedPreview('fixture')"/></div>
             </div>
@@ -422,7 +466,7 @@
               <div style="font-size:13px;color:rgba(255,255,255,.4)" x-text="ff.photoName||'📸 Optional photo background'"></div>
             </div>
           </div>
-          <div style="display:flex;gap:10px;margin-top:16px">
+          <div class="gen-row" style="display:flex;gap:10px;margin-top:16px">
             <button class="btn btn-ghost" style="padding:12px 16px;font-size:14px;flex-shrink:0;white-space:nowrap" @click="loadSample('fixture')">📋 Sample</button>
             <button class="btn btn-gold" style="flex:1;justify-content:center;padding:13px;font-size:15px" @click="submitFixture()" :disabled="creating||!ff.opponent">
               <span x-show="!creating">✨ Generate Match Day Post</span>
@@ -430,7 +474,7 @@
             </button>
           </div>
         </div>
-        <div style="position:sticky;top:80px">
+        <div class="prev-col" style="position:sticky;top:80px">
           <div class="sh">Live Preview</div>
           <div class="preview-wrap"><canvas id="fixture-preview" width="1080" height="1080" style="width:100%;height:auto;display:block"></canvas></div>
           <div style="display:flex;gap:8px;margin-top:10px">
@@ -446,7 +490,7 @@
       <div style="display:grid;grid-template-columns:1fr 340px;gap:28px;align-items:start" class="rg2">
         <div>
           <div class="glass" style="padding:24px">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div class="fg2" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
               <div><label class="lbl">Match vs *</label><input class="inp" x-model="qf.opponent" @input="debouncedPreview('squad')" placeholder="Hackney Hawks"/></div>
               <div><label class="lbl">Date</label><input class="inp" type="date" x-model="qf.date" @input="debouncedPreview('squad')"/></div>
             </div>
@@ -455,7 +499,7 @@
             <div class="sh" style="margin-bottom:14px">Playing XI — Enter Players (1–11)</div>
             <div style="display:flex;flex-direction:column;gap:10px">
               <template x-for="(pl,i) in qf.players" :key="i">
-                <div style="display:grid;grid-template-columns:32px 1fr 120px;gap:8px;align-items:center">
+                <div class="pl-row" style="display:grid;grid-template-columns:32px 1fr 120px;gap:8px;align-items:center">
                   <span style="font-size:13px;font-weight:700;color:rgba(255,255,255,.4);text-align:center" x-text="i+1"></span>
                   <input class="inp" x-model="pl.name" @input="debouncedPreview('squad')" :placeholder="'Player '+(i+1)"/>
                   <select class="inp" x-model="pl.role" @change="debouncedPreview('squad')" style="font-size:12px">
@@ -465,7 +509,7 @@
               </template>
             </div>
           </div>
-          <div style="display:flex;gap:10px;margin-top:16px">
+          <div class="gen-row" style="display:flex;gap:10px;margin-top:16px">
             <button class="btn btn-ghost" style="padding:12px 16px;font-size:14px;flex-shrink:0;white-space:nowrap" @click="loadSample('squad')">📋 Sample</button>
             <button class="btn btn-gold" style="flex:1;justify-content:center;padding:13px;font-size:15px" @click="submitSquad()" :disabled="creating||!qf.opponent">
               <span x-show="!creating">✨ Generate Squad Post</span>
@@ -473,7 +517,7 @@
             </button>
           </div>
         </div>
-        <div style="position:sticky;top:80px">
+        <div class="prev-col" style="position:sticky;top:80px">
           <div class="sh">Live Preview</div>
           <div class="preview-wrap"><canvas id="squad-preview" width="1080" height="1080" style="width:100%;height:auto;display:block"></canvas></div>
           <div style="display:flex;gap:8px;margin-top:10px">
@@ -496,7 +540,7 @@
             </div>
             <div class="divider"></div>
             <div class="sh">Performance (fill what applies)</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+            <div class="fg3" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
               <div><label class="lbl">Runs</label><input class="inp" type="number" x-model.number="gf.runs" @input="debouncedPreview('motm')" placeholder="0" min="0"/></div>
               <div><label class="lbl">Balls</label><input class="inp" type="number" x-model.number="gf.balls" @input="debouncedPreview('motm')" placeholder="0" min="0"/></div>
               <div><label class="lbl">S/R</label><input class="inp" x-model="gf.sr" @input="debouncedPreview('motm')" placeholder="auto"/></div>
@@ -513,7 +557,7 @@
               <div style="font-size:13px;color:rgba(255,255,255,.4)" x-text="gf.photoName||'📸 Add player photo (recommended)'"></div>
             </div>
           </div>
-          <div style="display:flex;gap:10px;margin-top:16px">
+          <div class="gen-row" style="display:flex;gap:10px;margin-top:16px">
             <button class="btn btn-ghost" style="padding:12px 16px;font-size:14px;flex-shrink:0;white-space:nowrap" @click="loadSample('motm')">📋 Sample</button>
             <button class="btn btn-gold" style="flex:1;justify-content:center;padding:13px;font-size:15px" @click="submitMOTM()" :disabled="creating||!gf.name">
               <span x-show="!creating">🌟 Generate MOTM Post</span>
@@ -521,7 +565,7 @@
             </button>
           </div>
         </div>
-        <div style="position:sticky;top:80px">
+        <div class="prev-col" style="position:sticky;top:80px">
           <div class="sh">Live Preview</div>
           <div class="preview-wrap"><canvas id="motm-preview" width="1080" height="1080" style="width:100%;height:auto;display:block"></canvas></div>
           <div style="display:flex;gap:8px;margin-top:10px">
@@ -552,7 +596,7 @@
               <div style="font-size:13px;color:rgba(255,255,255,.4)" x-text="lf.photoName||'📸 Add photo background'"></div>
             </div>
           </div>
-          <div style="display:flex;gap:10px;margin-top:16px">
+          <div class="gen-row" style="display:flex;gap:10px;margin-top:16px">
             <button class="btn btn-ghost" style="padding:12px 16px;font-size:14px;flex-shrink:0;white-space:nowrap" @click="loadSample('milestone')">📋 Sample</button>
             <button class="btn btn-gold" style="flex:1;justify-content:center;padding:13px;font-size:15px" @click="submitMilestone()" :disabled="creating||!lf.title">
               <span x-show="!creating">🎯 Generate Milestone Post</span>
@@ -560,7 +604,7 @@
             </button>
           </div>
         </div>
-        <div style="position:sticky;top:80px">
+        <div class="prev-col" style="position:sticky;top:80px">
           <div class="sh">Live Preview</div>
           <div class="preview-wrap"><canvas id="milestone-preview" width="1080" height="1080" style="width:100%;height:auto;display:block"></canvas></div>
           <div style="display:flex;gap:8px;margin-top:10px">
@@ -594,7 +638,7 @@
             <span x-show="creating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Processing…</span>
           </button>
         </div>
-        <div style="position:sticky;top:80px">
+        <div class="prev-col" style="position:sticky;top:80px">
           <div class="sh">Live Preview</div>
           <div class="preview-wrap"><canvas id="photo-preview" width="1080" height="1080" style="width:100%;height:auto;display:block"></canvas></div>
           <div style="display:flex;gap:8px;margin-top:10px">
@@ -675,7 +719,7 @@
       <div class="glass" style="padding:24px">
         <div class="sh">🏏 Club Identity</div>
         <div style="margin-bottom:14px"><label class="lbl">Club Name</label><input class="inp" x-model="settings.clubName" @input="refreshPreviews()" placeholder="Gabru Jawaans"/></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="fg2" class="sg2" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
           <div><label class="lbl">Primary Colour</label>
             <div style="display:flex;gap:8px;align-items:center">
               <input type="color" class="inp" x-model="settings.primary" @input="refreshPreviews()" style="padding:4px;flex-shrink:0;width:50px"/>
