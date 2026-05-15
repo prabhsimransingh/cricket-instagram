@@ -504,30 +504,15 @@
             <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="exportVideo('fixture')">🎬 Export Video</button>
           </div>
 
-          <!-- AI Generation Gallery (3 Variations) -->
-          <div x-show="aiVariations.length>0" id="ai-gallery" style="margin-top:24px;padding:16px;background:rgba(23,184,184,.08);border:2px solid rgba(23,184,184,.3);border-radius:12px">
-            <div class="sh">🎨 Pick Your Favorite (3 Variations)</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:12px 0">
-              <template x-for="(v,i) in aiVariations" :key="i">
-                <div @click="selectVariation(i)" style="cursor:pointer;border:3px solid transparent;border-radius:8px;overflow:hidden;aspect-ratio:9/16;transition:all .2s"
-                  :style="selectedVariationIdx===i?'border-color:#f0b429;box-shadow:0 0 12px rgba(240,180,41,.5)':'border-color:rgba(255,255,255,.1);opacity:.8'">
-                  <img :src="v.blobUrl" style="width:100%;height:100%;object-fit:cover;display:block" alt="variation"/>
-                  <div x-show="selectedVariationIdx===i" style="position:absolute;top:8px;right:8px;background:#f0b429;color:#000;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:700">✓ Selected</div>
-                </div>
-              </template>
-            </div>
-
-            <!-- Selected Preview (Full) -->
-            <div x-show="aiPreviewUrl" style="margin-top:12px">
-              <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,.6);margin-bottom:8px">Selected Image Preview:</div>
-              <img :src="aiPreviewUrl" style="width:100%;border-radius:10px;display:block;border:1px solid rgba(23,184,184,.3)" alt="selected preview"/>
-            </div>
-
+          <!-- AI Preview (Single Image) -->
+          <div x-show="aiPreviewUrl" id="ai-preview-img" style="margin-top:24px;padding:16px;background:rgba(23,184,184,.08);border:2px solid rgba(23,184,184,.3);border-radius:12px">
+            <div class="sh">🎨 AI Generated Image</div>
+            <img :src="aiPreviewUrl" style="width:100%;border-radius:10px;display:block;border:1px solid rgba(23,184,184,.3);margin:12px 0" alt="AI preview"/>
             <!-- Action Buttons -->
-            <div style="display:flex;gap:8px;margin-top:12px">
-              <button class="btn btn-gold" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="saveAIPreviewAsPost()" :disabled="!selectedVariationIdx&&selectedVariationIdx!==0">✓ Save as Post</button>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-gold" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="saveAIPreviewAsPost()">✓ Save as Post</button>
               <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="generateFixtureAIOnly()">🔄 Regenerate</button>
-              <button class="btn btn-red" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="resetAIGeneration()">✕ Discard All</button>
+              <button class="btn btn-red" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="resetAIGeneration()">✕ Discard</button>
             </div>
           </div>
         </div>
@@ -2366,7 +2351,7 @@ async function publishToInstagram(url,caption,cfg){
 function App(){return{
   tab:'queue', newTab:'match',
   posts:[], history:[], settings:Store.getSettings(),
-  toast:{show:false,msg:'',ok:true}, publishing:null, downloading:null, creating:false, aiGenerating:null, aiGeneratingProgress:0, aiGeneratingStatus:'', aiPreviewUrl:null, aiPreviewPost:null, aiVariations:[], selectedVariationIdx:null,
+  toast:{show:false,msg:'',ok:true}, publishing:null, downloading:null, creating:false, aiGenerating:null, aiGeneratingProgress:0, aiGeneratingStatus:'', aiPreviewUrl:null, aiPreviewPost:null,
   igStatus:'', igOk:false, createdPost:null,
   // forms
   mf:{opponent:'',result:'won',ourScore:'',theirScore:'',margin:'',venue:'',date:'',competition:'',batterName:'',batterRuns:0,batterBalls:0,batterFours:0,batterSixes:0,bowlerName:'',bowlerWkts:0,bowlerRuns:0,bowlerOvers:'',photoDataURL:'',photoName:''},
@@ -2567,47 +2552,30 @@ function App(){return{
     if(!this.ff.opponent){this.showToast('Enter opponent first',false);return;}
     this.aiGenerating='ai-gen';
     this.aiGeneratingProgress=0;
-    this.aiGeneratingStatus='Starting...';
-    this.aiVariations=[];
-    this.selectedVariationIdx=null;
+    this.aiGeneratingStatus='Generating image...';
     try{
-      const variations=[];
+      const cv=document.createElement('canvas');cv.width=W;cv.height=H;
+      const post={type:'fixture',meta:{...this.ff},renderMode:'ai-full'};
 
-      // Generate 3 variations with different seeds
-      for(let i=0;i<3;i++){
-        this.aiGeneratingStatus=`Generating variation ${i+1}/3...`;
-        this.aiGeneratingProgress=Math.round((i/3)*100);
-        try{
-          const cv=document.createElement('canvas');cv.width=W;cv.height=H;
-          const post={type:'fixture',meta:{...this.ff},renderMode:'ai-full'};
-          await renderCard(cv,post,this.settings);
-          const blob=await new Promise(res=>cv.toBlob(b=>res(b),'image/jpeg',0.92));
-          const blobUrl=URL.createObjectURL(blob);
-          variations.push({blob,blobUrl,index:i});
-          this.aiGeneratingProgress=Math.round(((i+1)/3)*100);
-        }catch(e){console.warn(`Variation ${i} failed`,e);}
-        // Small delay between generations to avoid rate limiting
-        if(i<2)await new Promise(r=>setTimeout(r,500));
-      }
+      this.aiGeneratingProgress=50;
+      await renderCard(cv,post,this.settings);
 
-      if(variations.length===0){
-        this.showToast('⚠ AI generation failed - Check browser console (F12) for errors. Try again or use Canvas mode.',false);
-        console.error('All AI variations failed. Check if Pollinations.ai is accessible.');
-        return;
-      }
+      this.aiGeneratingProgress=90;
+      const blob=await new Promise(res=>cv.toBlob(b=>res(b),'image/jpeg',0.92));
+      const blobUrl=URL.createObjectURL(blob);
 
-      this.aiVariations=variations;
-      this.selectedVariationIdx=0;
-      this.aiPreviewUrl=variations[0].blobUrl;
-      this.aiPreviewPost={type:'fixture',meta:{...this.ff},blob:variations[0].blob};
+      this.aiGeneratingProgress=100;
+      this.aiPreviewUrl=blobUrl;
+      this.aiPreviewPost={type:'fixture',meta:{...this.ff},blob};
 
-      // Auto-scroll to gallery
+      // Auto-scroll to preview
       await this.$nextTick();
-      const gallery=document.getElementById('ai-gallery');
-      if(gallery)gallery.scrollIntoView({behavior:'smooth',block:'center'});
-      this.showToast(`✨ Generated ${variations.length} variations! Pick your favorite.`);
+      const preview=document.getElementById('ai-preview-img');
+      if(preview)preview.scrollIntoView({behavior:'smooth',block:'center'});
+      this.showToast('✨ AI image generated! Ready to save or regenerate.');
     }catch(e){
       this.showToast('⚠ AI generation failed: '+e.message,false);
+      console.error('AI generation error:',e);
     }finally{
       this.aiGenerating=null;
       this.aiGeneratingProgress=0;
@@ -2615,17 +2583,7 @@ function App(){return{
     }
   },
 
-  selectVariation(idx){
-    if(idx>=0&&idx<this.aiVariations.length){
-      this.selectedVariationIdx=idx;
-      this.aiPreviewUrl=this.aiVariations[idx].blobUrl;
-      this.aiPreviewPost={type:'fixture',meta:{...this.ff},blob:this.aiVariations[idx].blob};
-    }
-  },
-
   resetAIGeneration(){
-    this.aiVariations=[];
-    this.selectedVariationIdx=null;
     this.aiPreviewUrl=null;
     this.aiPreviewPost=null;
   },
