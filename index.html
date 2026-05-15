@@ -109,7 +109,7 @@
     .gen-row{flex-direction:column!important}
     .gen-row .btn{width:100%!important;justify-content:center!important}
   }
-</style>
+@keyframes pulse{0%{opacity:.5;width:0}50%{opacity:1}100%{opacity:.5;width:100%}}</style>
 </head>
 <body x-data="App()" x-init="init()">
 
@@ -2126,7 +2126,7 @@ async function publishToInstagram(url,caption,cfg){
 function App(){return{
   tab:'queue', newTab:'match',
   posts:[], history:[], settings:Store.getSettings(),
-  toast:{show:false,msg:'',ok:true}, publishing:null, downloading:null, creating:false,
+  toast:{show:false,msg:'',ok:true}, publishing:null, downloading:null, creating:false, aiGenerating:null,
   igStatus:'', igOk:false, createdPost:null,
   // forms
   mf:{opponent:'',result:'won',ourScore:'',theirScore:'',margin:'',venue:'',date:'',competition:'',batterName:'',batterRuns:0,batterBalls:0,batterFours:0,batterSixes:0,bowlerName:'',bowlerWkts:0,bowlerRuns:0,bowlerOvers:'',photoDataURL:'',photoName:''},
