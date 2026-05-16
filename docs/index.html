@@ -353,7 +353,16 @@
             </div>
 
             <!-- Action Buttons -->
-            <div style="display:flex;gap:8px">
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn" @click="copyImage()" style="font-size:12px;padding:9px;background:linear-gradient(135deg,#17b8b8,#0e8f8f);color:#fff;border:none;flex:1">
+                📋 Copy Image
+              </button>
+              <button class="btn btn-ghost" @click="copyCaption()" style="font-size:12px;padding:9px;flex:1">
+                📄 Copy Caption
+              </button>
+              <button class="btn btn-gold" @click="publishAI()" style="font-size:12px;padding:9px;flex:1">
+                📱 Post to Instagram
+              </button>
               <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="regenerateAI()" :disabled="aiGenerating">🔄 Regenerate</button>
               <button class="btn btn-red" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="resetAIGeneration()">✕ Discard</button>
             </div>
@@ -530,7 +539,7 @@
           <div style="display:flex;flex-direction:column;gap:10px;margin-top:18px">
             <button class="btn btn-gold" style="width:100%;justify-content:center;padding:13px;font-size:15px"
               @click="submitPhoto()" :disabled="creating||aiGenerating||!pf.photoDataURL">
-              <span x-show="!creating">📸 Add to Queue</span>
+              <span x-show="!creating">✓ Create Post</span>
               <span x-show="creating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Processing…</span>
             </button>
             <button class="btn btn-blue" style="width:100%;justify-content:center;padding:13px;font-size:15px;display:flex;align-items:center;gap:8px" @click="generatePhotoAIOnly()" :disabled="aiGenerating||!pf.photoDataURL">
@@ -581,7 +590,7 @@
           <div class="sh" style="margin-bottom:10px">Select a caption:</div>
           <div style="display:flex;flex-direction:column;gap:8px">
             <template x-for="(c,i) in createdPost?.captions||[]" :key="i">
-              <div class="cap-card" :class="{selected:createdPost.caption===c.caption}" @click="createdPost.caption=c.caption;saveQueue()">
+              <div class="cap-card" :class="{selected:createdPost.caption===c.caption}" @click="createdPost.caption=c.caption">
                 <div style="font-size:10px;font-weight:700;color:#f0b429;margin-bottom:3px;text-transform:uppercase" x-text="c.tone"></div>
                 <div style="font-size:12px;color:rgba(255,255,255,.75);line-height:1.45" x-text="c.caption"></div>
               </div>
@@ -2219,7 +2228,6 @@ function App(){return{
   debouncedThumb(post){
     clearTimeout(post._tt);
     post._tt=setTimeout(()=>{
-      this.saveQueue();
       const el=document.getElementById('thumb-'+post.id);
       if(el){el.width=400;el.height=711;renderCard(el,post,this.settings).catch(()=>{});}
     },350);
@@ -2336,8 +2344,7 @@ function App(){return{
         const done={...post,status:'posted',postedAt:new Date().toISOString(),mediaId:'shared-'+Date.now()};
         const h=Store.getHistory();h.unshift(done);Store.setHistory(h.slice(0,100));
         this.history=Store.getHistory();
-        this.posts=this.posts.filter(p=>p.id!==post.id);this.saveQueue();
-        if(this.createdPost?.id===post.id)this.createdPost=null;
+        this.createdPost=null;
         this.showToast('🎉 Choose Instagram in the share sheet!');
         return;
       }
@@ -2375,8 +2382,7 @@ function App(){return{
       const done={...post,status:'posted',postedAt:new Date().toISOString(),mediaId:mid};
       const h=Store.getHistory();h.unshift(done);Store.setHistory(h.slice(0,100));
       this.history=Store.getHistory();
-      this.posts=this.posts.filter(p=>p.id!==post.id);this.saveQueue();
-      if(this.createdPost?.id===post.id)this.createdPost=null;
+      this.createdPost=null;
       this.showToast('🎉 Posted to Instagram!');
     }catch(e){
       if(e.name==='AbortError')return; // user dismissed share sheet
@@ -2387,8 +2393,39 @@ function App(){return{
 
   async regenCaptions(post){
     if(!this.settings.openaiKey)return this.showToast('OpenAI key not set in Settings',false);
-    try{const c=await generateCaptions(post.type,post.meta||{},this.settings);post.captions=c;post.caption=c[0]?.caption||post.caption;this.saveQueue();this.showToast('✨ Fresh captions!');}
+    try{const c=await generateCaptions(post.type,post.meta||{},this.settings);post.captions=c;post.caption=c[0]?.caption||post.caption;this.showToast('✨ Fresh captions!');}
     catch(e){this.showToast(`AI error: ${e.message}`,false);}
+  },
+
+  async publishAI(){
+    if(!this.aiPreviewPost?.blob)return this.showToast('No image to post',false);
+    this.publishing='ai-post';
+    const s=this.settings;
+    try{
+      const blob=this.aiPreviewPost.blob;
+      const caption=this.aiPreviewPost.caption||'';
+      const igFile=new File([blob],'instagram-post.jpg',{type:'image/jpeg'});
+
+      if(navigator.canShare&&navigator.canShare({files:[igFile]})){
+        this.showToast('📱 Opening Instagram…');
+        await navigator.share({files:[igFile],title:s.clubName||'Cricket Post',text:caption});
+        const done={type:this.aiPreviewPost.type,status:'posted',caption,postedAt:new Date().toISOString(),mediaId:'shared-'+Date.now()};
+        const h=Store.getHistory();h.unshift(done);Store.setHistory(h.slice(0,100));
+        this.history=Store.getHistory();
+        this.aiPreviewPost=null;this.aiPreviewUrl=null;
+        this.showToast('🎉 Posted to Instagram!');
+        return;
+      }
+
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');a.href=url;a.download='instagram-post.jpg';
+      document.body.appendChild(a);a.click();document.body.removeChild(a);
+      setTimeout(()=>URL.revokeObjectURL(url),15000);
+      this.showToast('📥 Image downloaded — open Instagram on your phone to post',false);
+    }catch(e){
+      if(e.name==='AbortError')return;
+      this.showToast('❌ '+e.message,false);console.error(e);
+    }finally{this.publishing=null;}
   },
 
   async _createPost(type,meta){
@@ -2597,10 +2634,10 @@ function App(){return{
       if(!caption&&this.pf.genCaption&&this.settings.openaiKey){
         try{const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Authorization':`Bearer ${this.settings.openaiKey}`,'Content-Type':'application/json'},body:JSON.stringify({model:'gpt-3.5-turbo',max_tokens:300,messages:[{role:'user',content:`Write a short Instagram caption for a cricket club photo. Include hashtags. Just the caption, no JSON.`}]})});const j=await r.json();caption=j.choices[0].message.content.trim();}catch{}
       }
-      const post={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),type:'photo',status:'draft',caption,captions:[],meta:{photoDataURL:this.pf.photoDataURL,photoName:this.pf.photoName},createdAt:new Date().toISOString()};
-      this.createdPost=post;
-      await this.$nextTick();this.renderThumb(post,'created-thumb');
-      this.showToast('📸 Photo ready! Copy and share');
+      // Create in-memory preview object (no persistence)
+      this.createdPost={type:'photo',caption,meta:{photoDataURL:this.pf.photoDataURL,photoName:this.pf.photoName}};
+      await this.$nextTick();
+      this.showToast('✨ Photo ready! Copy image & caption or post directly');
     }finally{this.creating=false;}
   },
 
