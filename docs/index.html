@@ -270,7 +270,7 @@
               </button>
             </div>
             <button class="btn btn-blue" style="width:100%;justify-content:center;padding:13px;font-size:15px;display:flex;align-items:center;gap:8px" @click="generateMatchAIOnly()" :disabled="aiGenerating||!mf.opponent">
-              <span x-show="!aiGenerating && version==='v2'">🎨 Generate AI Card</span>
+              <span x-show="!aiGenerating">🎨 Enhance with AI</span>
               <span x-show="aiGenerating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
             </button>
           </div>
@@ -316,7 +316,7 @@
               </button>
             </div>
             <button class="btn btn-blue" style="width:100%;justify-content:center;padding:13px;font-size:15px;display:flex;align-items:center;gap:8px" @click="generateFixtureAIOnly()" :disabled="aiGenerating||!ff.opponent">
-              <span x-show="!aiGenerating && version==='v2'">🎨 Generate AI Card</span>
+              <span x-show="!aiGenerating">🎨 Enhance with AI</span>
               <span x-show="aiGenerating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
             </button>
           </div>
@@ -382,7 +382,7 @@
               </button>
             </div>
             <button class="btn btn-blue" style="width:100%;justify-content:center;padding:13px;font-size:15px;display:flex;align-items:center;gap:8px" @click="generateSquadAIOnly()" :disabled="aiGenerating||!qf.opponent">
-              <span x-show="!aiGenerating && version==='v2'">🎨 Generate AI Card</span>
+              <span x-show="!aiGenerating">🎨 Enhance with AI</span>
               <span x-show="aiGenerating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
             </button>
           </div>
@@ -436,7 +436,7 @@
               </button>
             </div>
             <button class="btn btn-blue" style="width:100%;justify-content:center;padding:13px;font-size:15px;display:flex;align-items:center;gap:8px" @click="generateMOTMAIOnly()" :disabled="aiGenerating||!gf.name">
-              <span x-show="!aiGenerating && version==='v2'">🎨 Generate AI Card</span>
+              <span x-show="!aiGenerating">🎨 Enhance with AI</span>
               <span x-show="aiGenerating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
             </button>
           </div>
@@ -481,7 +481,7 @@
               </button>
             </div>
             <button class="btn btn-blue" style="width:100%;justify-content:center;padding:13px;font-size:15px;display:flex;align-items:center;gap:8px" @click="generateMilestoneAIOnly()" :disabled="aiGenerating||!lf.title">
-              <span x-show="!aiGenerating && version==='v2'">🎨 Generate AI Card</span>
+              <span x-show="!aiGenerating">🎨 Enhance with AI</span>
               <span x-show="aiGenerating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
             </button>
           </div>
