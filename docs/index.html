@@ -139,6 +139,7 @@
         <button style="padding:6px 12px;font-size:11px;font-weight:600;border:none;border-radius:6px;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)" :style="version==='main'?'background:rgba(240,180,41,.15);color:#f0b429':''" @click="switchVersion('main')">Main</button>
         <button style="padding:6px 12px;font-size:11px;font-weight:600;border:none;border-radius:6px;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)" :style="version==='v2'?'background:rgba(240,180,41,.15);color:#f0b429':''" @click="switchVersion('v2')">V2</button>
         <button style="padding:6px 12px;font-size:11px;font-weight:600;border:none;border-radius:6px;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)" :style="version==='v3'?'background:rgba(240,180,41,.15);color:#f0b429':''" @click="switchVersion('v3')">V3</button>
+        <button style="padding:6px 12px;font-size:11px;font-weight:600;border:none;border-radius:6px;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)" :style="version==='v4'?'background:rgba(240,180,41,.15);color:#f0b429':''" @click="switchVersion('v4')">V4</button>
       </div>
       <button class="btn btn-ghost" style="padding:7px 14px;font-size:12px" @click="tab='settings'">⚙ Settings</button>
     </div>
@@ -729,7 +730,7 @@ async function loadCharacterImg(url){
 //  COLOUR HELPERS
 // ═══════════════════════════════════════════════════════
 const W=1080,H=1920,S=1080;
-const APP_VERSION='v3'; // Update this with each release
+const APP_VERSION='v4'; // Update this with each release
 function hexRGB(h='#000'){h=h.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');return[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
 function rgb(r,g,b,a=1){return a<1?`rgba(${r},${g},${b},${a})`:`rgb(${r},${g},${b})`;}
 function lerpC(a,b,t){return a.map((v,i)=>Math.round(v+(b[i]-v)*t));}
@@ -2195,7 +2196,7 @@ function App(){return{
     // Detect version from URL parameter
     const params = new URLSearchParams(window.location.search);
     const versionParam = params.get('version');
-    if(versionParam === 'main' || versionParam === 'v2' || versionParam === 'v3') {
+    if(versionParam === 'main' || versionParam === 'v2' || versionParam === 'v3' || versionParam === 'v4') {
       this.version = versionParam;
     }
 
