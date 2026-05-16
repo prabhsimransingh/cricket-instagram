@@ -1266,7 +1266,7 @@ async function generateWithGPTImage(prompt, cfg) {
     model: 'gpt-image-1.5',
     prompt: prompt,
     n: 1,
-    size: '1024x1536'
+    size: '1024x1024'
   });
 
   const controller = new AbortController();
@@ -1330,8 +1330,8 @@ async function generateWithGPTImage(prompt, cfg) {
         cv.height = 1920;
         const ctx = cv.getContext('2d');
 
-        // Scale 1024x1536 image to cover 1080x1920 canvas (maintain aspect ratio, crop excess)
-        const imgAspect = img.width / img.height;  // 1024/1536 = 0.667
+        // Scale 1024x1024 image to cover 1080x1920 canvas (maintain aspect ratio, crop excess)
+        const imgAspect = img.width / img.height;  // 1024/1024 = 1.0
         const canvasAspect = cv.width / cv.height; // 1080/1920 = 0.5625
 
         let drawWidth = cv.width;
