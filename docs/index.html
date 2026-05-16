@@ -1165,9 +1165,16 @@ function buildPrompt_match(data, cfg) {
     : `fell short at ${data.ourScore}/${data.theirScore}`;
   const venue = data.venue || 'Cricket Ground';
   const comp = data.competition || 'Match';
+  const margin = data.margin ? ` by ${data.margin}` : '';
+  const date = data.date ? `, ${data.date}` : '';
+  const playerHighlight = data.batterName ? `${data.batterName} (${data.batterRuns} runs off ${data.batterBalls || '?'} balls, ${data.batterFours || 0}x4, ${data.batterSixes || 0}x6)` : '';
+  const bowlerHighlight = data.bowlerName ? `${data.bowlerName} (${data.bowlerWkts || 0}/${data.bowlerRuns || 0} in ${data.bowlerOvers || '?'} overs)` : '';
 
-  return `Professional cricket match result celebration poster. ${club} vs ${opp} at ${venue}.
-    Final score: ${score}. ${data.result === 'won' ? 'Victory celebration moment' : 'Intense match moment'}.
+  return `Professional cricket match result celebration poster. ${club} vs ${opp} at ${venue}${date}.
+    Final score: ${score}${margin}. ${comp}.
+    ${playerHighlight ? `Star performer: ${playerHighlight}.` : ''}
+    ${bowlerHighlight ? `Outstanding bowling: ${bowlerHighlight}.` : ''}
+    ${data.result === 'won' ? 'Victory celebration moment, triumphant energy' : 'Intense match moment, competitive drama'}.
     Professional sports photography, cinematic 8k photorealism, dramatic stadium floodlights,
     cricket action shot, pristine grass field, competitive energy, championship aesthetic,
     golden warm stadium lighting, high contrast sharp focus, dynamic composition.
@@ -1180,12 +1187,14 @@ function buildPrompt_fixture(data, cfg) {
   const venue = data.venue || 'Cricket Ground';
   const comp = data.competition || 'Cricket';
   const format = (data.format || 'T20').toUpperCase();
+  const dateTime = data.datetime ? `, ${data.datetime}` : '';
 
-  return `Professional cricket match day announcement poster. ${club} vs ${opp}, ${format} ${comp} at ${venue}.
+  return `Professional cricket match day announcement poster. ${club} vs ${opp}, ${format} ${comp} at ${venue}${dateTime}.
+    Match announcement, exciting fixture alert, upcoming cricket event.
     Professional sports photography, cinematic 8k photorealism, dramatic stadium floodlights,
     night cricket match, pristine grass cricket field, intense competitive energy,
     championship event aesthetic, golden warm stadium lighting, high contrast sharp focus,
-    action-ready atmosphere, awaiting match energy.
+    action-ready atmosphere, awaiting match energy, anticipation building.
     9:16 vertical Instagram story format, premium sports poster design.`;
 }
 
@@ -1207,13 +1216,25 @@ function buildPrompt_motm(data, cfg) {
   const club = (cfg.clubName || 'Champions Cricket Club').toUpperCase();
   const opp = (data.opponent || 'Opposition').toUpperCase();
   const venue = data.venue || 'Cricket Ground';
-  const playerStats = `${data.runs} runs${data.balls ? ` off ${data.balls} balls` : ''}${data.wkts ? `, ${data.wkts} wickets` : ''}`;
+  const date = data.date ? `, ${data.date}` : '';
+  const batting = data.runs ? `${data.runs} runs off ${data.balls || '?'} balls` : '';
+  const bowling = data.wkts ? `${data.wkts} wickets for ${data.conc || '?'} runs` : '';
+  const sr = data.sr ? ` (SR: ${data.sr})` : '';
+  const overs = data.overs ? ` in ${data.overs} overs` : '';
+  const fielding = data.fielding ? `, ${data.fielding} fielding contributions` : '';
 
-  return `Man of the Match highlight graphic. ${data.name} for ${club} vs ${opp} at ${venue}.
-    Outstanding performance: ${playerStats}. Player portrait with match statistics display.
-    Professional cricket player action shot, championship moment, dramatic spotlight lighting,
-    celebration and excellence energy, premium sports photography, cinematic 8k quality,
-    victorious athletic energy, golden accent lighting, high contrast sharp focus.
+  let statsText = '';
+  if(batting && bowling) statsText = `${batting}${sr} and ${bowling}${overs}${fielding}`;
+  else if(batting) statsText = `${batting}${sr}${fielding}`;
+  else if(bowling) statsText = `${bowling}${overs}${fielding}`;
+  else statsText = 'Outstanding performance';
+
+  return `Man of the Match highlight graphic. ${data.name} for ${club} vs ${opp} at ${venue}${date}.
+    Outstanding performance: ${statsText}. Player portrait with match statistics display.
+    Award-winning performance, individual excellence moment, championship highlight.
+    Professional cricket player action shot, dramatic spotlight lighting, celebration energy,
+    premium sports photography, cinematic 8k quality, victorious athletic energy,
+    golden accent lighting, high contrast sharp focus, trophy-worthy moment.
     9:16 vertical Instagram format, award-winning moment aesthetic.`;
 }
 
@@ -1221,21 +1242,25 @@ function buildPrompt_milestone(data, cfg) {
   const club = (cfg.clubName || 'Champions Cricket Club').toUpperCase();
   const title = data.title || 'Milestone Achievement';
   const season = data.season || 'Season';
+  const subtitle = data.subtitle ? ` - ${data.subtitle}` : '';
 
-  return `Celebration graphic: ${club} ${title} - ${data.name} achieved ${data.number} ${title.toLowerCase()} in ${season}.
-    Championship milestone celebration, gold and bronze accent colors, trophy aesthetic,
-    celebration confetti energy, achievement highlight design, premium sports graphic,
-    victorious moment, cinematic lighting, dramatic composition, inspiring achievement energy.
+  return `Celebration graphic: ${club} ${title} - ${data.name} achieved ${data.number} ${title.toLowerCase()} in ${season}${subtitle}.
+    Individual milestone achievement, personal excellence, championship record.
+    Celebration confetti energy, achievement highlight design, trophy aesthetic,
+    premium sports graphic, victorious moment, cinematic lighting, dramatic composition,
+    inspiring achievement energy, gold and bronze accent colors, record-breaking moment.
     9:16 vertical Instagram format, celebratory poster design, premium quality.`;
 }
 
 function buildPrompt_photo(data, cfg) {
   const club = (cfg.clubName || 'Champions Cricket Club').toUpperCase();
+  const caption = data.caption ? ` - ${data.caption}` : '';
 
-  return `Professional cricket club social media photo enhancement. ${club} action shot.
+  return `Professional cricket club social media photo enhancement. ${club} action shot${caption}.
     Enhance lighting and contrast, cinematic 8k quality, championship aesthetic,
-    professional sports photography, dramatic lighting, high impact visual design.
-    9:16 vertical Instagram format, premium photo quality.`;
+    professional sports photography, dramatic lighting, high impact visual design,
+    premium color grading, vibrant tones, dynamic composition, engaging visual storytelling.
+    9:16 vertical Instagram format, premium photo quality, professional editing.`;
 }
 
 // Generic AI generation function for all post types
@@ -1251,7 +1276,16 @@ async function generateAI(type, data, cfg) {
     default: return null;
   }
 
+  // Log collected data for verification
+  console.log('🎨 AI Generation Data Captured:');
+  console.log('  type:', type);
+  console.log('  data:', JSON.stringify(data, null, 2));
+  console.log('  config (club):', cfg.clubName || 'Not set');
+
   const prompt = promptBuilder(data, cfg);
+
+  console.log('🎨 Generated Prompt:');
+  console.log(prompt);
 
   // Validate API configuration
   console.log('🎨 AI Generation Check:');
