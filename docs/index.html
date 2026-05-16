@@ -330,41 +330,15 @@
             <div class="sh">🎨 AI Generated Image</div>
             <img :src="aiPreviewUrl" style="width:100%;border-radius:10px;display:block;border:1px solid rgba(23,184,184,.3);margin:12px 0" alt="AI preview"/>
 
-            <!-- Caption Selection -->
-            <div x-show="aiPreviewPost?.captions?.length > 0" style="margin-top:16px">
-              <div class="sh" style="margin-bottom:10px">📝 AI Generated Captions</div>
-              <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
-                <template x-for="(c,i) in aiPreviewPost.captions" :key="i">
-                  <div class="cap-card" :class="{selected:aiPreviewPost.caption===c.caption}" @click="aiPreviewPost.caption=c.caption" style="cursor:pointer">
-                    <div style="font-size:10px;font-weight:700;color:#f0b429;margin-bottom:3px;text-transform:uppercase" x-text="c.tone||'Option '+(i+1)"></div>
-                    <div style="font-size:12px;color:rgba(255,255,255,.75);line-height:1.45" x-text="c.caption"></div>
-                  </div>
-                </template>
-              </div>
-
-              <!-- Selected Caption Display & Copy -->
-              <div style="margin-bottom:12px">
-                <label class="lbl">Selected Caption (Copy to use):</label>
-                <textarea x-model="aiPreviewPost.caption" style="width:100%;padding:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;font-family:Inter;font-size:13px;resize:vertical;min-height:80px;line-height:1.5" readonly></textarea>
-                <button class="btn btn-gold" style="width:100%;margin-top:8px;padding:10px;font-size:13px" @click="copyCaption()">
-                  <span>📋 Copy Caption</span>
-                </button>
-              </div>
-            </div>
-
             <!-- Action Buttons -->
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button class="btn" @click="copyImage()" style="font-size:12px;padding:9px;background:linear-gradient(135deg,#17b8b8,#0e8f8f);color:#fff;border:none;flex:1">
-                📋 Copy Image
-              </button>
-              <button class="btn btn-ghost" @click="copyCaption()" style="font-size:12px;padding:9px;flex:1">
-                📄 Copy Caption
-              </button>
-              <button class="btn btn-gold" @click="publishAI()" style="font-size:12px;padding:9px;flex:1">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+              <button class="btn btn-gold" style="flex:1;justify-content:center;font-size:13px;padding:10px" @click="publishAI()" :disabled="aiGenerating">
                 📱 Post to Instagram
               </button>
-              <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="regenerateAI()" :disabled="aiGenerating">🔄 Regenerate</button>
-              <button class="btn btn-red" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="resetAIGeneration()">✕ Discard</button>
+              <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:13px;padding:10px" @click="regenerateAI()" :disabled="aiGenerating">
+                <span x-show="!aiGenerating">🔄 Regenerate</span>
+                <span x-show="aiGenerating" style="display:flex;align-items:center;gap:6px"><span class="spin"></span>Generating...</span>
+              </button>
             </div>
           </div>
         </div>
@@ -1285,7 +1259,7 @@ async function generateWithGPTImage(prompt, cfg) {
     model: 'gpt-image-1.5',
     prompt: prompt,
     n: 1,
-    size: '1024x1024'
+    size: '1024x1792'
   });
 
   const controller = new AbortController();
@@ -1347,7 +1321,8 @@ async function generateWithGPTImage(prompt, cfg) {
         cv.width = 1080;
         cv.height = 1920;
         const ctx = cv.getContext('2d');
-        ctx.drawImage(img, 0, 0);
+        // Scale image to fill canvas (1080x1920 Instagram story format)
+        ctx.drawImage(img, 0, 0, cv.width, cv.height);
         console.log('🎨 [GPT Image] Canvas created successfully ✓');
         res(cv);
       };
@@ -2531,32 +2506,13 @@ function App(){return{
       this.aiPreviewUrl = URL.createObjectURL(blob);
       this.aiPreviewPost = {type, meta: data, blob};
 
-      this.aiGeneratingProgress=95;
-      this.aiGeneratingStatus='Generating captions...';
-
-      // Auto-generate captions based on the post type (non-blocking - don't fail the whole process)
-      if (this.settings.openaiKey) {
-        try {
-          const captions = await generateCaptions(type, data, this.settings);
-          this.aiPreviewPost.captions = captions;
-          this.aiPreviewPost.caption = captions[0]?.caption || '';
-        } catch(e) {
-          console.warn('⚠ Caption generation failed (non-blocking):', e.message);
-          this.aiPreviewPost.captions = [];
-          this.aiPreviewPost.caption = '';
-        }
-      } else {
-        this.aiPreviewPost.captions = [];
-        this.aiPreviewPost.caption = '';
-      }
-
       this.aiGeneratingProgress=100;
 
       // Auto-scroll to preview
       await this.$nextTick();
       const preview = document.getElementById('ai-preview-img');
       if(preview) preview.scrollIntoView({behavior:'smooth', block:'center'});
-      this.showToast('✨ AI image + captions generated! Ready to save or regenerate.');
+      this.showToast('✨ AI image generated! Regenerate or post to Instagram.');
     } catch(e) {
       this.showToast('⚠ AI generation failed: '+e.message, false);
       console.error('AI generation error:', e);
