@@ -1314,51 +1314,29 @@ async function generateWithGPTImage(prompt, cfg) {
       return null;
     }
 
-    console.log('🎨 [GPT Image] Loading image from URL...');
-    const img = new Image();
-    return new Promise((res) => {
-      const timeout = setTimeout(() => {
-        console.error('❌ GPT Image: Image load timeout (5s)');
-        res(null);
-      }, 5000);
+    console.log('🎨 [GPT Image] Converting image to blob...');
 
-      img.onload = () => {
-        clearTimeout(timeout);
-        console.log('🎨 [GPT Image] Image loaded! Creating canvas...');
-        const cv = document.createElement('canvas');
-        cv.width = 1080;
-        cv.height = 1920;
-        const ctx = cv.getContext('2d');
-
-        // Scale 1024x1024 image to cover 1080x1920 canvas (maintain aspect ratio, crop excess)
-        const imgAspect = img.width / img.height;  // 1024/1024 = 1.0
-        const canvasAspect = cv.width / cv.height; // 1080/1920 = 0.5625
-
-        let drawWidth = cv.width;
-        let drawHeight = cv.width / imgAspect;
-        let offsetX = 0;
-        let offsetY = (cv.height - drawHeight) / 2;
-
-        // If image is too tall, scale by height instead
-        if(drawHeight < cv.height) {
-          drawHeight = cv.height;
-          drawWidth = cv.height * imgAspect;
-          offsetX = (cv.width - drawWidth) / 2;
-          offsetY = 0;
-        }
-
-        ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
-        console.log('🎨 [GPT Image] Canvas created successfully ✓');
-        res(cv);
-      };
-      img.onerror = (err) => {
-        clearTimeout(timeout);
-        console.error('❌ GPT Image: Image load failed:', err);
-        res(null);
-      };
-      img.crossOrigin = 'anonymous';
-      img.src = imageUrl;
-    });
+    // Get the original image blob (no cropping)
+    if(data.data[0].b64_json) {
+      // Convert base64 to blob
+      const binaryString = atob(data.data[0].b64_json);
+      const bytes = new Uint8Array(binaryString.length);
+      for(let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      const blob = new Blob([bytes], {type: 'image/png'});
+      console.log('🎨 [GPT Image] Blob created from b64_json ✓');
+      return blob;
+    } else if(data.data[0].url) {
+      // Fetch and convert URL to blob
+      const imgResponse = await fetch(imageUrl);
+      const blob = await imgResponse.blob();
+      console.log('🎨 [GPT Image] Blob created from URL ✓');
+      return blob;
+    } else {
+      console.error('❌ GPT Image: No valid image data');
+      return null;
+    }
   } catch(e) {
     clearTimeout(timeoutId);
     console.error('❌ GPT Image error (exception):', e.message);
