@@ -2201,7 +2201,7 @@ function App(){return{
     }
 
     // Clear service workers on load
-    this.clearServiceWorkers();
+    await this.clearServiceWorkers();
 
     this.posts=Store.getQueue();this.history=Store.getHistory();
     await this.$nextTick();
