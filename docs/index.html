@@ -1345,6 +1345,8 @@ async function generateWithGPTImage(prompt, cfg) {
   } catch(e) {
     clearTimeout(timeoutId);
     console.error('❌ GPT Image error (exception):', e.message);
+    // Re-throw API errors so they bubble up with details
+    if(e.message.includes('API Error')) throw e;
     return null;
   }
 }
