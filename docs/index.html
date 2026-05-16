@@ -982,7 +982,37 @@ function darken(c,f){return c.map(v=>Math.round(v*f));}
 
 function rr(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();}
 
-async function loadImg(src){return new Promise(res=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>res(null);i.src=src;});}
+async function loadImg(src){
+  return new Promise(res=>{
+    try{
+      const i=new Image();
+      // For base64 images, don't set crossOrigin
+      // For URLs, set crossOrigin to allow canvas operations
+      if(!src.startsWith('data:')){
+        i.crossOrigin='anonymous';
+      }
+      i.onload=()=>{
+        console.log('✓ Image loaded:',src.substring(0,50));
+        res(i);
+      };
+      i.onerror=(e)=>{
+        console.error('✗ Image failed to load:',src.substring(0,50),e);
+        res(null);
+      };
+      i.src=src;
+      // Timeout in case loading hangs
+      setTimeout(()=>{
+        if(!i.complete){
+          console.warn('⚠ Image load timeout:',src.substring(0,50));
+          res(null);
+        }
+      },5000);
+    }catch(e){
+      console.error('✗ loadImg error:',e);
+      res(null);
+    }
+  });
+}
 
 function drawPhoto(ctx,src,dim=0.5){return new Promise(res=>{const img=new Image();img.onload=()=>{const{width:iw,height:ih}=img;const sc=Math.max(W/iw,H/ih),dw=iw*sc,dh=ih*sc;ctx.drawImage(img,(W-dw)/2,(H-dh)/2,dw,dh);if(dim>0){ctx.fillStyle=`rgba(0,0,0,${dim})`;ctx.fillRect(0,0,W,H);}res();};img.onerror=res;img.src=src;});}
 
@@ -2764,8 +2794,12 @@ function App(){return{
             if(b)res(b);
             else rej(new Error('toBlob returned null'));
           },'image/jpeg',0.92);
-          setTimeout(()=>rej(new Error('toBlob timeout')),10000);
-        }catch(e){rej(e);}
+          setTimeout(()=>rej(new Error('toBlob timeout (5s)')),5000);
+        }catch(e){
+          console.error('📤 toBlob error:',e.message);
+          if(e.message.includes('tainted')) rej(new Error('Canvas is tainted - image CORS issue'));
+          else rej(e);
+        }
       });
       console.log('📤 Blob created:',blob.size);
       const igFile=new File([blob],'instagram-post.jpg',{type:'image/jpeg'});
@@ -2928,8 +2962,12 @@ function App(){return{
               if(b) res(b);
               else rej(new Error('toBlob returned null'));
             }, 'image/jpeg', 0.92);
-            setTimeout(() => rej(new Error('toBlob timeout')), 10000);
-          }catch(e){rej(e);}
+            setTimeout(() => rej(new Error('toBlob timeout (5s)')), 5000);
+          }catch(e){
+            console.error('📝 toBlob error:', e.message);
+            if(e.message.includes('tainted')) rej(new Error('Canvas is tainted - image CORS issue'));
+            else rej(e);
+          }
         });
         console.log('📝 Blob created, URL:', blob.size);
         this.aiPreviewUrl = URL.createObjectURL(blob);
@@ -2950,8 +2988,12 @@ function App(){return{
               if(b) res(b);
               else rej(new Error('toBlob returned null'));
             }, 'image/jpeg', 0.92);
-            setTimeout(() => rej(new Error('toBlob timeout')), 10000);
-          }catch(e){rej(e);}
+            setTimeout(() => rej(new Error('toBlob timeout (5s)')), 5000);
+          }catch(e){
+            console.error('🎨 toBlob error:', e.message);
+            if(e.message.includes('tainted')) rej(new Error('Canvas is tainted - image CORS issue'));
+            else rej(e);
+          }
         });
         console.log('🎨 Blob created:', blob.size);
         this.aiPreviewUrl = URL.createObjectURL(blob);
