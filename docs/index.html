@@ -2520,35 +2520,14 @@ function App(){return{
       // Generate AI image
       this.aiGeneratingProgress=30;
       console.log(`🎨 Generating AI card for ${type}...`);
-      const aiCanvas = await generateAI(type, data, this.settings);
+      const blob = await generateAI(type, data, this.settings);
 
-      if(!aiCanvas) {
+      if(!blob) {
         throw new Error('AI image generation failed. Check your API key has image generation credits and try again.');
       }
 
-      this.aiGeneratingProgress=60;
-      // Composite AI image with overlays (logos, text)
-      const ctx = aiCanvas.getContext('2d');
-      await drawClubLogo(ctx, this.settings);
-      await drawLeagueLogo(ctx, this.settings);
-
       this.aiGeneratingProgress=90;
-      console.log('🎨 AI canvas ready, converting to blob...');
-      const blob = await new Promise((res,rej) => {
-        try{
-          aiCanvas.toBlob(b => {
-            console.log('🎨 toBlob callback:', b ? 'success' : 'null');
-            if(b) res(b);
-            else rej(new Error('toBlob returned null'));
-          }, 'image/jpeg', 0.92);
-          setTimeout(() => rej(new Error('toBlob timeout (5s)')), 5000);
-        }catch(e){
-          console.error('🎨 toBlob error:', e.message);
-          if(e.message.includes('tainted')) rej(new Error('Canvas is tainted - image CORS issue'));
-          else rej(e);
-        }
-      });
-      console.log('🎨 Blob created:', blob.size);
+      console.log('🎨 AI image blob created:', blob.size, 'bytes');
       this.aiPreviewUrl = URL.createObjectURL(blob);
       this.aiPreviewPost = {type, meta: data, blob};
 
