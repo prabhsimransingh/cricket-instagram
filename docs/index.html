@@ -574,7 +574,7 @@
     <div x-show="createdPost&&!aiGenerating" style="margin-top:28px" class="glass" x-cloak>
       <div style="padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px">
         <span style="font-size:20px">✅</span>
-        <span style="font-weight:700;font-size:16px">Post created! Ready to share</span>
+        <span style="font-weight:700;font-size:16px">Ready! Copy image & caption or post directly</span>
       </div>
       <div style="padding:20px 24px;display:flex;gap:20px;align-items:flex-start">
         <canvas id="created-thumb" width="160" height="285" style="width:120px;height:215px;border-radius:10px;flex-shrink:0;background:#0a0a0a;object-fit:contain"></canvas>
@@ -1337,7 +1337,7 @@ async function generateWithGPTImage(prompt, cfg) {
         console.log('🎨 [GPT Image] Image loaded! Creating canvas...');
         const cv = document.createElement('canvas');
         cv.width = 1080;
-        cv.height = 1536;
+        cv.height = 1920;
         const ctx = cv.getContext('2d');
         ctx.drawImage(img, 0, 0);
         console.log('🎨 [GPT Image] Canvas created successfully ✓');
