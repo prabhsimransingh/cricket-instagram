@@ -340,10 +340,13 @@
             <!-- Action Buttons -->
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
               <button class="btn btn-gold" style="flex:1;justify-content:center;font-size:13px;padding:10px" @click="publishAI()" :disabled="aiGenerating">
-                📱 Post to Instagram
+                📱 Share Image
+              </button>
+              <button class="btn" style="flex:1;justify-content:center;font-size:13px;padding:10px;background:#E1306C;color:#fff;border:none;cursor:pointer;border-radius:6px" @click="shareToInstagramApp()" :disabled="aiGenerating">
+                📲 Instagram App
               </button>
               <button class="btn" style="flex:1;justify-content:center;font-size:13px;padding:10px;background:#666;color:#fff;border:none;cursor:pointer;border-radius:6px" @click="copyImage()" :disabled="aiGenerating">
-                📋 Copy Image
+                📋 Copy
               </button>
               <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:13px;padding:10px" @click="regenerateAI()" :disabled="aiGenerating">
                 <span x-show="!aiGenerating">🔄 Regenerate</span>
@@ -2207,6 +2210,16 @@ function App(){return{
     await this.clearServiceWorkers();
 
     this.posts=Store.getQueue();this.history=Store.getHistory();
+
+    // Restore AI preview from localStorage if available
+    const savedType = localStorage.getItem('aiPreviewPost_type');
+    const savedUrl = localStorage.getItem('aiPreviewPost_url');
+    if(savedType && savedUrl) {
+      this.aiPreviewUrl = savedUrl;
+      this.aiPreviewPost = {type: savedType, meta: {}, blob: null};
+      console.log('🎨 AI preview restored from localStorage');
+    }
+
     await this.$nextTick();
     ['match','fixture','squad','motm','milestone'].forEach(t=>this.drawPreview(t));
   },
@@ -2449,6 +2462,35 @@ function App(){return{
     }finally{this.publishing=null;}
   },
 
+  async shareToInstagramApp(){
+    if(!this.aiPreviewPost?.blob){
+      this.showToast('❌ No image to share',false);
+      return;
+    }
+    try{
+      const blob = this.aiPreviewPost.blob;
+      const url = URL.createObjectURL(blob);
+
+      // Try to open Instagram app with intent
+      const ua = navigator.userAgent.toLowerCase();
+      if(ua.includes('android')){
+        // Android: Use intent:// scheme
+        window.location.href = 'intent://instagram.com#Intent;package=com.instagram.android;scheme=https;end';
+      }else if(ua.includes('iphone')||ua.includes('ipad')){
+        // iOS: Use instagram:// scheme
+        window.location.href = 'instagram://';
+      }else{
+        this.showToast('📲 Open Instagram app and paste the image',false);
+      }
+
+      this.showToast('📲 Opening Instagram app…');
+      setTimeout(()=>URL.revokeObjectURL(url),15000);
+    }catch(e){
+      this.showToast('❌ '+e.message,false);
+      console.error(e);
+    }
+  },
+
   async _createPost(type,meta){
     this.creating=true;this.createdPost=null;
     try{
@@ -2530,6 +2572,12 @@ function App(){return{
       console.log('🎨 AI image blob created:', blob.size, 'bytes');
       this.aiPreviewUrl = URL.createObjectURL(blob);
       this.aiPreviewPost = {type, meta: data, blob};
+
+      // Save to localStorage for persistence across refreshes
+      const blobUrl = URL.createObjectURL(blob);
+      localStorage.setItem('aiPreviewPost_type', type);
+      localStorage.setItem('aiPreviewPost_url', blobUrl);
+      console.log('🎨 AI preview saved to localStorage');
 
       this.aiGeneratingProgress=100;
 
