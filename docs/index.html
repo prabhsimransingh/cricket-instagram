@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
 <title>WicketGram — Cricket Club Posts</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Oswald:wght@600;700&family=Bebas+Neue&display=swap"/>
@@ -669,6 +672,7 @@
       <div style="grid-column:1/-1;display:flex;gap:12px;flex-wrap:wrap">
         <button class="btn btn-gold" style="font-size:15px;padding:12px 28px" @click="saveSettings()">💾 Save Settings</button>
         <button class="btn btn-ghost" @click="testInstagram()" :disabled="!settings.igToken&&!settings.ayrshareKey">Test Connection</button>
+        <button class="btn btn-blue" @click="checkForUpdates()">🔄 Check for Updates</button>
         <button class="btn btn-red" @click="clearAll()" style="margin-left:auto">⚠ Clear All Data</button>
       </div>
       <div x-show="igStatus" class="glass-sm" style="grid-column:1/-1;padding:14px;font-size:13px" :class="igOk?'text-green-400':'text-red-400'" x-text="igStatus"></div>
@@ -2195,9 +2199,47 @@ function App(){return{
       this.version = versionParam;
     }
 
+    // Clear service workers on load
+    this.clearServiceWorkers();
+
     this.posts=Store.getQueue();this.history=Store.getHistory();
     await this.$nextTick();
     ['match','fixture','squad','motm','milestone'].forEach(t=>this.drawPreview(t));
+  },
+
+  async clearServiceWorkers(){
+    if('serviceWorker' in navigator){
+      try{
+        const regs=await navigator.serviceWorker.getRegistrations();
+        regs.forEach(reg=>reg.unregister());
+        console.log('✓ Service workers cleared');
+      }catch(e){console.warn('⚠ Error clearing service workers:',e.message);}
+    }
+  },
+
+  async checkForUpdates(){
+    this.showToast('🔄 Checking for updates...');
+    try{
+      // Clear all caches
+      if('caches' in window){
+        const names=await caches.keys();
+        await Promise.all(names.map(name=>caches.delete(name)));
+        console.log('✓ Caches cleared');
+      }
+      // Clear service workers
+      await this.clearServiceWorkers();
+      // Clear localStorage
+      localStorage.clear();
+      console.log('✓ Local storage cleared');
+      // Force hard reload
+      this.showToast('✨ Clearing cache and refreshing...');
+      setTimeout(()=>{
+        location.href=location.href.split('?')[0]+'?v='+Date.now();
+      },1000);
+    }catch(e){
+      this.showToast('❌ Error: '+e.message,false);
+      console.error(e);
+    }
   },
 
   debouncedPreview(t){clearTimeout(this._pt);this._pt=setTimeout(()=>this.drawPreview(t),200);},
