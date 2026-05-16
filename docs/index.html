@@ -145,185 +145,12 @@
 
   <!-- TABS -->
   <div class="tab-bar">
-    <div class="tab" :class="{active:tab==='queue'}" @click="tab='queue'">
-      📬 Queue
-      <span x-show="posts.length" style="background:rgba(240,180,41,.2);color:#f0b429;font-size:10px;padding:1px 7px;border-radius:10px;margin-left:4px;font-weight:700" x-text="posts.length"></span>
-    </div>
-    <div class="tab" :class="{active:tab==='new'}" @click="tab='new'">✚ New Post</div>
-    <div class="tab" :class="{active:tab==='history'}" @click="tab='history'">📜 History</div>
+    <div class="tab" :class="{active:tab==='create'}" @click="tab='create'">✚ Create Post</div>
     <div class="tab" :class="{active:tab==='settings'}" @click="tab='settings'">⚙ Settings</div>
   </div>
 
-  <!-- ══ QUEUE ══ -->
-  <div x-show="tab==='queue'" style="padding-top:28px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-      <h2 style="font-size:20px;font-weight:700">Post Queue</h2>
-      <button class="btn btn-ghost" style="font-size:12px" @click="tab='new'">+ New Post</button>
-    </div>
-    <div x-show="!posts.length" style="text-align:center;padding:80px 20px;color:rgba(255,255,255,.3)">
-      <div style="font-size:52px;margin-bottom:12px">📭</div>
-      <p style="font-size:16px;font-weight:600;color:rgba(255,255,255,.45)">Queue is empty</p>
-      <p style="font-size:13px;margin-top:4px">Create a post using the New Post tab</p>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:16px">
-    <template x-for="post in posts" :key="post.id">
-      <div class="post-card" style="display:grid;grid-template-columns:200px 1fr;min-height:200px">
-
-        <!-- LEFT: square graphic preview with type overlay -->
-        <div class="post-thumb" style="position:relative;aspect-ratio:9/16;background:#060a0e;overflow:hidden;border-right:1px solid rgba(255,255,255,.06)">
-          <canvas :id="'thumb-'+post.id" width="400" height="711" style="width:100%;height:100%;display:block;object-fit:cover" x-init="$nextTick(()=>renderThumb(post))"></canvas>
-          <!-- type badge overlaid bottom-left of thumbnail -->
-          <div style="position:absolute;bottom:10px;left:10px">
-            <span class="type-pill" :class="'type-'+post.type"
-              x-text="post.type==='motm'?'🌟 Man of Match':post.type==='squad'?'📋 Playing XI':post.type==='match'?'🏆 Match Result':post.type==='fixture'?'⚡ Match Day':post.type==='milestone'?'🎯 Milestone':'📸 Photo'">
-            </span>
-          </div>
-          <!-- status dot top-right -->
-          <div style="position:absolute;top:10px;right:10px">
-            <span class="badge" :class="'badge-'+post.status" x-text="post.status"></span>
-          </div>
-        </div>
-
-        <!-- RIGHT: meta + caption + actions -->
-        <div class="post-content" style="padding:18px 22px;display:flex;flex-direction:column;gap:10px;min-width:0">
-
-          <!-- Title row -->
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-            <div style="font-size:15px;font-weight:700;color:#e6edf3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" x-text="postTitle(post)"></div>
-            <span style="font-size:11px;color:rgba(255,255,255,.22);white-space:nowrap" x-text="fmtDate(post.createdAt)"></span>
-          </div>
-
-          <!-- Caption textarea -->
-          <textarea class="inp" x-model="post.caption" @change="saveQueue()" rows="3"
-            style="resize:none;font-size:13px;line-height:1.55;flex:1" placeholder="Caption…"></textarea>
-
-          <!-- AI caption options (collapsed by default, expandable) -->
-          <div x-show="post.captions&&post.captions.length>1">
-            <div class="sh" style="margin-bottom:8px">✨ AI Caption Options</div>
-            <div style="display:flex;flex-direction:column;gap:6px">
-              <template x-for="(c,i) in post.captions||[]" :key="i">
-                <div class="cap-card" :class="{selected:post.caption===c.caption}" @click="post.caption=c.caption;saveQueue()">
-                  <div style="font-size:10px;font-weight:700;color:#f0b429;margin-bottom:3px;text-transform:uppercase" x-text="c.tone"></div>
-                  <div style="font-size:12px;color:rgba(255,255,255,.7);line-height:1.45" x-text="c.caption"></div>
-                </div>
-              </template>
-            </div>
-          </div>
-
-          <!-- ── EDIT PANEL ── -->
-          <div x-show="post._editing" style="background:rgba(0,0,0,.35);border:1px solid rgba(20,184,166,.25);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px">
-            <div style="font-size:13px;font-weight:700;color:#17b8b8;margin-bottom:2px">✏ Edit Post Details</div>
-
-            <!-- MATCH fields -->
-            <template x-if="post.type==='match'">
-              <div class="fg2s" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-                <div><label class="lbl" style="font-size:11px">Opponent</label><input class="inp" style="font-size:13px" x-model="post.meta.opponent" @input="debouncedThumb(post)"/></div>
-                <div><label class="lbl" style="font-size:11px">Result</label>
-                  <select class="inp" style="font-size:13px" x-model="post.meta.result" @change="debouncedThumb(post)">
-                    <option>won</option><option>lost</option><option>tie</option>
-                  </select></div>
-                <div><label class="lbl" style="font-size:11px">Our Score</label><input class="inp" style="font-size:13px" x-model="post.meta.ourScore" @input="debouncedThumb(post)"/></div>
-                <div><label class="lbl" style="font-size:11px">Their Score</label><input class="inp" style="font-size:13px" x-model="post.meta.theirScore" @input="debouncedThumb(post)"/></div>
-                <div><label class="lbl" style="font-size:11px">Won/Lost By</label><input class="inp" style="font-size:13px" x-model="post.meta.margin" @input="debouncedThumb(post)"/></div>
-                <div><label class="lbl" style="font-size:11px">Venue</label><input class="inp" style="font-size:13px" x-model="post.meta.venue" @input="debouncedThumb(post)"/></div>
-                <div><label class="lbl" style="font-size:11px">Top Batter</label><input class="inp" style="font-size:13px" x-model="post.meta.batterName" @input="debouncedThumb(post)"/></div>
-                <div><label class="lbl" style="font-size:11px">Runs (balls)</label>
-                  <div style="display:flex;gap:4px">
-                    <input class="inp" style="font-size:13px;width:50%" x-model.number="post.meta.batterRuns" @input="debouncedThumb(post)" placeholder="Runs"/>
-                    <input class="inp" style="font-size:13px;width:50%" x-model.number="post.meta.batterBalls" @input="debouncedThumb(post)" placeholder="Balls"/>
-                  </div></div>
-                <div><label class="lbl" style="font-size:11px">Top Bowler</label><input class="inp" style="font-size:13px" x-model="post.meta.bowlerName" @input="debouncedThumb(post)"/></div>
-                <div><label class="lbl" style="font-size:11px">Wkts / Runs</label>
-                  <div style="display:flex;gap:4px">
-                    <input class="inp" style="font-size:13px;width:50%" x-model.number="post.meta.bowlerWkts" @input="debouncedThumb(post)" placeholder="Wkts"/>
-                    <input class="inp" style="font-size:13px;width:50%" x-model.number="post.meta.bowlerRuns" @input="debouncedThumb(post)" placeholder="Runs"/>
-                  </div></div>
-              </div>
-            </template>
-
-            <!-- FIXTURE fields -->
-            <template x-if="post.type==='fixture'">
-              <div class="fg2s" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-                <div><label class="lbl" style="font-size:11px">Opponent</label><input class="inp" style="font-size:13px" x-model="post.meta.opponent" @input="debouncedThumb(post)"/></div>
-                <div><label class="lbl" style="font-size:11px">Date & Time</label><input class="inp" type="datetime-local" style="font-size:13px" x-model="post.meta.datetime" @input="debouncedThumb(post)"/></div>
-                <div><label class="lbl" style="font-size:11px">Venue</label><input class="inp" style="font-size:13px" x-model="post.meta.venue" @input="debouncedThumb(post)"/></div>
-                <div><label class="lbl" style="font-size:11px">Competition</label><input class="inp" style="font-size:13px" x-model="post.meta.competition" @input="debouncedThumb(post)"/></div>
-              </div>
-            </template>
-
-            <!-- MOTM fields -->
-            <template x-if="post.type==='motm'">
-              <div class="fg2s" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-                <div><label class="lbl" style="font-size:11px">Player Name</label><input class="inp" style="font-size:13px" x-model="post.meta.name" @input="debouncedThumb(post)"/></div>
-                <div><label class="lbl" style="font-size:11px">Opponent</label><input class="inp" style="font-size:13px" x-model="post.meta.opponent" @input="debouncedThumb(post)"/></div>
-                <div><label class="lbl" style="font-size:11px">Runs</label><input class="inp" style="font-size:13px" x-model.number="post.meta.runs" @input="debouncedThumb(post)"/></div>
-                <div><label class="lbl" style="font-size:11px">Wickets</label><input class="inp" style="font-size:13px" x-model.number="post.meta.wkts" @input="debouncedThumb(post)"/></div>
-                <div><label class="lbl" style="font-size:11px">Strike Rate</label><input class="inp" style="font-size:13px" x-model="post.meta.sr" @input="debouncedThumb(post)"/></div>
-                <div><label class="lbl" style="font-size:11px">Fielding</label><input class="inp" style="font-size:13px" x-model="post.meta.fielding" @input="debouncedThumb(post)"/></div>
-              </div>
-            </template>
-
-            <!-- MILESTONE fields -->
-            <template x-if="post.type==='milestone'">
-              <div class="fg2s" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-                <div><label class="lbl" style="font-size:11px">Title</label><input class="inp" style="font-size:13px" x-model="post.meta.title" @input="debouncedThumb(post)"/></div>
-                <div><label class="lbl" style="font-size:11px">Player/Team</label><input class="inp" style="font-size:13px" x-model="post.meta.name" @input="debouncedThumb(post)"/></div>
-                <div><label class="lbl" style="font-size:11px">Number</label><input class="inp" style="font-size:13px" x-model="post.meta.number" @input="debouncedThumb(post)"/></div>
-                <div><label class="lbl" style="font-size:11px">Season</label><input class="inp" style="font-size:13px" x-model="post.meta.season" @input="debouncedThumb(post)"/></div>
-                <div style="grid-column:1/-1"><label class="lbl" style="font-size:11px">Subtitle</label><input class="inp" style="font-size:13px" x-model="post.meta.subtitle" @input="debouncedThumb(post)"/></div>
-              </div>
-            </template>
-
-            <!-- SQUAD — edit players -->
-            <template x-if="post.type==='squad'">
-              <div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-                  <div><label class="lbl" style="font-size:11px">Opponent</label><input class="inp" style="font-size:13px" x-model="post.meta.opponent" @input="debouncedThumb(post)"/></div>
-                  <div><label class="lbl" style="font-size:11px">Competition</label><input class="inp" style="font-size:13px" x-model="post.meta.competition" @input="debouncedThumb(post)"/></div>
-                </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-                  <template x-for="(pl,pi) in (post.meta.players||[])" :key="pi">
-                    <div style="display:flex;gap:4px;align-items:center">
-                      <span style="font-size:11px;color:rgba(255,255,255,.35);width:16px" x-text="pi+1+'.'"></span>
-                      <input class="inp" style="font-size:12px;flex:2" x-model="pl.name" @input="debouncedThumb(post)" placeholder="Name"/>
-                      <select class="inp" style="font-size:12px;flex:1;padding:4px" x-model="pl.role" @change="debouncedThumb(post)">
-                        <option value="">Role</option><option>Captain</option><option>Batter</option><option>Bowler</option><option>All-rounder</option><option>WK</option>
-                      </select>
-                    </div>
-                  </template>
-                </div>
-              </div>
-            </template>
-
-            <button class="btn btn-green" style="font-size:13px;align-self:flex-start" @click="post._editing=false;saveQueue();showToast('✅ Saved!')">✓ Done Editing</button>
-          </div>
-
-          <!-- Action buttons -->
-<div class="act-btns" style="display:flex;flex-wrap:wrap;gap:8px;padding-top:4px;border-top:1px solid rgba(255,255,255,.06)">
-            <button class="btn btn-green" x-show="post.status!=='approved'" @click="approvePost(post)" style="font-size:13px">✓ Approve</button>
-            <button class="btn" @click="downloadPost(post)" :disabled="downloading===post.id"
-              style="font-size:13px;background:linear-gradient(135deg,#17b8b8,#0e8f8f);color:#fff;border:none">
-              <span x-show="downloading!==post.id">⬇ Download</span>
-              <span x-show="downloading===post.id" style="display:flex;align-items:center;gap:6px"><span class="spin"></span>Saving…</span>
-            </button>
-            <button class="btn btn-gold" @click="publishNow(post)" :disabled="publishing===post.id" style="font-size:13px"
-              :title="settings.ayrshareKey?'Post via Ayrshare':'Add Ayrshare key in Settings to post directly'">
-              <span x-show="publishing!==post.id">📱 Post to Instagram</span>
-              <span x-show="publishing===post.id" style="display:flex;align-items:center;gap:6px"><span class="spin"></span>Posting…</span>
-            </button>
-            <button class="btn btn-ghost" @click="regenCaptions(post)" :disabled="!settings.openaiKey" style="font-size:13px">✨ AI Captions</button>
-            <button class="btn btn-ghost" @click="post._editing=!post._editing;$nextTick(()=>{})" style="font-size:13px">✏ Edit Details</button>
-            <button class="btn btn-red" @click="rejectPost(post)" style="font-size:13px;margin-left:auto">✕ Remove</button>
-          </div>
-        </div>
-
-      </div>
-    </template>
-    </div>
-  </div>
-
-  <!-- ══ NEW POST ══ -->
-  <div x-show="tab==='new'" style="padding-top:28px">
+  <!-- ══ CREATE POST ══ -->
+  <div x-show="tab==='create'" style="padding-top:28px">
     <h2 style="font-size:20px;font-weight:700;margin-bottom:20px">Create New Post</h2>
     <!-- Post type picker — card style -->
     <div class="rg3 type-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px">
@@ -747,8 +574,7 @@
     <div x-show="createdPost&&!aiGenerating" style="margin-top:28px" class="glass" x-cloak>
       <div style="padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px">
         <span style="font-size:20px">✅</span>
-        <span style="font-weight:700;font-size:16px">Post added to queue!</span>
-        <button class="btn btn-ghost" style="margin-left:auto;font-size:12px" @click="tab='queue'">View Queue →</button>
+        <span style="font-weight:700;font-size:16px">Post created! Ready to share</span>
       </div>
       <div style="padding:20px 24px;display:flex;gap:20px;align-items:flex-start">
         <canvas id="created-thumb" width="160" height="285" style="width:120px;height:215px;border-radius:10px;flex-shrink:0;background:#0a0a0a;object-fit:contain"></canvas>
@@ -766,43 +592,19 @@
             </div>
           </div>
 <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
-            <button class="btn" @click="downloadPost(createdPost)" :disabled="downloading===createdPost?.id"
-              style="font-size:13px;background:linear-gradient(135deg,#17b8b8,#0e8f8f);color:#fff;border:none">
-              <span x-show="downloading!==createdPost?.id">⬇ Download PNG</span>
-              <span x-show="downloading===createdPost?.id" style="display:flex;align-items:center;gap:6px"><span class="spin"></span>Saving…</span>
+            <button class="btn" @click="copyImage()" style="font-size:13px;background:linear-gradient(135deg,#17b8b8,#0e8f8f);color:#fff;border:none">
+              📋 Copy Image
             </button>
-            <button class="btn btn-gold" @click="publishNow(createdPost)" :disabled="publishing===createdPost?.id" style="font-size:13px">
+            <button class="btn btn-ghost" @click="copyCaption()" style="font-size:13px">
+              📄 Copy Caption
+            </button>
+            <button class="btn btn-gold" @click="publishNow(createdPost)" :disabled="publishing===createdPost?.id" style="font-size:13px;margin-left:auto">
               <span x-show="publishing!==createdPost?.id">📱 Post to Instagram</span>
               <span x-show="publishing===createdPost?.id" style="display:flex;align-items:center;gap:6px"><span class="spin"></span>Posting…</span>
             </button>
-            <button class="btn btn-ghost" @click="approvePost(createdPost)">✓ Approve for later</button>
           </div>
         </div>
       </div>
-    </div>
-  </div>
-
-  <!-- ══ HISTORY ══ -->
-  <div x-show="tab==='history'" style="padding-top:28px">
-    <h2 style="font-size:20px;font-weight:700;margin-bottom:20px">Posted History</h2>
-    <div x-show="!history.length" style="text-align:center;padding:80px 20px;color:rgba(255,255,255,.3)">
-      <div style="font-size:48px;margin-bottom:12px">📜</div>
-      <p style="font-size:16px;font-weight:600;color:rgba(255,255,255,.45)">No posts yet</p>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px">
-    <template x-for="post in history" :key="post.id">
-      <div class="post-card" style="overflow:hidden">
-        <canvas :id="'hist-'+post.id" width="520" height="520" style="width:100%;aspect-ratio:9/16;display:block"
-          x-init="$nextTick(()=>renderThumb(post,'hist-'+post.id))"></canvas>
-        <div style="padding:14px">
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-            <span class="badge badge-posted">Posted</span>
-            <span style="font-size:11px;color:rgba(255,255,255,.3)" x-text="fmtDate(post.postedAt||post.createdAt)"></span>
-          </div>
-          <p style="font-size:12px;color:rgba(255,255,255,.55);line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical" x-text="post.caption||'—'"></p>
-        </div>
-      </div>
-    </template>
     </div>
   </div>
 
@@ -2387,7 +2189,7 @@ async function publishToInstagram(url,caption,cfg){
 //  ALPINE APP
 // ═══════════════════════════════════════════════════════
 function App(){return{
-  tab:'queue', newTab:'match', version:'v2',
+  tab:'create', newTab:'match', version:'v2',
   posts:[], history:[], settings:Store.getSettings(),
   toast:{show:false,msg:'',ok:true}, publishing:null, downloading:null, creating:false, aiGenerating:null, aiGeneratingProgress:0, aiGeneratingStatus:'', aiPreviewUrl:null, aiPreviewPost:null,
   igStatus:'', igOk:false, createdPost:null,
@@ -2597,7 +2399,7 @@ function App(){return{
       if(this.settings.openaiKey){try{captions=await generateCaptions(type,meta,this.settings);}catch(e){this.showToast('AI captions failed — post created without captions',false);}}
       const renderMode=meta._renderMode||'canvas';
       const post={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),type,status:'draft',caption:captions[0]?.caption||'',captions,meta,renderMode,createdAt:new Date().toISOString()};
-      this.posts.unshift(post);this.saveQueue();this.createdPost=post;
+      this.createdPost=post;
       await this.$nextTick();
 
       // AI Full Card mode: generate image with progress bar
@@ -2758,6 +2560,21 @@ function App(){return{
     this.aiPreviewPost=null;
   },
 
+  async copyImage(){
+    if(!this.aiPreviewPost?.blob){
+      this.showToast('❌ No image to copy',false);
+      return;
+    }
+    try {
+      await navigator.clipboard.write([
+        new ClipboardItem({ "image/png": this.aiPreviewPost.blob })
+      ]);
+      this.showToast('✅ Image copied to clipboard!');
+    } catch(e) {
+      this.showToast('❌ Failed to copy image: ' + e.message, false);
+    }
+  },
+
   copyCaption(){
     if(!this.aiPreviewPost?.caption)return;
     navigator.clipboard.writeText(this.aiPreviewPost.caption).then(()=>{
@@ -2787,11 +2604,11 @@ function App(){return{
       renderMode:'ai-full',
       createdAt:new Date().toISOString()
     };
-    this.posts.unshift(post);this.saveQueue();this.createdPost=post;
+    this.createdPost=post;
     await this.$nextTick();
     this.renderThumb(post,'created-thumb');
     this.aiPreviewUrl=null;this.aiPreviewPost=null;
-    this.showToast('✨ Post added to queue!');
+    this.showToast('✨ Post created! Copy and share');
   },
 
   async submitPhoto(){
@@ -2803,9 +2620,9 @@ function App(){return{
         try{const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Authorization':`Bearer ${this.settings.openaiKey}`,'Content-Type':'application/json'},body:JSON.stringify({model:'gpt-3.5-turbo',max_tokens:300,messages:[{role:'user',content:`Write a short Instagram caption for a cricket club photo. Include hashtags. Just the caption, no JSON.`}]})});const j=await r.json();caption=j.choices[0].message.content.trim();}catch{}
       }
       const post={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),type:'photo',status:'draft',caption,captions:[],meta:{photoDataURL:this.pf.photoDataURL,photoName:this.pf.photoName},createdAt:new Date().toISOString()};
-      this.posts.unshift(post);this.saveQueue();this.createdPost=post;
+      this.createdPost=post;
       await this.$nextTick();this.renderThumb(post,'created-thumb');
-      this.showToast('📸 Photo post created!');
+      this.showToast('📸 Photo ready! Copy and share');
     }finally{this.creating=false;}
   },
 
