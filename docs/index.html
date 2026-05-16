@@ -1290,8 +1290,9 @@ async function generateWithGPTImage(prompt, cfg) {
     console.log('🎨 [GPT Image] Response status:', response.status, response.ok ? '✓' : '✗');
 
     if(!response.ok) {
-      console.error('❌ GPT Image API error (Status ' + response.status + '):', data);
-      return null;
+      const errorMsg = data.error?.message || data.message || JSON.stringify(data);
+      console.error('❌ GPT Image API error (Status ' + response.status + '):', errorMsg);
+      throw new Error('API Error (' + response.status + '): ' + errorMsg);
     }
 
     console.log('🎨 [GPT Image] Success! Data received:', !!data.data, !!data.data[0]);
@@ -2520,7 +2521,7 @@ function App(){return{
       const aiCanvas = await generateAI(type, data, this.settings);
 
       if(!aiCanvas) {
-        throw new Error('AI image generation failed. Check your API key and try again.');
+        throw new Error('AI image generation failed. Check your API key has image generation credits and try again.');
       }
 
       this.aiGeneratingProgress=60;
