@@ -333,12 +333,17 @@
           <!-- AI Preview (Single Image) -->
           <div x-show="aiPreviewUrl" id="ai-preview-img" style="margin-top:24px;padding:16px;background:rgba(23,184,184,.08);border:2px solid rgba(23,184,184,.3);border-radius:12px">
             <div class="sh">🎨 AI Generated Image</div>
-            <img :src="aiPreviewUrl" style="width:100%;border-radius:10px;display:block;border:1px solid rgba(23,184,184,.3);margin:12px 0" alt="AI preview"/>
+            <div style="display:flex;justify-content:center;margin:12px 0">
+              <img :src="aiPreviewUrl" style="max-width:320px;height:auto;border-radius:10px;display:block;border:2px solid rgba(23,184,184,.3)" alt="AI preview"/>
+            </div>
 
             <!-- Action Buttons -->
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
               <button class="btn btn-gold" style="flex:1;justify-content:center;font-size:13px;padding:10px" @click="publishAI()" :disabled="aiGenerating">
                 📱 Post to Instagram
+              </button>
+              <button class="btn" style="flex:1;justify-content:center;font-size:13px;padding:10px;background:#666;color:#fff;border:none;cursor:pointer;border-radius:6px" @click="copyImage()" :disabled="aiGenerating">
+                📋 Copy Image
               </button>
               <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:13px;padding:10px" @click="regenerateAI()" :disabled="aiGenerating">
                 <span x-show="!aiGenerating">🔄 Regenerate</span>
