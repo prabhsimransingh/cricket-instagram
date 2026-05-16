@@ -354,7 +354,6 @@
 
             <!-- Action Buttons -->
             <div style="display:flex;gap:8px">
-              <button class="btn btn-gold" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="saveAIPreviewAsPost()">✓ Save as Post</button>
               <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="regenerateAI()" :disabled="aiGenerating">🔄 Regenerate</button>
               <button class="btn btn-red" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="resetAIGeneration()">✕ Discard</button>
             </div>
@@ -2589,27 +2588,6 @@ function App(){return{
     await this.generateAICardForType(this.aiPreviewPost.type);
   },
 
-  async saveAIPreviewAsPost(){
-    if(!this.aiPreviewPost)return;
-    const type = this.aiPreviewPost.type;
-    let captions=[];
-    if(this.settings.openaiKey){try{captions=await generateCaptions(type,this.aiPreviewPost.meta,this.settings);}catch(e){}}
-    const post={
-      id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),
-      type:type,
-      status:'draft',
-      caption:captions[0]?.caption||'',
-      captions,
-      meta:this.aiPreviewPost.meta,
-      renderMode:'ai-full',
-      createdAt:new Date().toISOString()
-    };
-    this.createdPost=post;
-    await this.$nextTick();
-    this.renderThumb(post,'created-thumb');
-    this.aiPreviewUrl=null;this.aiPreviewPost=null;
-    this.showToast('✨ Post created! Copy and share');
-  },
 
   async submitPhoto(){
     if(!this.pf.photoDataURL)return this.showToast('Select a photo first',false);
