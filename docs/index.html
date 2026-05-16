@@ -2221,7 +2221,7 @@ function App(){return{
   async checkForUpdates(){
     this.showToast('🔄 Checking for updates...');
     try{
-      // Clear all caches
+      // Clear all caches (but NOT localStorage - that has your API keys!)
       if('caches' in window){
         const names=await caches.keys();
         await Promise.all(names.map(name=>caches.delete(name)));
@@ -2229,11 +2229,9 @@ function App(){return{
       }
       // Clear service workers
       await this.clearServiceWorkers();
-      // Clear localStorage
-      localStorage.clear();
-      console.log('✓ Local storage cleared');
-      // Force hard reload
-      this.showToast('✨ Clearing cache and refreshing...');
+      console.log('✓ Service workers cleared');
+      // Force hard reload with cache-bust query param
+      this.showToast('✨ Refreshing with latest version...');
       setTimeout(()=>{
         location.href=location.href.split('?')[0]+'?v='+Date.now();
       },1000);
