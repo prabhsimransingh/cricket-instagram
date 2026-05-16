@@ -311,7 +311,7 @@
               <span x-show="publishing!==post.id">📱 Post to Instagram</span>
               <span x-show="publishing===post.id" style="display:flex;align-items:center;gap:6px"><span class="spin"></span>Posting…</span>
             </button>
-            <button class="btn btn-ghost" @click="regenCaptions(post)" :disabled="!settings.groqKey" style="font-size:13px">✨ AI Captions</button>
+            <button class="btn btn-ghost" @click="regenCaptions(post)" :disabled="!settings.openaiKey" style="font-size:13px">✨ AI Captions</button>
             <button class="btn btn-ghost" @click="post._editing=!post._editing;$nextTick(()=>{})" style="font-size:13px">✏ Edit Details</button>
             <button class="btn btn-red" @click="rejectPost(post)" style="font-size:13px;margin-left:auto">✕ Remove</button>
           </div>
@@ -755,7 +755,7 @@
               </div>
             </template>
             <div x-show="!createdPost?.captions?.length" style="font-size:13px;color:rgba(255,255,255,.3)">
-              No AI captions generated — edit the caption field in the queue, or add a Groq key in Settings.
+              No AI captions generated yet — captions are automatically created with AI images.
             </div>
           </div>
 <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
@@ -854,33 +854,7 @@
       <div class="glass" style="padding:24px">
         <div class="sh">🔑 API Keys</div>
         <p style="font-size:12px;color:rgba(255,255,255,.3);margin-bottom:14px;line-height:1.5">Stored in your browser only — never sent anywhere except the respective APIs.</p>
-        <!-- Ayrshare — recommended -->
-        <div style="margin-bottom:18px;padding:14px;border:1.5px solid rgba(240,180,41,.35);border-radius:12px;background:rgba(240,180,41,.06)">
-          <div style="font-weight:700;color:rgba(240,180,41,.95);font-size:13px;margin-bottom:4px">⭐ Ayrshare — Recommended for Instagram posting</div>
-          <p style="font-size:11px;color:rgba(255,255,255,.45);margin-bottom:10px;line-height:1.6">
-            1. Sign up free at <a href="https://ayrshare.com" target="_blank" style="color:#f0b429">ayrshare.com</a><br>
-            2. Connect your Instagram in their dashboard<br>
-            3. Copy your API Key below — done!
-          </p>
-          <label class="lbl">Ayrshare API Key</label>
-          <input class="inp" type="password" x-model="settings.ayrshareKey" placeholder="AYS-…"/>
-          <div x-show="settings.ayrshareKey" style="margin-top:8px;font-size:11px;color:rgba(100,255,150,.7)">✓ Ayrshare key set — Imgur not required</div>
-        </div>
-        <div style="margin-bottom:12px"><label class="lbl">Groq API Key (AI Captions) <a href="https://console.groq.com" target="_blank" style="color:#f0b429;font-size:10px;margin-left:4px">Get free →</a></label><input class="inp" type="password" x-model="settings.groqKey" placeholder="gsk_…"/></div>
-<div style="margin-bottom:12px;padding:12px;border:1px solid rgba(139,196,0,.3);border-radius:10px;background:rgba(139,196,0,.06)">
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;color:rgba(139,196,0,.95)">
-            <input type="checkbox" x-model="settings.aiCharacters" style="cursor:pointer;width:18px;height:18px"/>
-            ✨ AI Character Art for Matches (Pollinations)
-          </label>
-          <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:8px">Generates character art for home/away teams. Free, requires internet. <a href="https://pollinations.ai" target="_blank" style="color:#8bc400">Learn more</a></div>
-        </div>
-<div style="margin-bottom:12px;padding:12px;border:1px solid rgba(255,139,196,.3);border-radius:10px;background:rgba(255,139,196,.06)">
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;color:rgba(255,139,196,.95)">
-            <input type="checkbox" x-model="settings.aiFullCard" style="cursor:pointer;width:18px;height:18px"/>
-            🎨 AI Full Card Mode (Experimental)
-          </label>
-          <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:8px">Generate entire card image via Pollinations (slower, stunning visuals)</div>
-        </div>
+        <div style="margin-bottom:12px"><label class="lbl">OpenAI API Key (For Captions)</label><input class="inp" type="password" x-model="settings.openaiKey" placeholder="sk-…"/><div x-show="settings.openaiKey" style="margin-top:8px;font-size:11px;color:rgba(100,255,150,.7)">✓ OpenAI key set — Captions will generate automatically</div></div>
 
         <!-- DALL-E 3 Settings -->
         <div style="margin-bottom:12px;padding:12px;border:2px solid rgba(88,166,255,.4);border-radius:10px;background:rgba(88,166,255,.08)">
@@ -918,7 +892,6 @@
         <div class="sh" style="margin-bottom:14px">📖 Setup Guide</div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;font-size:13px;color:rgba(255,255,255,.55)" class="rg3">
           <div style="border:1px solid rgba(240,180,41,.25);border-radius:10px;padding:14px;background:rgba(240,180,41,.04)"><p style="font-weight:700;color:rgba(240,180,41,.9);margin-bottom:6px">⭐ 1. Ayrshare (Recommended)</p><p>Sign up free at <a href="https://ayrshare.com" target="_blank" style="color:#f0b429">ayrshare.com</a> → Social Accounts → Connect Instagram. Go to API Keys, copy your key. No Facebook app setup needed.</p></div>
-          <div><p style="font-weight:700;color:rgba(255,255,255,.85);margin-bottom:6px">2. Groq (AI Captions)</p><p>Free at <a href="https://console.groq.com" target="_blank" style="color:#f0b429">console.groq.com</a> → API Keys. Powers all caption generation using Llama 3.3.</p></div>
           <div><p style="font-weight:700;color:rgba(255,255,255,.85);margin-bottom:6px">3. Imgur (Backup image hosting)</p><p>Only needed if Ayrshare image upload fails. Register free at <a href="https://api.imgur.com/oauth2/addclient" target="_blank" style="color:#f0b429">api.imgur.com</a> — "OAuth 2 without callback".</p></div>
         </div>
       </div>
@@ -936,7 +909,7 @@ const Store = {
   setQueue:    v  => localStorage.setItem('cc_q', JSON.stringify(v)),
   getHistory:  () => JSON.parse(localStorage.getItem('cc_hist')||'[]'),
   setHistory:  v  => localStorage.setItem('cc_hist', JSON.stringify(v)),
-  getSettings:()=>{const s=JSON.parse(localStorage.getItem('cc_cfg')||'{}');return{clubName:'Champions',primary:'#152244',accent:'#17b8b8',leagueLogo:NACL_LOGO_B64,clubLogo:CHAMPIONS_LOGO_B64,groqKey:'',ayrshareKey:'',igToken:'',igAccountId:'',imgurClientId:'',useDallE:false,dalleApiKey:'',...s};},
+  getSettings:()=>{const s=JSON.parse(localStorage.getItem('cc_cfg')||'{}');return{clubName:'Champions',primary:'#152244',accent:'#17b8b8',leagueLogo:NACL_LOGO_B64,clubLogo:CHAMPIONS_LOGO_B64,openaiKey:'',ayrshareKey:'',igToken:'',igAccountId:'',imgurClientId:'',useDallE:false,dalleApiKey:'',...s};},
   setSettings:v=>{const s={...v};if(s.leagueLogo===NACL_LOGO_B64)delete s.leagueLogo;if(s.clubLogo===CHAMPIONS_LOGO_B64)delete s.clubLogo;try{localStorage.setItem('cc_cfg',JSON.stringify(s));}catch(e){console.warn('Settings:',e);}},
 };
 
@@ -2599,7 +2572,7 @@ function parseCSV(raw){
 }
 
 // ═══════════════════════════════════════════════════════
-//  AI CAPTIONS (Groq)
+//  AI CAPTIONS (OpenAI)
 // ═══════════════════════════════════════════════════════
 async function generateCaptions(type,data,cfg){
   const club=cfg.clubName||'Cricket Club';
@@ -2612,8 +2585,8 @@ async function generateCaptions(type,data,cfg){
     milestone:`Milestone: ${data.title}${data.number?' — '+data.number:''}${data.name?' achieved by '+data.name:''}\nReturn ONLY JSON: [{"tone":"proud","caption":"..."},{"tone":"celebratory","caption":"..."},{"tone":"tribute","caption":"..."}]`,
   };
   const prompt=prompts[type];if(!prompt)return[{tone:'general',caption:''}];
-  const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Authorization':`Bearer ${cfg.groqKey}`,'Content-Type':'application/json'},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:900,messages:[{role:'system',content:sys},{role:'user',content:prompt}]})});
-  if(!r.ok){const e=await r.json();throw new Error(e.error?.message||'Groq error');}
+  const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Authorization':`Bearer ${cfg.openaiKey}`,'Content-Type':'application/json'},body:JSON.stringify({model:'gpt-3.5-turbo',max_tokens:900,messages:[{role:'system',content:sys},{role:'user',content:prompt}]})});
+  if(!r.ok){const e=await r.json();throw new Error(e.error?.message||'OpenAI error');}
   const j=await r.json();
   const txt=j.choices[0].message.content.trim().replace(/^```(?:json)?\n?/,'').replace(/\n?```$/,'');
   return JSON.parse(txt);
@@ -2868,7 +2841,7 @@ function App(){return{
   },
 
   async regenCaptions(post){
-    if(!this.settings.groqKey)return this.showToast('Groq key not set',false);
+    if(!this.settings.openaiKey)return this.showToast('OpenAI key not set in Settings',false);
     try{const c=await generateCaptions(post.type,post.meta||{},this.settings);post.captions=c;post.caption=c[0]?.caption||post.caption;this.saveQueue();this.showToast('✨ Fresh captions!');}
     catch(e){this.showToast(`AI error: ${e.message}`,false);}
   },
@@ -2877,7 +2850,7 @@ function App(){return{
     this.creating=true;this.createdPost=null;
     try{
       let captions=[];
-      if(this.settings.groqKey){try{captions=await generateCaptions(type,meta,this.settings);}catch(e){this.showToast('AI captions failed — post created without captions',false);}}
+      if(this.settings.openaiKey){try{captions=await generateCaptions(type,meta,this.settings);}catch(e){this.showToast('AI captions failed — post created without captions',false);}}
       const renderMode=meta._renderMode||'canvas';
       const post={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),type,status:'draft',caption:captions[0]?.caption||'',captions,meta,renderMode,createdAt:new Date().toISOString()};
       this.posts.unshift(post);this.saveQueue();this.createdPost=post;
@@ -3000,13 +2973,32 @@ function App(){return{
         this.aiPreviewPost = {type, meta: data, blob};
       }
 
+      this.aiGeneratingProgress=95;
+      this.aiGeneratingStatus='Generating captions...';
+
+      // Auto-generate captions based on the post type (non-blocking - don't fail the whole process)
+      if (this.settings.openaiKey) {
+        try {
+          const captions = await generateCaptions(type, data, this.settings);
+          this.aiPreviewPost.captions = captions;
+          this.aiPreviewPost.caption = captions[0]?.caption || '';
+        } catch(e) {
+          console.warn('⚠ Caption generation failed (non-blocking):', e.message);
+          this.aiPreviewPost.captions = [];
+          this.aiPreviewPost.caption = '';
+        }
+      } else {
+        this.aiPreviewPost.captions = [];
+        this.aiPreviewPost.caption = '';
+      }
+
       this.aiGeneratingProgress=100;
 
       // Auto-scroll to preview
       await this.$nextTick();
       const preview = document.getElementById('ai-preview-img');
       if(preview) preview.scrollIntoView({behavior:'smooth', block:'center'});
-      this.showToast('✨ AI image generated! Ready to save or regenerate.');
+      this.showToast('✨ AI image + captions generated! Ready to save or regenerate.');
     } catch(e) {
       this.showToast('⚠ AI generation failed: '+e.message, false);
       console.error('AI generation error:', e);
@@ -3050,7 +3042,7 @@ function App(){return{
     if(!this.aiPreviewPost)return;
     const type = this.aiPreviewPost.type;
     let captions=[];
-    if(this.settings.groqKey){try{captions=await generateCaptions(type,this.aiPreviewPost.meta,this.settings);}catch(e){}}
+    if(this.settings.openaiKey){try{captions=await generateCaptions(type,this.aiPreviewPost.meta,this.settings);}catch(e){}}
     const post={
       id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),
       type:type,
@@ -3073,8 +3065,8 @@ function App(){return{
     this.creating=true;
     try{
       let caption=this.pf.caption;
-      if(!caption&&this.pf.genCaption&&this.settings.groqKey){
-        try{const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Authorization':`Bearer ${this.settings.groqKey}`,'Content-Type':'application/json'},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:300,messages:[{role:'user',content:`Write a short Instagram caption for a cricket club photo. Include hashtags. Just the caption, no JSON.`}]})});const j=await r.json();caption=j.choices[0].message.content.trim();}catch{}
+      if(!caption&&this.pf.genCaption&&this.settings.openaiKey){
+        try{const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Authorization':`Bearer ${this.settings.openaiKey}`,'Content-Type':'application/json'},body:JSON.stringify({model:'gpt-3.5-turbo',max_tokens:300,messages:[{role:'user',content:`Write a short Instagram caption for a cricket club photo. Include hashtags. Just the caption, no JSON.`}]})});const j=await r.json();caption=j.choices[0].message.content.trim();}catch{}
       }
       const post={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),type:'photo',status:'draft',caption,captions:[],meta:{photoDataURL:this.pf.photoDataURL,photoName:this.pf.photoName},createdAt:new Date().toISOString()};
       this.posts.unshift(post);this.saveQueue();this.createdPost=post;
