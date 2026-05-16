@@ -1266,7 +1266,7 @@ async function generateWithGPTImage(prompt, cfg) {
     model: 'gpt-image-1.5',
     prompt: prompt,
     n: 1,
-    size: '1024x1792'
+    size: '1792x1024'
   });
 
   const controller = new AbortController();
@@ -1329,8 +1329,25 @@ async function generateWithGPTImage(prompt, cfg) {
         cv.width = 1080;
         cv.height = 1920;
         const ctx = cv.getContext('2d');
-        // Scale image to fill canvas (1080x1920 Instagram story format)
-        ctx.drawImage(img, 0, 0, cv.width, cv.height);
+
+        // Scale 1792x1024 image to cover 1080x1920 canvas (maintain aspect ratio, crop excess)
+        const imgAspect = img.width / img.height;  // 1792/1024 = 1.75
+        const canvasAspect = cv.width / cv.height; // 1080/1920 = 0.5625
+
+        let drawWidth = cv.width;
+        let drawHeight = cv.width / imgAspect;
+        let offsetX = 0;
+        let offsetY = (cv.height - drawHeight) / 2;
+
+        // If image is too tall, scale by height instead
+        if(drawHeight < cv.height) {
+          drawHeight = cv.height;
+          drawWidth = cv.height * imgAspect;
+          offsetX = (cv.width - drawWidth) / 2;
+          offsetY = 0;
+        }
+
+        ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
         console.log('🎨 [GPT Image] Canvas created successfully ✓');
         res(cv);
       };
