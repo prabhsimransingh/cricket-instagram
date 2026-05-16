@@ -461,14 +461,6 @@
       <div style="display:grid;grid-template-columns:1fr 340px;gap:28px;align-items:start" class="rg2">
         <div>
           <div class="glass" style="padding:24px">
-            <div style="margin-bottom:16px;padding:12px;background:rgba(255,139,196,.08);border-radius:8px;border:1px solid rgba(255,139,196,.25);display:flex;gap:12px;align-items:center">
-              <span style="font-size:12px;font-weight:600;color:rgba(255,139,196,.95)">🎨 Render Style:</span>
-              <select x-model="ff._renderMode" style="flex:1;padding:8px 12px;border-radius:6px;background:rgba(255,255,255,.05);color:#fff;border:1px solid rgba(255,255,255,.15);font-size:12px;font-family:Inter">
-                <option value="canvas">Canvas</option>
-                <option value="ai-chars" selected>+ AI Characters</option>
-                <option value="ai-full">🎨 AI Full Card</option>
-              </select>
-            </div>
             <div class="fg2" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
               <div><label class="lbl">Opponent *</label><input class="inp" x-model="ff.opponent" @input="debouncedPreview('fixture')" placeholder="Hackney Hawks"/></div>
               <div><label class="lbl">Match Date & Time *</label><input class="inp" type="datetime-local" x-model="ff.datetime" @input="debouncedPreview('fixture')"/></div>
@@ -2304,16 +2296,9 @@ async function renderCard(canvas,post,cfg){
   const ctx=canvas.getContext('2d');
   ctx.clearRect(0,0,W,H);
   const d=post.meta||{};
-  const mode=post.renderMode||'canvas';
   try{
-    // AI Full Card mode
-    if(post.type==='fixture'&&mode==='ai-full'){
-      console.log('🎨 Attempting AI full card for fixture');
-      const img=await generateFixtureAI(d,cfg);
-      if(img){ctx.drawImage(img,0,0,W,H);return;}
-    }
-    // AI Characters mode — disable for now, use canvas
-    const aiChars=mode==='ai-chars';
+    // Always use canvas rendering for preview
+    const aiChars=false;
     console.log('🎨 Rendering',post.type,'card');
     if(post.type==='match')         await drawMatchCard(ctx,d,cfg);
     else if(post.type==='fixture'){cfg.aiCharacters=aiChars;await drawFixtureCard(ctx,d,cfg);}
@@ -2427,7 +2412,7 @@ function App(){return{
   igStatus:'', igOk:false, createdPost:null,
   // forms
   mf:{opponent:'',result:'won',ourScore:'',theirScore:'',margin:'',venue:'',date:'',competition:'',batterName:'',batterRuns:0,batterBalls:0,batterFours:0,batterSixes:0,bowlerName:'',bowlerWkts:0,bowlerRuns:0,bowlerOvers:'',photoDataURL:'',photoName:''},
-  ff:{opponent:'',datetime:'',venue:'',competition:'',format:'T20',photoDataURL:'',photoName:'',_renderMode:'ai-full'},
+  ff:{opponent:'',datetime:'',venue:'',competition:'',format:'T20',photoDataURL:'',photoName:''},
   qf:{opponent:'',date:'',competition:'',players:Array.from({length:11},()=>({name:'',role:''}))},
   gf:{name:'',opponent:'',date:'',runs:0,balls:0,sr:'',wkts:0,conc:0,overs:'',fielding:'',photoDataURL:'',photoName:''},
   lf:{title:'',name:'',number:'',season:'',subtitle:'',photoDataURL:'',photoName:''},
