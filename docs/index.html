@@ -220,18 +220,43 @@
             </div>
           </div>
           <div class="glass" style="padding:24px">
-            <div class="fg2" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <!-- Opponent & Victory -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
               <div><label class="lbl">Opponent *</label><input class="inp" x-model="mf.opponent" @input="debouncedPreview('match')" placeholder="Brick Lane CC"/></div>
-              <div><label class="lbl">Result *</label>
-                <select class="inp" x-model="mf.result" @change="debouncedPreview('match')">
-                  <option value="won">Won</option><option value="lost">Lost</option><option value="tied">Tied</option><option value="no result">No Result</option>
+              <div><label class="lbl">Which Team Won? *</label>
+                <select class="inp" x-model="mf.victory" @change="autoCalcMargin(); debouncedPreview('match')">
+                  <option value="team_a">Our Team Won</option>
+                  <option value="team_b">Opposition Won</option>
+                  <option value="tie">Tie / No Result</option>
                 </select>
               </div>
             </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:14px">
-              <div><label class="lbl">Our Score</label><input class="inp" x-model="mf.ourScore" @input="debouncedPreview('match')" placeholder="156/5"/></div>
-              <div><label class="lbl">Their Score</label><input class="inp" x-model="mf.theirScore" @input="debouncedPreview('match')" placeholder="143/8"/></div>
-              <div><label class="lbl">Margin</label><input class="inp" x-model="mf.margin" @input="debouncedPreview('match')" placeholder="13 runs"/></div>
+
+            <!-- Team A (Our Team) Score Details -->
+            <div class="divider" style="margin-top:14px"></div>
+            <div class="sh" style="margin-top:10px">🏟️ Our Team</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-top:10px">
+              <div><label class="lbl">Score (Runs)</label><input class="inp" type="number" x-model.number="mf.ourScore" @input="autoCalcMargin(); debouncedPreview('match')" placeholder="156" min="0"/></div>
+              <div><label class="lbl">Wickets Lost</label><input class="inp" type="number" x-model.number="mf.ourWicketsLost" @input="autoCalcMargin(); debouncedPreview('match')" placeholder="5" min="0" max="10"/></div>
+              <div><label class="lbl">Overs Faced</label><input class="inp" x-model="mf.ourOvers" @input="autoCalcMargin(); debouncedPreview('match')" placeholder="20"/></div>
+              <div><label class="lbl">Full Score</label><input class="inp" :value="mf.ourScore && mf.ourWicketsLost!==undefined ? mf.ourScore + '/' + mf.ourWicketsLost : '—'" readonly style="background:rgba(255,255,255,0.1);opacity:0.7;cursor:default"/></div>
+            </div>
+
+            <!-- Team B (Opposition) Score Details -->
+            <div class="divider" style="margin-top:14px"></div>
+            <div class="sh" style="margin-top:10px">🏏 Opposition</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-top:10px">
+              <div><label class="lbl">Score (Runs)</label><input class="inp" type="number" x-model.number="mf.theirScore" @input="autoCalcMargin(); debouncedPreview('match')" placeholder="143" min="0"/></div>
+              <div><label class="lbl">Wickets Lost</label><input class="inp" type="number" x-model.number="mf.theirWicketsLost" @input="autoCalcMargin(); debouncedPreview('match')" placeholder="8" min="0" max="10"/></div>
+              <div><label class="lbl">Overs Faced</label><input class="inp" x-model="mf.theirOvers" @input="autoCalcMargin(); debouncedPreview('match')" placeholder="20"/></div>
+              <div><label class="lbl">Full Score</label><input class="inp" :value="mf.theirScore && mf.theirWicketsLost!==undefined ? mf.theirScore + '/' + mf.theirWicketsLost : '—'" readonly style="background:rgba(255,255,255,0.1);opacity:0.7;cursor:default"/></div>
+            </div>
+
+            <!-- Auto-calculated Margin -->
+            <div class="divider" style="margin-top:14px"></div>
+            <div class="sh" style="margin-top:10px">📊 Margin (Auto-Calculated)</div>
+            <div style="padding:10px;background:rgba(23,184,184,0.1);border-radius:6px;border:1px solid rgba(23,184,184,0.3);font-size:13px;color:rgba(255,255,255,0.8)">
+              <strong x-text="mf.margin || 'Fill scores above to calculate'"></strong>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
               <div><label class="lbl">Venue</label><input class="inp" x-model="mf.venue" @input="debouncedPreview('match')" placeholder="Victoria Park"/></div>
@@ -1280,25 +1305,38 @@ async function drawMatchCard(ctx,d,cfg){
 function buildPrompt_match(data, cfg) {
   const club = (cfg.clubName || 'Champions Cricket Club').toUpperCase();
   const opp = (data.opponent || 'Opposition').toUpperCase();
-  const score = data.result === 'won'
-    ? `${data.ourScore}/${data.theirScore} victory`
-    : `fell short at ${data.ourScore}/${data.theirScore}`;
+  const victory = data.victory || data.result; // Support both new (victory) and old (result) fields
+
+  // Build context based on victory
+  let scoreContext = '';
+  let motivationalTone = '';
+
+  if(victory === 'team_a' || victory === 'won'){
+    scoreContext = `${club} triumphed over ${opp}, scoring ${data.ourScore} while holding them to ${data.theirScore}. Victory by ${data.margin || 'a convincing margin'}.`;
+    motivationalTone = '💪 Dominant performance. Highlight the confidence, skill, and team unity. Celebratory energy, victory moment.';
+  }else if(victory === 'team_b' || victory === 'lost'){
+    scoreContext = `Despite a strong effort, ${club} fell short against ${opp}. Scored ${data.ourScore} but opposition reached ${data.theirScore}. Lost by ${data.margin || 'a narrow margin'}.`;
+    motivationalTone = '🔥 Resilient effort despite loss. Show growth mindset and determination. Make it inspirational and motivating with message: "Stronger Next Time!"';
+  }else{
+    scoreContext = `${club} vs ${opp} resulted in ${data.margin || 'a tie / no result'}.`;
+    motivationalTone = 'Balanced, competitive match energy.';
+  }
+
   const venue = data.venue || 'Cricket Ground';
   const comp = data.competition || 'Match';
-  const margin = data.margin ? ` by ${data.margin}` : '';
   const date = data.date ? `, ${data.date}` : '';
-  const playerHighlight = data.batterName ? `${data.batterName} (${data.batterRuns} runs off ${data.batterBalls || '?'} balls, ${data.batterFours || 0}x4, ${data.batterSixes || 0}x6)` : '';
-  const bowlerHighlight = data.bowlerName ? `${data.bowlerName} (${data.bowlerWkts || 0}/${data.bowlerRuns || 0} in ${data.bowlerOvers || '?'} overs)` : '';
+  const playerHighlight = data.batterName ? `${data.batterName} shone with ${data.batterRuns} runs off ${data.batterBalls || '?'} balls (${data.batterFours || 0}x4, ${data.batterSixes || 0}x6)` : '';
+  const bowlerHighlight = data.bowlerName ? `${data.bowlerName} was exceptional: ${data.bowlerWkts || 0}/${data.bowlerRuns || 0} in ${data.bowlerOvers || '?'} overs` : '';
 
-  return `Professional cricket match result celebration poster. ${club} vs ${opp} at ${venue}${date}.
-    Final score: ${score}${margin}. ${comp}.
-    ${playerHighlight ? `Star performer: ${playerHighlight}.` : ''}
+  return `Professional cricket match result social media poster for ${club}.
+    ${scoreContext}
+    Venue: ${venue}${date}. Competition: ${comp}.
+    ${playerHighlight ? `Key performer: ${playerHighlight}.` : ''}
     ${bowlerHighlight ? `Outstanding bowling: ${bowlerHighlight}.` : ''}
-    ${data.result === 'won' ? 'Victory celebration moment, triumphant energy' : 'Intense match moment, competitive drama'}.
-    Professional sports photography, cinematic 8k photorealism, dramatic stadium floodlights,
-    cricket action shot, pristine grass field, competitive energy, championship aesthetic,
-    golden warm stadium lighting, high contrast sharp focus, dynamic composition.
-    9:16 vertical Instagram format, premium sports design, celebration ${data.result === 'won' ? 'energy' : 'drama'}.`;
+    ${motivationalTone}
+    Design: Cinematic cricket action shot with vibrant colors, professional sports photography aesthetic,
+    ${victory === 'team_a' || victory === 'won' ? 'golden celebratory lighting' : 'dynamic dramatic lighting'}, championship quality,
+    high contrast sharp focus, 9:16 vertical Instagram format, premium sports design.`;
 }
 
 function buildPrompt_fixture(data, cfg) {
@@ -1981,7 +2019,7 @@ function wrapText(ctx,text,x,y,maxW,lh){const words=text.split(' ');let line='';
 //  SAMPLE DATA
 // ═══════════════════════════════════════════════════════
 const SAMPLES={
-  match:{opponent:'Brick Lane CC',result:'won',ourScore:'187/6',theirScore:'163/9',margin:'24 runs',venue:'Victoria Park',date:'2025-06-15',competition:'East London T20 League',batterName:'Ravinder Singh',batterRuns:84,batterBalls:52,batterFours:9,batterSixes:4,bowlerName:'Harpreet Dhaliwal',bowlerWkts:3,bowlerRuns:28,bowlerOvers:'4.0',photoDataURL:'',photoName:''},
+  match:{opponent:'Brick Lane CC',result:'won',ourScore:187,theirScore:163,margin:'24 runs',victory:'team_a',ourOvers:'20',theirOvers:'19.4',ourWicketsLost:6,theirWicketsLost:9,venue:'Victoria Park',date:'2025-06-15',competition:'East London T20 League',batterName:'Ravinder Singh',batterRuns:84,batterBalls:52,batterFours:9,batterSixes:4,bowlerName:'Harpreet Dhaliwal',bowlerWkts:3,bowlerRuns:28,bowlerOvers:'4.0',photoDataURL:'',photoName:''},
   fixture:{opponent:'Hackney Hawks',datetime:'2025-06-22T14:00',venue:'Victoria Park, East London',competition:'East London T20 League',format:'T20',photoDataURL:'',photoName:''},
   squad:{opponent:'Hackney Hawks',date:'2025-06-22',competition:'East London T20 League',players:[{name:'Harpreet Singh',role:'Captain'},{name:'Ravinder Singh',role:'Batter'},{name:'Jag Dhaliwal',role:'Batter'},{name:'Manpreet Gill',role:'All-rounder'},{name:'Bobby Sandhu',role:'All-rounder'},{name:'Kiran Bains',role:'WK'},{name:'Dev Randhawa',role:'Bowler'},{name:'Sunny Basra',role:'Bowler'},{name:'Taz Grewal',role:'Bowler'},{name:'Pav Mann',role:'Bowler'},{name:'Roop Chana',role:'Bowler'}]},
   motm:{name:'Harpreet Singh',opponent:'Brick Lane CC',date:'2025-06-15',runs:84,balls:52,sr:'161.5',wkts:2,conc:18,overs:'4.0',fielding:'2 catches',photoDataURL:'',photoName:''},
@@ -2344,7 +2382,7 @@ function App(){return{
   toast:{show:false,msg:'',ok:true}, publishing:null, downloading:null, creating:false, aiGenerating:null, aiGeneratingProgress:0, aiGeneratingStatus:'', aiPreviewUrl:null, aiPreviewPost:null,
   igStatus:'', igOk:false, createdPost:null,
   // forms
-  mf:{opponent:'',result:'won',ourScore:'',theirScore:'',margin:'',venue:'',date:'',competition:'',batterName:'',batterRuns:0,batterBalls:0,batterFours:0,batterSixes:0,bowlerName:'',bowlerWkts:0,bowlerRuns:0,bowlerOvers:'',photoDataURL:'',photoName:''},
+  mf:{opponent:'',result:'won',ourScore:'',theirScore:'',margin:'',venue:'',date:'',competition:'',victory:'team_a',ourOvers:'20',theirOvers:'20',ourWicketsLost:0,theirWicketsLost:0,batterName:'',batterRuns:0,batterBalls:0,batterFours:0,batterSixes:0,bowlerName:'',bowlerWkts:0,bowlerRuns:0,bowlerOvers:'',photoDataURL:'',photoName:''},
   ff:{opponent:'',datetime:'',venue:'',competition:'',format:'T20',photoDataURL:'',photoName:''},
   qf:{opponent:'',date:'',competition:'',players:Array.from({length:11},()=>({name:'',role:''}))},
   gf:{name:'',opponent:'',date:'',runs:0,balls:0,sr:'',wkts:0,conc:0,overs:'',fielding:'',photoDataURL:'',photoName:''},
@@ -2356,7 +2394,7 @@ function App(){return{
     // Detect version from URL parameter
     const params = new URLSearchParams(window.location.search);
     const versionParam = params.get('version');
-    if(versionParam === 'main' || versionParam === 'v2' || versionParam === 'v3' || versionParam === 'v4' || versionParam === 'v5' || versionParam === 'v6' || versionParam === 'v7' || versionParam === 'v8' || versionParam === 'v9' || versionParam === 'v10' || versionParam === 'v11') {
+    if(versionParam === 'main' || versionParam === 'v2' || versionParam === 'v3' || versionParam === 'v4' || versionParam === 'v5' || versionParam === 'v6' || versionParam === 'v7' || versionParam === 'v8' || versionParam === 'v9' || versionParam === 'v10' || versionParam === 'v11' || versionParam === 'v12') {
       this.version = versionParam;
     }
 
@@ -2687,7 +2725,27 @@ function App(){return{
     finally{this.creating=false;}
   },
 
-  async submitMatch(){await this._createPost('match',{...this.mf});},
+  autoCalcMargin(){
+    const victory = this.mf.victory;
+    const ourScore = parseInt(this.mf.ourScore) || 0;
+    const theirScore = parseInt(this.mf.theirScore) || 0;
+    const ourWkts = parseInt(this.mf.ourWicketsLost) || 0;
+    const theirWkts = parseInt(this.mf.theirWicketsLost) || 0;
+
+    if(victory === 'team_a'){
+      // We won - margin is runs difference
+      const diff = ourScore - theirScore;
+      this.mf.margin = diff > 0 ? `${diff} runs` : '0 runs';
+    }else if(victory === 'team_b'){
+      // We lost - margin is wickets remaining for opposition
+      const wktsRemaining = 10 - theirWkts;
+      this.mf.margin = wktsRemaining > 0 ? `by ${wktsRemaining} wickets` : 'all out';
+    }else{
+      this.mf.margin = 'Tie / No Result';
+    }
+  },
+
+  async submitMatch(){this.autoCalcMargin(); await this._createPost('match',{...this.mf});},
   async submitFixture(){await this._createPost('fixture',{...this.ff});},
   async submitSquad(){await this._createPost('squad',{...this.qf,players:[...this.qf.players]});},
   async submitMOTM(){await this._createPost('motm',{...this.gf});},
