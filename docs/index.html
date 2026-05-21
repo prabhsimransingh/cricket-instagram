@@ -2356,7 +2356,7 @@ function App(){return{
     // Detect version from URL parameter
     const params = new URLSearchParams(window.location.search);
     const versionParam = params.get('version');
-    if(versionParam === 'main' || versionParam === 'v2' || versionParam === 'v3' || versionParam === 'v4' || versionParam === 'v5' || versionParam === 'v6' || versionParam === 'v7' || versionParam === 'v8' || versionParam === 'v9' || versionParam === 'v10') {
+    if(versionParam === 'main' || versionParam === 'v2' || versionParam === 'v3' || versionParam === 'v4' || versionParam === 'v5' || versionParam === 'v6' || versionParam === 'v7' || versionParam === 'v8' || versionParam === 'v9' || versionParam === 'v10' || versionParam === 'v11') {
       this.version = versionParam;
     }
 
@@ -2622,10 +2622,13 @@ function App(){return{
       return;
     }
     try{
-      const blob = this.aiPreviewPost.blob;
-      const url = URL.createObjectURL(blob);
+      // Copy image to clipboard FIRST
+      await navigator.clipboard.write([
+        new ClipboardItem({ "image/png": this.aiPreviewPost.blob })
+      ]);
+      this.showToast('✅ Image copied to clipboard!');
 
-      // Try to open Instagram app with intent
+      // Open Instagram app
       const ua = navigator.userAgent.toLowerCase();
       if(ua.includes('android')){
         // Android: Use intent:// scheme
@@ -2634,13 +2637,16 @@ function App(){return{
         // iOS: Use instagram:// scheme
         window.location.href = 'instagram://';
       }else{
-        this.showToast('📲 Open Instagram app and paste the image',false);
+        this.showToast('📝 Image ready! Open Instagram and paste (Cmd+V)', false);
+        return;
       }
 
-      this.showToast('📲 Opening Instagram app…');
-      setTimeout(()=>URL.revokeObjectURL(url),15000);
+      // Show instruction toast after app opens
+      setTimeout(() => {
+        this.showToast('📝 App opening... Paste image in Instagram (Cmd+V or Ctrl+V)', false);
+      }, 500);
     }catch(e){
-      this.showToast('❌ '+e.message,false);
+      this.showToast('❌ Copy failed: ' + e.message,false);
       console.error(e);
     }
   },
