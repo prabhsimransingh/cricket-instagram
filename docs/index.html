@@ -284,6 +284,30 @@
             <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="exportVideo('match')">🎬 Export Video</button>
           </div>
           <p style="font-size:11px;color:rgba(255,255,255,.2);text-align:center;margin-top:6px">Updates as you type</p>
+
+          <!-- AI Preview (Match) -->
+          <div x-show="aiPreviewUrl" id="ai-preview-img-match" style="margin-top:24px;padding:16px;background:rgba(23,184,184,.08);border:2px solid rgba(23,184,184,.3);border-radius:12px">
+            <div class="sh">🎨 AI Generated Image</div>
+            <div style="display:flex;justify-content:center;margin:12px 0">
+              <img :src="aiPreviewUrl" style="max-width:320px;height:auto;border-radius:10px;display:block;border:2px solid rgba(23,184,184,.3)" alt="AI preview"/>
+            </div>
+            <!-- Action Buttons -->
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+              <button class="btn btn-gold" style="flex:1;justify-content:center;font-size:13px;padding:10px" @click="publishAI()" :disabled="aiGenerating">
+                📱 Share Image
+              </button>
+              <button class="btn" style="flex:1;justify-content:center;font-size:13px;padding:10px;background:#E1306C;color:#fff;border:none;cursor:pointer;border-radius:6px" @click="shareToInstagramApp()" :disabled="aiGenerating">
+                📲 Instagram App
+              </button>
+              <button class="btn" style="flex:1;justify-content:center;font-size:13px;padding:10px;background:#666;color:#fff;border:none;cursor:pointer;border-radius:6px" @click="copyImage()" :disabled="aiGenerating">
+                📋 Copy
+              </button>
+              <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:13px;padding:10px" @click="regenerateAI()" :disabled="aiGenerating">
+                <span x-show="!aiGenerating">🔄 Regenerate</span>
+                <span x-show="aiGenerating" style="display:flex;align-items:center;gap:6px"><span class="spin"></span>Generating...</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -403,6 +427,30 @@
             <button class="btn btn-ghost" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="playPreview('squad')">▶ Play Effects</button>
             <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="exportVideo('squad')">🎬 Export Video</button>
           </div>
+
+          <!-- AI Preview (Squad) -->
+          <div x-show="aiPreviewUrl" id="ai-preview-img-squad" style="margin-top:24px;padding:16px;background:rgba(23,184,184,.08);border:2px solid rgba(23,184,184,.3);border-radius:12px">
+            <div class="sh">🎨 AI Generated Image</div>
+            <div style="display:flex;justify-content:center;margin:12px 0">
+              <img :src="aiPreviewUrl" style="max-width:320px;height:auto;border-radius:10px;display:block;border:2px solid rgba(23,184,184,.3)" alt="AI preview"/>
+            </div>
+            <!-- Action Buttons -->
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+              <button class="btn btn-gold" style="flex:1;justify-content:center;font-size:13px;padding:10px" @click="publishAI()" :disabled="aiGenerating">
+                📱 Share Image
+              </button>
+              <button class="btn" style="flex:1;justify-content:center;font-size:13px;padding:10px;background:#E1306C;color:#fff;border:none;cursor:pointer;border-radius:6px" @click="shareToInstagramApp()" :disabled="aiGenerating">
+                📲 Instagram App
+              </button>
+              <button class="btn" style="flex:1;justify-content:center;font-size:13px;padding:10px;background:#666;color:#fff;border:none;cursor:pointer;border-radius:6px" @click="copyImage()" :disabled="aiGenerating">
+                📋 Copy
+              </button>
+              <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:13px;padding:10px" @click="regenerateAI()" :disabled="aiGenerating">
+                <span x-show="!aiGenerating">🔄 Regenerate</span>
+                <span x-show="aiGenerating" style="display:flex;align-items:center;gap:6px"><span class="spin"></span>Generating...</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -457,6 +505,30 @@
             <button class="btn btn-ghost" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="playPreview('motm')">▶ Play Effects</button>
             <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="exportVideo('motm')">🎬 Export Video</button>
           </div>
+
+          <!-- AI Preview (MOTM) -->
+          <div x-show="aiPreviewUrl" id="ai-preview-img-motm" style="margin-top:24px;padding:16px;background:rgba(23,184,184,.08);border:2px solid rgba(23,184,184,.3);border-radius:12px">
+            <div class="sh">🎨 AI Generated Image</div>
+            <div style="display:flex;justify-content:center;margin:12px 0">
+              <img :src="aiPreviewUrl" style="max-width:320px;height:auto;border-radius:10px;display:block;border:2px solid rgba(23,184,184,.3)" alt="AI preview"/>
+            </div>
+            <!-- Action Buttons -->
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+              <button class="btn btn-gold" style="flex:1;justify-content:center;font-size:13px;padding:10px" @click="publishAI()" :disabled="aiGenerating">
+                📱 Share Image
+              </button>
+              <button class="btn" style="flex:1;justify-content:center;font-size:13px;padding:10px;background:#E1306C;color:#fff;border:none;cursor:pointer;border-radius:6px" @click="shareToInstagramApp()" :disabled="aiGenerating">
+                📲 Instagram App
+              </button>
+              <button class="btn" style="flex:1;justify-content:center;font-size:13px;padding:10px;background:#666;color:#fff;border:none;cursor:pointer;border-radius:6px" @click="copyImage()" :disabled="aiGenerating">
+                📋 Copy
+              </button>
+              <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:13px;padding:10px" @click="regenerateAI()" :disabled="aiGenerating">
+                <span x-show="!aiGenerating">🔄 Regenerate</span>
+                <span x-show="aiGenerating" style="display:flex;align-items:center;gap:6px"><span class="spin"></span>Generating...</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -502,6 +574,30 @@
             <button class="btn btn-ghost" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="playPreview('milestone')">▶ Play Effects</button>
             <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="exportVideo('milestone')">🎬 Export Video</button>
           </div>
+
+          <!-- AI Preview (Milestone) -->
+          <div x-show="aiPreviewUrl" id="ai-preview-img-milestone" style="margin-top:24px;padding:16px;background:rgba(23,184,184,.08);border:2px solid rgba(23,184,184,.3);border-radius:12px">
+            <div class="sh">🎨 AI Generated Image</div>
+            <div style="display:flex;justify-content:center;margin:12px 0">
+              <img :src="aiPreviewUrl" style="max-width:320px;height:auto;border-radius:10px;display:block;border:2px solid rgba(23,184,184,.3)" alt="AI preview"/>
+            </div>
+            <!-- Action Buttons -->
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+              <button class="btn btn-gold" style="flex:1;justify-content:center;font-size:13px;padding:10px" @click="publishAI()" :disabled="aiGenerating">
+                📱 Share Image
+              </button>
+              <button class="btn" style="flex:1;justify-content:center;font-size:13px;padding:10px;background:#E1306C;color:#fff;border:none;cursor:pointer;border-radius:6px" @click="shareToInstagramApp()" :disabled="aiGenerating">
+                📲 Instagram App
+              </button>
+              <button class="btn" style="flex:1;justify-content:center;font-size:13px;padding:10px;background:#666;color:#fff;border:none;cursor:pointer;border-radius:6px" @click="copyImage()" :disabled="aiGenerating">
+                📋 Copy
+              </button>
+              <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:13px;padding:10px" @click="regenerateAI()" :disabled="aiGenerating">
+                <span x-show="!aiGenerating">🔄 Regenerate</span>
+                <span x-show="aiGenerating" style="display:flex;align-items:center;gap:6px"><span class="spin"></span>Generating...</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -541,6 +637,30 @@
           <div style="display:flex;gap:8px;margin-top:10px">
             <button class="btn btn-ghost" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="playPreview('photo')">▶ Play Effects</button>
             <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="exportVideo('photo')">🎬 Export Video</button>
+          </div>
+
+          <!-- AI Preview (Photo) -->
+          <div x-show="aiPreviewUrl" id="ai-preview-img-photo" style="margin-top:24px;padding:16px;background:rgba(23,184,184,.08);border:2px solid rgba(23,184,184,.3);border-radius:12px">
+            <div class="sh">🎨 AI Enhanced Image</div>
+            <div style="display:flex;justify-content:center;margin:12px 0">
+              <img :src="aiPreviewUrl" style="max-width:320px;height:auto;border-radius:10px;display:block;border:2px solid rgba(23,184,184,.3)" alt="AI preview"/>
+            </div>
+            <!-- Action Buttons -->
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+              <button class="btn btn-gold" style="flex:1;justify-content:center;font-size:13px;padding:10px" @click="publishAI()" :disabled="aiGenerating">
+                📱 Share Image
+              </button>
+              <button class="btn" style="flex:1;justify-content:center;font-size:13px;padding:10px;background:#E1306C;color:#fff;border:none;cursor:pointer;border-radius:6px" @click="shareToInstagramApp()" :disabled="aiGenerating">
+                📲 Instagram App
+              </button>
+              <button class="btn" style="flex:1;justify-content:center;font-size:13px;padding:10px;background:#666;color:#fff;border:none;cursor:pointer;border-radius:6px" @click="copyImage()" :disabled="aiGenerating">
+                📋 Copy
+              </button>
+              <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:13px;padding:10px" @click="regenerateAI()" :disabled="aiGenerating">
+                <span x-show="!aiGenerating">🔄 Regenerate</span>
+                <span x-show="aiGenerating" style="display:flex;align-items:center;gap:6px"><span class="spin"></span>Generating...</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
