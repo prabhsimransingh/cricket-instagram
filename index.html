@@ -1969,96 +1969,35 @@ async function drawFixtureCard(ctx,d,cfg){
 //  3. PLAYING XI  — IPL team-announcement style
 // ═══════════════════════════════════════════════════════
 async function drawSquadCard(ctx,d,cfg){
-  const P=hexRGB(cfg.primary||'#1a472a'),A=hexRGB(cfg.accent||'#f0b429');
-  const club=(cfg.clubName||'Cricket Club').toUpperCase();
-
-  // Rich dark background
-  ctx.fillStyle='#060c08';ctx.fillRect(0,0,S,S);
-  // Pitch arc texture
-  ctx.strokeStyle=rgb(...P,.22);ctx.lineWidth=1.5;
-  for(let r2=130;r2<780;r2+=118){ctx.beginPath();ctx.arc(S/2,S+260,r2,Math.PI,2*Math.PI);ctx.stroke();}
-  // Top glow from club color
-  const tg=ctx.createRadialGradient(S/2,0,0,S/2,0,520);
-  tg.addColorStop(0,rgb(...P,.48));tg.addColorStop(.55,rgb(...P,.12));tg.addColorStop(1,'transparent');
-  ctx.fillStyle=tg;ctx.fillRect(0,0,S,S);
-  // Right-side dark tint for contrast
-  const rg=ctx.createLinearGradient(S*.5,0,S,0);
-  rg.addColorStop(0,'transparent');rg.addColorStop(1,'rgba(0,0,0,.4)');
-  ctx.fillStyle=rg;ctx.fillRect(0,0,S,S);
-
-  // Top accent bar + left strip
-  ctx.fillStyle=rgb(...A);ctx.fillRect(0,0,S,10);
-  ctx.fillStyle=rgb(...A,.8);ctx.fillRect(0,10,6,S-10);
-
-  // ── PLAYING XI header ──
-  // PLAYING XI — centred so it clears both side badges
-  ctx.font='700 92px "Oswald"';
-  const piW=ctx.measureText('PLAYING XI').width;
-  ctx.fillStyle='rgba(0,0,0,.42)';ctx.fillText('PLAYING XI',(S-piW)/2+2,122);
-  ctx.fillStyle=rgb(...A);ctx.shadowColor=rgb(...A,.22);ctx.shadowBlur=22;
-  ctx.fillText('PLAYING XI',(S-piW)/2,120);ctx.shadowBlur=0;
-
-  // Subtitle
-  const sub=`${club}${d.opponent?' · vs '+d.opponent.toUpperCase():''}${d.date?' · '+fmtD(d.date):''}`;
-  const subW=ctx.measureText(sub.slice(0,54));
-  ctx.font='500 19px "Inter"';ctx.fillStyle='rgba(255,255,255,.38)';
-  ctx.fillText(sub.slice(0,54),(S-ctx.measureText(sub.slice(0,54)).width)/2,158);
-  if(d.competition){
-    ctx.font='600 14px "Inter"';
-    const cw=ctx.measureText(d.competition.toUpperCase()).width;
-    rr(ctx,S-174-cw,134,cw+20,30,15);
-    ctx.fillStyle=rgb(...A,.1);ctx.fill();ctx.strokeStyle=rgb(...A,.25);ctx.lineWidth=1;ctx.stroke();
-    ctx.fillStyle=rgb(...A,.72);ctx.fillText(d.competition.toUpperCase(),S-164-cw,153);
+  const S=1024,W=1536;const P=hexRGB(cfg.primary||'#1a472a'),A=hexRGB(cfg.accent||'#f0b429');const club=(cfg.clubName||'CHAMPIONS').toUpperCase();
+  // Modern gradient background (navy → bright blue)
+  const bgGrad=ctx.createLinearGradient(0,0,0,W);bgGrad.addColorStop(0,'#0a1932');bgGrad.addColorStop(1,'#1a3a7f');ctx.fillStyle=bgGrad;ctx.fillRect(0,0,S,W);
+  // Header gradient (blue → cyan)
+  const headerGrad=ctx.createLinearGradient(0,0,0,150);headerGrad.addColorStop(0,'#007a96');headerGrad.addColorStop(1,'#00a0d8');ctx.fillStyle=headerGrad;ctx.fillRect(0,0,S,150);
+  // Team name
+  ctx.font='bold 85px Arial';ctx.fillStyle='#ffffff';ctx.textAlign='center';ctx.fillText(club+' PLAYING XI',S/2,90);
+  // Role colors mapping
+  const roleColors={'Batsman':'#3b82f6','Opening':'#60a5fa','Middle Order':'#3b82f6','Bowler':'#ef4444','Pacer':'#ef4444','Spinner':'#f97316','All-rounder':'#22c55e','Wicket-keeper':'#a855f7'};
+  // Players
+  const players=d.players||[];const startY=170;const rowHeight=105;
+  for(let idx=0;idx<players.length&&idx<11;idx++){const player=players[idx];const y=startY+(idx*rowHeight);
+    // Player card background (semi-transparent)
+    ctx.fillStyle='rgba(255,255,255,0.08)';ctx.strokeStyle='rgba(100,160,240,0.3)';ctx.lineWidth=2;ctx.fillRect(35,y,954,95);ctx.strokeRect(35,y,954,95);
+    // Jersey number avatar
+    const avatarX=85;const avatarY=y+47;ctx.beginPath();ctx.arc(avatarX,avatarY,30,0,Math.PI*2);ctx.fillStyle='#4688dc';ctx.fill();ctx.strokeStyle='rgba(150,200,255,0.7)';ctx.lineWidth=2;ctx.stroke();
+    // Jersey number
+    ctx.font='bold 42px Arial';ctx.fillStyle='#ffffff';ctx.textAlign='center';ctx.fillText(String(idx+1),avatarX,avatarY+14);
+    // Player name
+    ctx.font='bold 36px Arial';ctx.fillStyle='#ffffff';ctx.textAlign='left';ctx.fillText((player.name||'Player').toUpperCase().slice(0,24),145,y+30);
+    // Role badge
+    const role=player.role||'Player';const badgeColor=roleColors[role]||'#6496c8';ctx.fillStyle=badgeColor;ctx.fillRect(145,y+50,635,26);ctx.font='bold 20px Arial';ctx.fillStyle='#ffffff';ctx.textAlign='center';ctx.fillText(role.toUpperCase(),145+635/2,y+66);
   }
-
-  ctx.beginPath();ctx.moveTo(50,174);ctx.lineTo(S-50,174);ctx.strokeStyle=rgb(...A,.2);ctx.lineWidth=1.5;ctx.stroke();
-
-  // ── Role colour map ──
-  const RC={Batter:[63,185,80],Bowler:[88,166,255],WK:A,'All-rounder':[200,130,255],Captain:A};
-
-  const players=d.players||[];
-  const col1=players.slice(0,6),col2=players.slice(6,11);
-  const rowH=82,startY=184,colW=(S-120)/2;
-
-  function drawPlayer2(p,i,x,y){
-    const isCap=p.role==='Captain';
-    const rc=RC[p.role]||[139,148,158];
-    const rh=rowH-9;
-    // Row bg with side gradient
-    rr(ctx,x,y,colW,rh,12);
-    const rbg=ctx.createLinearGradient(x,y,x+colW,y);
-    rbg.addColorStop(0,'rgba(255,255,255,.082)');rbg.addColorStop(1,'rgba(255,255,255,.024)');
-    ctx.fillStyle=rbg;ctx.fill();
-    ctx.strokeStyle='rgba(255,255,255,.072)';ctx.lineWidth=1;ctx.stroke();
-    // Left role-colour strip (thicker, more visible)
-    rr(ctx,x,y,6,rh,2);ctx.fillStyle=rgb(...rc,isCap?1:.78);ctx.fill();
-    // Number circle (larger)
-    const nCX=x+30,nCY=y+rh/2;
-    ctx.beginPath();ctx.arc(nCX,nCY,22,0,Math.PI*2);
-    ctx.fillStyle=rgb(...rc,.16);ctx.fill();ctx.strokeStyle=rgb(...rc,.35);ctx.lineWidth=1.5;ctx.stroke();
-    ctx.font='700 22px "Oswald"';ctx.fillStyle=rgb(...rc,.95);
-    const num=String(i+1),nw=ctx.measureText(num).width;ctx.fillText(num,nCX-nw/2,nCY+8);
-    // Player name (bigger)
-    ctx.font=isCap?'700 34px "Oswald"':'600 32px "Oswald"';
-    ctx.fillStyle=isCap?'#ffffff':'rgba(255,255,255,.9)';
-    ctx.fillText((p.name||'TBC').slice(0,16),x+62,y+47);
-    // Role chip
-    if(p.role&&p.role!=='Captain'){
-      const rt=p.role==='All-rounder'?'AR':p.role==='Batter'?'BAT':p.role==='Bowler'?'BWL':p.role;
-      ctx.font='700 12px "Inter"';const rtw=ctx.measureText(rt).width;
-      rr(ctx,x+colW-16-rtw-16,y+18,rtw+16,24,12);
-      ctx.fillStyle=rgb(...rc,.18);ctx.fill();ctx.strokeStyle=rgb(...rc,.32);ctx.lineWidth=1;ctx.stroke();
-      ctx.fillStyle=rgb(...rc,.92);ctx.fillText(rt,x+colW-16-rtw-8,y+34);
-    }
-    if(isCap){ctx.font='700 20px "Inter"';ctx.fillStyle=rgb(...A,.92);ctx.fillText('(C)',x+colW-56,y+47);}
-  }
-
-  col1.forEach((p,i)=>drawPlayer2(p,i,50,startY+i*rowH));
-  col2.forEach((p,i)=>drawPlayer2(p,i+6,50+colW+20,startY+i*rowH));
-
-  await drawClubLogo(ctx,cfg);
-  await drawLeagueLogo(ctx,cfg);
-  footerBar(ctx,JKT.teal,'',club,club);
+  // Footer divider
+  const footerY=startY+(11*rowHeight)+40;ctx.strokeStyle='rgba(100,160,240,0.3)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(50,footerY);ctx.lineTo(974,footerY);ctx.stroke();
+  // Footer text
+  ctx.font='bold 26px Arial';ctx.fillStyle='rgba(120,200,255,0.8)';ctx.textAlign='center';ctx.fillText('READY TO WIN',S/2,footerY+50);
+  // Logos
+  await drawClubLogo(ctx,cfg);await drawLeagueLogo(ctx,cfg);footerBar(ctx,JKT.teal,'',club,club);
 }
 
 // ═══════════════════════════════════════════════════════
