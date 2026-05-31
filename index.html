@@ -1149,32 +1149,37 @@ function jerseyBg(ctx,P,A,postType){
   ctx.fillStyle=bv;ctx.fillRect(0,0,W,H);
 }
 
-// ─── Draw NACL logo (top-right) ─────────────────────────────
+// ─── Draw NACL logo (top-right) ─ Seamless integration ──────
 async function drawLeagueLogo(ctx,cfg){
   if(!cfg||!cfg.leagueLogo)return;
   const img=await loadImg(cfg.leagueLogo);if(!img)return;
-  // Circular watermark (centre, clipped)
+  // Circular watermark (centre, clipped) - keep as subtle bg
   const wR=140,wCx=W/2,wCy=H/2;
   ctx.save();
   ctx.beginPath();ctx.arc(wCx,wCy,wR,0,Math.PI*2);ctx.clip();
   ctx.globalAlpha=0.05;
   ctx.drawImage(img,wCx-wR,wCy-wR,wR*2,wR*2);
   ctx.restore();
-  // Top-right circular badge
-  const r=68,cx=S-r-22,cy=r+18;
-  const zoom=1.3;
+  // Top-right SEAMLESS badge (no harsh white bg, no thick ring)
+  const r=70,cx=S-r-24,cy=r+24;
+  // Soft drop shadow for depth
   ctx.save();
+  ctx.shadowColor='rgba(0,0,0,0.55)';ctx.shadowBlur=24;ctx.shadowOffsetY=4;
   ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
-  ctx.fillStyle='#ffffff';ctx.fill();
-  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.clip();
-  ctx.drawImage(img,cx-r*zoom,cy-r*zoom,r*2*zoom,r*2*zoom);
+  ctx.fillStyle='rgba(0,0,0,0.35)';ctx.fill();
   ctx.restore();
-  // Outer ring — red then thin gold
+  // Clip and fit logo with contain (preserves aspect)
+  ctx.save();
+  ctx.beginPath();ctx.arc(cx,cy,r-3,0,Math.PI*2);ctx.clip();
+  const lw=img.naturalWidth||img.width||1, lh=img.naturalHeight||img.height||1;
+  const target=(r-6)*2, scale=Math.min(target/lw,target/lh);
+  const dw=lw*scale, dh=lh*scale;
+  ctx.drawImage(img,cx-dw/2,cy-dh/2,dw,dh);
+  ctx.restore();
+  // Subtle white rim (blends, doesn't shout)
   ctx.save();
   ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
-  ctx.strokeStyle='#cc1e1e';ctx.lineWidth=4;ctx.stroke();
-  ctx.beginPath();ctx.arc(cx,cy,r+5,0,Math.PI*2);
-  ctx.strokeStyle='rgba(255,185,0,0.7)';ctx.lineWidth=2;ctx.stroke();
+  ctx.strokeStyle='rgba(255,255,255,0.18)';ctx.lineWidth=1.5;ctx.stroke();
   ctx.restore();
 }
 
@@ -1197,21 +1202,26 @@ async function drawJersey(ctx){
 async function drawClubLogo(ctx,cfg){
   if(!cfg||!cfg.clubLogo)return;
   const img=await loadImg(cfg.clubLogo);if(!img)return;
-  // Top-left circular badge
-  const r=68,cx=r+18,cy=r+16;
-  const zoom=1.95;
+  // Top-left SEAMLESS badge (no harsh white bg, no thick ring)
+  const r=70,cx=r+24,cy=r+24;
+  // Soft drop shadow for depth
   ctx.save();
+  ctx.shadowColor='rgba(0,0,0,0.55)';ctx.shadowBlur=24;ctx.shadowOffsetY=4;
   ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
-  ctx.fillStyle='#ffffff';ctx.fill();
-  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.clip();
-  ctx.drawImage(img,cx-r*zoom,cy-r*zoom,r*2*zoom,r*2*zoom);
+  ctx.fillStyle='rgba(0,0,0,0.35)';ctx.fill();
   ctx.restore();
-  // Outer ring — teal then thin lime
+  // Clip and fit logo with contain (preserves aspect)
+  ctx.save();
+  ctx.beginPath();ctx.arc(cx,cy,r-3,0,Math.PI*2);ctx.clip();
+  const lw=img.naturalWidth||img.width||1, lh=img.naturalHeight||img.height||1;
+  const target=(r-6)*2, scale=Math.min(target/lw,target/lh);
+  const dw=lw*scale, dh=lh*scale;
+  ctx.drawImage(img,cx-dw/2,cy-dh/2,dw,dh);
+  ctx.restore();
+  // Subtle white rim
   ctx.save();
   ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
-  ctx.strokeStyle='#14b8a6';ctx.lineWidth=4;ctx.stroke();
-  ctx.beginPath();ctx.arc(cx,cy,r+5,0,Math.PI*2);
-  ctx.strokeStyle='rgba(139,196,0,0.7)';ctx.lineWidth=2;ctx.stroke();
+  ctx.strokeStyle='rgba(255,255,255,0.18)';ctx.lineWidth=1.5;ctx.stroke();
   ctx.restore();
 }
 
@@ -1749,16 +1759,13 @@ async function generateWithGPTImage(prompt, cfg) {
     const img = new Image();
     img.crossOrigin = 'anonymous';
     return new Promise((res) => {
-      img.onload = async () => {
+      img.onload = () => {
         const cv = document.createElement('canvas');
         cv.width = 1080;
         cv.height = 1536;
         const ctx = cv.getContext('2d');
         ctx.drawImage(img, 0, 0, cv.width, cv.height);
-
-        // Composite REAL logo PNGs on top of AI image (pixel-perfect, reliable)
-        await compositeLogosOnAI(ctx, cfg, cv.width, cv.height);
-
+        // Logos are added later by drawClubLogo/drawLeagueLogo in generateAICardForType
         res(cv);
       };
       img.onerror = () => res(null);
@@ -1769,76 +1776,6 @@ async function generateWithGPTImage(prompt, cfg) {
     clearTimeout(timeoutId);
     return null;
   }
-}
-
-// ─── Composite real logo PNGs seamlessly onto AI-generated image ───
-async function compositeLogosOnAI(ctx, cfg, cvW, cvH){
-  // Champions logo (top-left)
-  const clubLogoSrc = cfg.clubLogo || null;
-  // NaCL logo (top-right) - use built-in if no league logo set
-  const leagueLogoSrc = cfg.leagueLogo || NACL_LOGO_B64;
-
-  // Sample the background color near where logo will go to make ring blend
-  const sampleBgColor = (cx, cy) => {
-    try {
-      const px = ctx.getImageData(cx, cy, 1, 1).data;
-      return {r:px[0], g:px[1], b:px[2]};
-    } catch(e) {
-      return {r:20, g:30, b:50};
-    }
-  };
-
-  // Seamless logo drawing - subtle shadow, soft edges, no hard rings
-  const drawLogoSeamless = async (src, cx, cy, r) => {
-    if(!src) return;
-    const logo = await loadImg(src);
-    if(!logo) return;
-
-    // 1) Soft outer glow (matches lighting, doesn't clash)
-    ctx.save();
-    ctx.shadowColor = 'rgba(0,0,0,0.55)';
-    ctx.shadowBlur = 24;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 4;
-
-    // 2) Subtle dark backing (semi-transparent — picks up the bg)
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI*2);
-    ctx.fillStyle = 'rgba(0,0,0,0.35)';
-    ctx.fill();
-    ctx.restore();
-
-    // 3) Clip to circle and draw logo with subtle inner padding
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(cx, cy, r-3, 0, Math.PI*2);
-    ctx.clip();
-
-    // Determine logo aspect ratio and fit inside circle (contain, not cover)
-    const lw = logo.naturalWidth || logo.width || 1;
-    const lh = logo.naturalHeight || logo.height || 1;
-    const targetSize = (r-6) * 2; // inner diameter
-    const scale = Math.min(targetSize/lw, targetSize/lh);
-    const dw = lw * scale;
-    const dh = lh * scale;
-    ctx.drawImage(logo, cx-dw/2, cy-dh/2, dw, dh);
-    ctx.restore();
-
-    // 4) Very subtle white inner highlight (just a thin rim, blends)
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI*2);
-    ctx.strokeStyle = 'rgba(255,255,255,0.18)';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-    ctx.restore();
-  };
-
-  const r = 70;
-  if(clubLogoSrc) await drawLogoSeamless(clubLogoSrc, r+28, r+28, r);
-  if(leagueLogoSrc) await drawLogoSeamless(leagueLogoSrc, cvW-r-28, r+28, r);
-
-  console.log('✅ Logos seamlessly composited onto AI image');
 }
 
 // Pollinations generation wrapper
@@ -1855,6 +1792,7 @@ async function generateWithPollinations(prompt, cfg) {
     console.log('🎨 Fetching AI image from Pollinations.ai...');
 
     const img = new Image();
+    img.crossOrigin = 'anonymous';  // CRITICAL: avoid tainted canvas (logos can't draw on tainted ctx for export)
     return new Promise((res) => {
       const timeout = setTimeout(() => {
         console.warn('⏱️ AI image timeout (20s)');
@@ -1868,7 +1806,8 @@ async function generateWithPollinations(prompt, cfg) {
           cv.width = 1080;
           cv.height = 1536;
           const ctx = cv.getContext('2d');
-          ctx.drawImage(img, 0, 0);
+          // Stretch to fill canvas (avoid black bars if returned size differs)
+          ctx.drawImage(img, 0, 0, cv.width, cv.height);
           res(cv);
         } catch(e) {
           console.error('Canvas error:', e);
@@ -2954,13 +2893,26 @@ function App(){return{
         this.aiGeneratingProgress=60;
         // Composite AI image with overlays (logos, text)
         const ctx = aiCanvas.getContext('2d');
-        await drawClubLogo(ctx, this.settings);
-        await drawLeagueLogo(ctx, this.settings);
+        // Defensive: ensure logos always present (fall back to built-in if user wiped them)
+        const cfgWithLogos = {
+          ...this.settings,
+          clubLogo: this.settings.clubLogo || CHAMPIONS_LOGO_B64,
+          leagueLogo: this.settings.leagueLogo || NACL_LOGO_B64,
+        };
+        console.log('🎨 Drawing logos:', {hasClubLogo: !!cfgWithLogos.clubLogo, hasLeagueLogo: !!cfgWithLogos.leagueLogo});
+        await drawClubLogo(ctx, cfgWithLogos);
+        await drawLeagueLogo(ctx, cfgWithLogos);
 
         this.aiGeneratingProgress=90;
-        const blob = await new Promise(res => aiCanvas.toBlob(b => res(b), 'image/jpeg', 0.92));
-        this.aiPreviewUrl = URL.createObjectURL(blob);
-        this.aiPreviewPost = {type, meta: data, blob};
+        try {
+          const blob = await new Promise((resolve, reject) => aiCanvas.toBlob(b => b ? resolve(b) : reject(new Error('toBlob returned null - canvas may be tainted')), 'image/jpeg', 0.92));
+          this.aiPreviewUrl = URL.createObjectURL(blob);
+          this.aiPreviewPost = {type, meta: data, blob};
+        } catch(blobErr) {
+          console.error('❌ toBlob failed (tainted canvas?):', blobErr);
+          this.showToast('⚠ Image export failed - try again', false);
+          throw blobErr;
+        }
       }
 
       this.aiGeneratingProgress=100;
