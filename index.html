@@ -395,15 +395,24 @@
             <div class="fg2" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
               <div><label class="lbl">Opponent *</label><input class="inp" x-model="mf.opponent" @input="debouncedPreview('match')" placeholder="Brick Lane CC"/></div>
               <div><label class="lbl">Result *</label>
-                <select class="inp" x-model="mf.result" @change="debouncedPreview('match')">
+                <select class="inp" x-model="mf.result" @change="autoCalcMargin();debouncedPreview('match')">
                   <option value="won">Won</option><option value="lost">Lost</option><option value="tied">Tied</option><option value="no result">No Result</option>
                 </select>
               </div>
             </div>
+            <div style="margin-top:14px"><label class="lbl">Who Batted First? *</label>
+              <select class="inp" x-model="mf.battedFirst" @change="autoCalcMargin();debouncedPreview('match')">
+                <option value="us">We Batted First (Defended)</option>
+                <option value="them">They Batted First (We Chased)</option>
+              </select>
+              <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:4px">
+                Margin auto-calculates: <strong>by runs</strong> if defender wins, <strong>by wickets</strong> if chaser wins
+              </div>
+            </div>
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:14px">
-              <div><label class="lbl">Our Score</label><input class="inp" x-model="mf.ourScore" @input="debouncedPreview('match')" placeholder="156/5"/></div>
-              <div><label class="lbl">Their Score</label><input class="inp" x-model="mf.theirScore" @input="debouncedPreview('match')" placeholder="143/8"/></div>
-              <div><label class="lbl">Margin</label><input class="inp" x-model="mf.margin" @input="debouncedPreview('match')" placeholder="13 runs"/></div>
+              <div><label class="lbl">Our Score (e.g., 156/5)</label><input class="inp" x-model="mf.ourScore" @input="autoCalcMargin();debouncedPreview('match')" placeholder="156/5"/></div>
+              <div><label class="lbl">Their Score (e.g., 143/8)</label><input class="inp" x-model="mf.theirScore" @input="autoCalcMargin();debouncedPreview('match')" placeholder="143/8"/></div>
+              <div><label class="lbl">Margin (auto)</label><input class="inp" x-model="mf.margin" :readonly="mf.battedFirst" :style="mf.battedFirst?'background:rgba(255,255,255,.03);opacity:.8':''" placeholder="13 runs"/></div>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
               <div><label class="lbl">Venue</label><input class="inp" x-model="mf.venue" @input="debouncedPreview('match')" placeholder="Victoria Park"/></div>
@@ -1695,75 +1704,30 @@ async function generateAI(type, data, cfg) {
 
 // GPT Image generation wrapper
 async function generateWithGPTImage(prompt, cfg) {
-  // Check if we have logos to send along (Champions + NaCL)
-  const hasLogos = (cfg.clubLogo || NACL_LOGO_B64) && (cfg.leagueLogo || NACL_LOGO_B64);
-  const useEdit = hasLogos && cfg.useLogoEdit !== false; // default to true
+  // Generate AI image, then composite REAL logo PNGs on top (pixel-perfect, reliable)
+  // Tell AI to leave space for logos so they don't clash with content
+  const enhancedPrompt = `${prompt}\n\nLEAVE EMPTY SPACE in the top-left corner (about 140x140 pixels) and top-right corner (about 140x140 pixels) for logos to be added later. Do NOT draw any logos, text, or graphics in those corner areas - they must be clean for logo placement.`;
+
+  const body = JSON.stringify({
+    model: 'gpt-image-1.5',
+    prompt: enhancedPrompt,
+    n: 1,
+    size: '1024x1536'
+  });
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 180000);
-
-  // Enhance prompt to integrate logos
-  const enhancedPrompt = useEdit
-    ? `${prompt}\n\nIMPORTANT: Seamlessly integrate the provided club logo (Champions) in the top-left corner and league logo (NaCL) in the top-right corner. The logos should look professionally embedded into the design, matching the lighting and style of the rest of the image. Keep the logos clearly visible and recognizable.`
-    : prompt;
+  const timeoutId = setTimeout(() => controller.abort(), 120000);
 
   try {
-    let response;
-
-    if(useEdit) {
-      // Use IMAGE EDIT endpoint with logos as reference (multipart form-data)
-      const formData = new FormData();
-      formData.append('model', 'gpt-image-1');
-      formData.append('prompt', enhancedPrompt);
-      formData.append('n', '1');
-      formData.append('size', '1024x1536');
-
-      // Convert base64 logos to blobs and add as reference images
-      const clubLogoB64 = cfg.clubLogo || NACL_LOGO_B64;
-      const leagueLogoB64 = cfg.leagueLogo || NACL_LOGO_B64;
-
-      // Convert base64 → blob helper
-      const b64ToBlob = (b64data) => {
-        const base64 = b64data.includes(',') ? b64data.split(',')[1] : b64data;
-        const byteChars = atob(base64);
-        const byteArrays = [];
-        for(let offset = 0; offset < byteChars.length; offset += 512) {
-          const slice = byteChars.slice(offset, offset + 512);
-          const byteNumbers = new Array(slice.length);
-          for(let i = 0; i < slice.length; i++) byteNumbers[i] = slice.charCodeAt(i);
-          byteArrays.push(new Uint8Array(byteNumbers));
-        }
-        return new Blob(byteArrays, {type: 'image/png'});
-      };
-
-      formData.append('image[]', b64ToBlob(clubLogoB64), 'champions_logo.png');
-      formData.append('image[]', b64ToBlob(leagueLogoB64), 'nacl_logo.png');
-
-      console.log('🎨 Calling OpenAI Image Edit API with logos...');
-      response = await fetch('https://api.openai.com/v1/images/edits', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${cfg.dalleApiKey}` },
-        body: formData,
-        signal: controller.signal
-      });
-    } else {
-      // Fallback: regular generation (no logos)
-      const body = JSON.stringify({
-        model: 'gpt-image-1.5',
-        prompt: prompt,
-        n: 1,
-        size: '1024x1536'
-      });
-      response = await fetch('https://api.openai.com/v1/images/generations', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${cfg.dalleApiKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: body,
-        signal: controller.signal
-      });
-    }
+    const response = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${cfg.dalleApiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: body,
+      signal: controller.signal
+    });
 
     clearTimeout(timeoutId);
     const data = await response.json();
@@ -1783,13 +1747,18 @@ async function generateWithGPTImage(prompt, cfg) {
     }
 
     const img = new Image();
+    img.crossOrigin = 'anonymous';
     return new Promise((res) => {
-      img.onload = () => {
+      img.onload = async () => {
         const cv = document.createElement('canvas');
         cv.width = 1080;
         cv.height = 1536;
         const ctx = cv.getContext('2d');
-        ctx.drawImage(img, 0, 0);
+        ctx.drawImage(img, 0, 0, cv.width, cv.height);
+
+        // Composite REAL logo PNGs on top of AI image (pixel-perfect, reliable)
+        await compositeLogosOnAI(ctx, cfg, cv.width, cv.height);
+
         res(cv);
       };
       img.onerror = () => res(null);
@@ -1800,6 +1769,47 @@ async function generateWithGPTImage(prompt, cfg) {
     clearTimeout(timeoutId);
     return null;
   }
+}
+
+// ─── Composite real logo PNGs on top of AI-generated image ───
+async function compositeLogosOnAI(ctx, cfg, cvW, cvH){
+  // Champions logo (top-left)
+  const clubLogoSrc = cfg.clubLogo || null;
+  // NaCL logo (top-right) - use built-in if no league logo set
+  const leagueLogoSrc = cfg.leagueLogo || NACL_LOGO_B64;
+
+  const drawLogoCircle = async (src, cx, cy, r, ringColor) => {
+    if(!src) return;
+    const logo = await loadImg(src);
+    if(!logo) return;
+    // White circle background
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI*2);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    // Clip and draw logo
+    ctx.beginPath();
+    ctx.arc(cx, cy, r-2, 0, Math.PI*2);
+    ctx.clip();
+    const zoom = 1.2;
+    ctx.drawImage(logo, cx-r*zoom, cy-r*zoom, r*2*zoom, r*2*zoom);
+    ctx.restore();
+    // Ring border
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI*2);
+    ctx.strokeStyle = ringColor;
+    ctx.lineWidth = 4;
+    ctx.stroke();
+    ctx.restore();
+  };
+
+  const r = 70;
+  if(clubLogoSrc) await drawLogoCircle(clubLogoSrc, r+24, r+22, r, '#14b8a6');
+  if(leagueLogoSrc) await drawLogoCircle(leagueLogoSrc, cvW-r-24, r+22, r, '#cc1e1e');
+
+  console.log('✅ Logos composited onto AI image');
 }
 
 // Pollinations generation wrapper
@@ -2262,7 +2272,7 @@ function wrapText(ctx,text,x,y,maxW,lh){const words=text.split(' ');let line='';
 //  SAMPLE DATA
 // ═══════════════════════════════════════════════════════
 const SAMPLES={
-  match:{opponent:'Brick Lane CC',result:'won',ourScore:'187/6',theirScore:'163/9',margin:'24 runs',venue:'Victoria Park',date:'2025-06-15',competition:'East London T20 League',batterName:'Ravinder Singh',batterRuns:84,batterBalls:52,batterFours:9,batterSixes:4,bowlerName:'Harpreet Dhaliwal',bowlerWkts:3,bowlerRuns:28,bowlerOvers:'4.0',photoDataURL:'',photoName:''},
+  match:{opponent:'Brick Lane CC',result:'won',battedFirst:'us',ourScore:'187/6',theirScore:'163/9',margin:'24 runs',venue:'Victoria Park',date:'2025-06-15',competition:'East London T20 League',batterName:'Ravinder Singh',batterRuns:84,batterBalls:52,batterFours:9,batterSixes:4,bowlerName:'Harpreet Dhaliwal',bowlerWkts:3,bowlerRuns:28,bowlerOvers:'4.0',photoDataURL:'',photoName:''},
   fixture:{opponent:'Hackney Hawks',datetime:'2025-06-22T14:00',venue:'Victoria Park, East London',competition:'East London T20 League',format:'T20',photoDataURL:'',photoName:''},
   squad:{opponent:'Hackney Hawks',date:'2025-06-22',competition:'East London T20 League',players:[{name:'Harpreet Singh',role:'Captain'},{name:'Ravinder Singh',role:'Batter'},{name:'Jag Dhaliwal',role:'Batter'},{name:'Manpreet Gill',role:'All-rounder'},{name:'Bobby Sandhu',role:'All-rounder'},{name:'Kiran Bains',role:'WK'},{name:'Dev Randhawa',role:'Bowler'},{name:'Sunny Basra',role:'Bowler'},{name:'Taz Grewal',role:'Bowler'},{name:'Pav Mann',role:'Bowler'},{name:'Roop Chana',role:'Bowler'}]},
   motm:{name:'Harpreet Singh',opponent:'Brick Lane CC',date:'2025-06-15',runs:84,balls:52,sr:'161.5',wkts:2,conc:18,overs:'4.0',fielding:'2 catches',photoDataURL:'',photoName:''},
@@ -2629,7 +2639,7 @@ function App(){return{
   toast:{show:false,msg:'',ok:true}, publishing:null, downloading:null, creating:false, aiGenerating:null, aiGeneratingProgress:0, aiGeneratingStatus:'', aiPreviewUrl:null, aiPreviewPost:null,
   igStatus:'', igOk:false, createdPost:null,
   // forms
-  mf:{opponent:'',result:'won',ourScore:'',theirScore:'',margin:'',venue:'',date:'',competition:'',batterName:'',batterRuns:0,batterBalls:0,batterFours:0,batterSixes:0,bowlerName:'',bowlerWkts:0,bowlerRuns:0,bowlerOvers:'',photoDataURL:'',photoName:''},
+  mf:{opponent:'',result:'won',battedFirst:'us',ourScore:'',theirScore:'',margin:'',venue:'',date:'',competition:'',batterName:'',batterRuns:0,batterBalls:0,batterFours:0,batterSixes:0,bowlerName:'',bowlerWkts:0,bowlerRuns:0,bowlerOvers:'',photoDataURL:'',photoName:''},
   ff:{opponent:'',datetime:'',venue:'',competition:'',format:'T20',photoDataURL:'',photoName:'',_renderMode:'ai-full'},
   qf:{opponent:'',date:'',competition:'',players:Array.from({length:11},()=>({name:'',role:''}))},
   gf:{name:'',opponent:'',date:'',runs:0,balls:0,sr:'',wkts:0,conc:0,overs:'',fielding:'',photoDataURL:'',photoName:''},
@@ -2644,6 +2654,51 @@ function App(){return{
   },
 
   debouncedPreview(t){clearTimeout(this._pt);this._pt=setTimeout(()=>this.drawPreview(t),200);},
+  // ── Auto-calculate margin from cricket rules ──
+  // If defending team (batted first) wins → "by X runs" (their score - their score)
+  // If chasing team (batted second) wins → "by X wickets" (10 - wickets lost when target reached)
+  autoCalcMargin(){
+    const m = this.mf;
+    if(!m.battedFirst) return;
+    // Parse "156/5" → runs=156, wkts=5
+    const parseScore = (s) => {
+      if(!s) return {runs:0, wkts:0};
+      const parts = String(s).split('/');
+      return {runs: parseInt(parts[0])||0, wkts: parseInt(parts[1])||0};
+    };
+    const our = parseScore(m.ourScore);
+    const their = parseScore(m.theirScore);
+    const result = m.result;
+    const weBattedFirst = m.battedFirst === 'us';
+
+    if(result === 'tied' || result === 'no result'){
+      m.margin = result === 'tied' ? 'Match Tied' : 'No Result';
+      return;
+    }
+
+    // Determine who chased (batted second)
+    if(result === 'won'){
+      if(weBattedFirst){
+        // We defended our total → "won by X runs"
+        const diff = our.runs - their.runs;
+        m.margin = diff > 0 ? `${diff} runs` : '0 runs';
+      } else {
+        // We chased their total → "won by X wickets"
+        const wktsRemaining = 10 - our.wkts;
+        m.margin = wktsRemaining > 0 ? `${wktsRemaining} wickets` : 'last wicket';
+      }
+    } else if(result === 'lost'){
+      if(weBattedFirst){
+        // We defended but opp chased → opp won by wickets remaining
+        const wktsRemaining = 10 - their.wkts;
+        m.margin = wktsRemaining > 0 ? `${wktsRemaining} wickets` : 'last wicket';
+      } else {
+        // We chased but fell short → opp won by run difference
+        const diff = their.runs - our.runs;
+        m.margin = diff > 0 ? `${diff} runs` : '0 runs';
+      }
+    }
+  },
 
   debouncedThumb(post){
     clearTimeout(post._tt);
@@ -2964,7 +3019,7 @@ function App(){return{
 
   loadSample(type){
     const s=SAMPLES[type];if(!s)return;
-    if(type==='match'){Object.assign(this.mf,s);}
+    if(type==='match'){Object.assign(this.mf,s);this.autoCalcMargin();}
     else if(type==='fixture'){Object.assign(this.ff,s);}
     else if(type==='squad'){
       this.qf.opponent=s.opponent;this.qf.date=s.date;this.qf.competition=s.competition;
