@@ -5,7 +5,7 @@
 ![WicketGram Demo](https://img.shields.io/badge/Cricket-Instagram-E1306C?style=for-the-badge&logo=instagram)
 ![MIT License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 ![Stars](https://img.shields.io/github/stars/prabhsimransingh/cricket-instagram?style=for-the-badge)
-![Version](https://img.shields.io/badge/Version-v12-blue?style=for-the-badge)
+![Version](https://img.shields.io/badge/Version-v13-blue?style=for-the-badge)
 
 ---
 
@@ -266,14 +266,14 @@ python serve.py
 
 ## 🗺️ Roadmap
 
-### v12 (Current)
-✅ Intelligent Match form (auto-calculated margins, victory selection)
-✅ Motivational context in AI prompts (wins vs losses)
-✅ All 6 post types with AI generation
-✅ Clipboard copy for images & captions
-✅ Instagram app integration
+### v13 (Current) ✨ 
+✅ Beautiful Playing XI canvas redesign
+✅ Modern gradient backgrounds & colorful role badges
+✅ Professional player avatar circles
+✅ "READY TO WIN" inspirational footer
+✅ All previous features from v12
 
-### v13 (Next)
+### v14 (Next)
 - [ ] TikTok post type (shorter format, trending sounds)
 - [ ] Facebook variant posts (1.91:1 aspect ratio)
 - [ ] Batch posting & scheduling
@@ -281,7 +281,7 @@ python serve.py
 - [ ] Dark mode toggle
 - [ ] Multiple club profiles
 
-### v14 (Future)
+### v15 (Future)
 - [ ] Android app launch (React Native)
 - [ ] iOS app launch
 - [ ] Video post support
@@ -402,7 +402,7 @@ If you find WicketGram useful, please:
 
 | Component | Status | Version |
 |-----------|--------|---------|
-| Web App | ✅ Production | v12 |
+| Web App | ✅ Production | v13 (Beautiful Playing XI) |
 | Android App | 🚀 In Development | - |
 | iOS App | 📋 Planned | - |
 | API Integration | ✅ Complete | Multiple APIs |
