@@ -1705,8 +1705,8 @@ async function generateAI(type, data, cfg) {
 // GPT Image generation wrapper
 async function generateWithGPTImage(prompt, cfg) {
   // Generate AI image, then composite REAL logo PNGs on top (pixel-perfect, reliable)
-  // Tell AI to leave space for logos so they don't clash with content
-  const enhancedPrompt = `${prompt}\n\nLEAVE EMPTY SPACE in the top-left corner (about 140x140 pixels) and top-right corner (about 140x140 pixels) for logos to be added later. Do NOT draw any logos, text, or graphics in those corner areas - they must be clean for logo placement.`;
+  // Tell AI to keep top corners dark/uniform so logos blend in seamlessly
+  const enhancedPrompt = `${prompt}\n\nCOMPOSITION REQUIREMENT: The top-left and top-right corners (about 160x160 pixels each) must be DARK, uniform, and visually quiet — like a subtle vignette or shadow. No bright details, no text, no graphics, no logos, no faces in these corner areas. The corners should fade into a darker tone so logos can be placed there seamlessly without clashing with the design.`;
 
   const body = JSON.stringify({
     model: 'gpt-image-1.5',
@@ -1771,45 +1771,74 @@ async function generateWithGPTImage(prompt, cfg) {
   }
 }
 
-// ─── Composite real logo PNGs on top of AI-generated image ───
+// ─── Composite real logo PNGs seamlessly onto AI-generated image ───
 async function compositeLogosOnAI(ctx, cfg, cvW, cvH){
   // Champions logo (top-left)
   const clubLogoSrc = cfg.clubLogo || null;
   // NaCL logo (top-right) - use built-in if no league logo set
   const leagueLogoSrc = cfg.leagueLogo || NACL_LOGO_B64;
 
-  const drawLogoCircle = async (src, cx, cy, r, ringColor) => {
+  // Sample the background color near where logo will go to make ring blend
+  const sampleBgColor = (cx, cy) => {
+    try {
+      const px = ctx.getImageData(cx, cy, 1, 1).data;
+      return {r:px[0], g:px[1], b:px[2]};
+    } catch(e) {
+      return {r:20, g:30, b:50};
+    }
+  };
+
+  // Seamless logo drawing - subtle shadow, soft edges, no hard rings
+  const drawLogoSeamless = async (src, cx, cy, r) => {
     if(!src) return;
     const logo = await loadImg(src);
     if(!logo) return;
-    // White circle background
+
+    // 1) Soft outer glow (matches lighting, doesn't clash)
     ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.55)';
+    ctx.shadowBlur = 24;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 4;
+
+    // 2) Subtle dark backing (semi-transparent — picks up the bg)
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI*2);
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
     ctx.fill();
-    // Clip and draw logo
-    ctx.beginPath();
-    ctx.arc(cx, cy, r-2, 0, Math.PI*2);
-    ctx.clip();
-    const zoom = 1.2;
-    ctx.drawImage(logo, cx-r*zoom, cy-r*zoom, r*2*zoom, r*2*zoom);
     ctx.restore();
-    // Ring border
+
+    // 3) Clip to circle and draw logo with subtle inner padding
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, r-3, 0, Math.PI*2);
+    ctx.clip();
+
+    // Determine logo aspect ratio and fit inside circle (contain, not cover)
+    const lw = logo.naturalWidth || logo.width || 1;
+    const lh = logo.naturalHeight || logo.height || 1;
+    const targetSize = (r-6) * 2; // inner diameter
+    const scale = Math.min(targetSize/lw, targetSize/lh);
+    const dw = lw * scale;
+    const dh = lh * scale;
+    ctx.drawImage(logo, cx-dw/2, cy-dh/2, dw, dh);
+    ctx.restore();
+
+    // 4) Very subtle white inner highlight (just a thin rim, blends)
     ctx.save();
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI*2);
-    ctx.strokeStyle = ringColor;
-    ctx.lineWidth = 4;
+    ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+    ctx.lineWidth = 1.5;
     ctx.stroke();
     ctx.restore();
   };
 
   const r = 70;
-  if(clubLogoSrc) await drawLogoCircle(clubLogoSrc, r+24, r+22, r, '#14b8a6');
-  if(leagueLogoSrc) await drawLogoCircle(leagueLogoSrc, cvW-r-24, r+22, r, '#cc1e1e');
+  if(clubLogoSrc) await drawLogoSeamless(clubLogoSrc, r+28, r+28, r);
+  if(leagueLogoSrc) await drawLogoSeamless(leagueLogoSrc, cvW-r-28, r+28, r);
 
-  console.log('✅ Logos composited onto AI image');
+  console.log('✅ Logos seamlessly composited onto AI image');
 }
 
 // Pollinations generation wrapper
