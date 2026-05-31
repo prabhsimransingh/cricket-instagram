@@ -1227,6 +1227,9 @@ async function drawMatchCard(ctx,d,cfg){
   await drawClubLogo(ctx,cfg);
   await drawLeagueLogo(ctx,cfg);
 
+  // Note: Champions & NaCL logos are now integrated into AI-generated images
+  // via OpenAI Image Edit API (sent as reference images to generation endpoint)
+
   // Header: club name + date
   const hX=cfg.clubLogo?172:50;
   ctx.font='700 28px "Inter"';ctx.fillStyle='rgba(255,255,255,.95)';
@@ -1692,26 +1695,75 @@ async function generateAI(type, data, cfg) {
 
 // GPT Image generation wrapper
 async function generateWithGPTImage(prompt, cfg) {
-  const body = JSON.stringify({
-    model: 'gpt-image-1.5',
-    prompt: prompt,
-    n: 1,
-    size: '1024x1536'
-  });
+  // Check if we have logos to send along (Champions + NaCL)
+  const hasLogos = (cfg.clubLogo || NACL_LOGO_B64) && (cfg.leagueLogo || NACL_LOGO_B64);
+  const useEdit = hasLogos && cfg.useLogoEdit !== false; // default to true
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 120000);
+  const timeoutId = setTimeout(() => controller.abort(), 180000);
+
+  // Enhance prompt to integrate logos
+  const enhancedPrompt = useEdit
+    ? `${prompt}\n\nIMPORTANT: Seamlessly integrate the provided club logo (Champions) in the top-left corner and league logo (NaCL) in the top-right corner. The logos should look professionally embedded into the design, matching the lighting and style of the rest of the image. Keep the logos clearly visible and recognizable.`
+    : prompt;
 
   try {
-    const response = await fetch('https://api.openai.com/v1/images/generations', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${cfg.dalleApiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: body,
-      signal: controller.signal
-    });
+    let response;
+
+    if(useEdit) {
+      // Use IMAGE EDIT endpoint with logos as reference (multipart form-data)
+      const formData = new FormData();
+      formData.append('model', 'gpt-image-1');
+      formData.append('prompt', enhancedPrompt);
+      formData.append('n', '1');
+      formData.append('size', '1024x1536');
+
+      // Convert base64 logos to blobs and add as reference images
+      const clubLogoB64 = cfg.clubLogo || NACL_LOGO_B64;
+      const leagueLogoB64 = cfg.leagueLogo || NACL_LOGO_B64;
+
+      // Convert base64 → blob helper
+      const b64ToBlob = (b64data) => {
+        const base64 = b64data.includes(',') ? b64data.split(',')[1] : b64data;
+        const byteChars = atob(base64);
+        const byteArrays = [];
+        for(let offset = 0; offset < byteChars.length; offset += 512) {
+          const slice = byteChars.slice(offset, offset + 512);
+          const byteNumbers = new Array(slice.length);
+          for(let i = 0; i < slice.length; i++) byteNumbers[i] = slice.charCodeAt(i);
+          byteArrays.push(new Uint8Array(byteNumbers));
+        }
+        return new Blob(byteArrays, {type: 'image/png'});
+      };
+
+      formData.append('image[]', b64ToBlob(clubLogoB64), 'champions_logo.png');
+      formData.append('image[]', b64ToBlob(leagueLogoB64), 'nacl_logo.png');
+
+      console.log('🎨 Calling OpenAI Image Edit API with logos...');
+      response = await fetch('https://api.openai.com/v1/images/edits', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${cfg.dalleApiKey}` },
+        body: formData,
+        signal: controller.signal
+      });
+    } else {
+      // Fallback: regular generation (no logos)
+      const body = JSON.stringify({
+        model: 'gpt-image-1.5',
+        prompt: prompt,
+        n: 1,
+        size: '1024x1536'
+      });
+      response = await fetch('https://api.openai.com/v1/images/generations', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${cfg.dalleApiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: body,
+        signal: controller.signal
+      });
+    }
 
     clearTimeout(timeoutId);
     const data = await response.json();
