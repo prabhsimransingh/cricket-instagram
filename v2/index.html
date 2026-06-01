@@ -276,6 +276,17 @@
             <button class="btn btn-ghost" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="playPreview('match')">▶ Play Effects</button>
             <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="exportVideo('match')">🎬 Export Video</button>
           </div>
+
+          <!-- AI Preview (Single Image) -->
+          <div x-show="aiPreviewUrl" class="ai-preview-img" style="margin-top:24px;padding:16px;background:rgba(23,184,184,.08);border:2px solid rgba(23,184,184,.3);border-radius:12px">
+            <div class="sh">🎨 AI Generated Image</div>
+            <img x-bind:src="aiPreviewUrl || ''" style="width:100%;border-radius:10px;display:block;border:1px solid rgba(23,184,184,.3);margin:12px 0" alt="AI preview"/>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-gold" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="saveAIPreviewAsPost()">✓ Save as Post</button>
+              <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="generateMatchAIOnly()">🔄 Regenerate</button>
+              <button class="btn btn-red" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="resetAIGeneration()">✕ Discard</button>
+            </div>
+          </div>
           <p style="font-size:11px;color:rgba(255,255,255,.2);text-align:center;margin-top:6px">Updates as you type</p>
         </div>
       </div>
@@ -324,7 +335,7 @@
           </div>
 
           <!-- AI Preview (Single Image) -->
-          <div x-show="aiPreviewUrl" id="ai-preview-img" style="margin-top:24px;padding:16px;background:rgba(23,184,184,.08);border:2px solid rgba(23,184,184,.3);border-radius:12px">
+          <div x-show="aiPreviewUrl" class="ai-preview-img" style="margin-top:24px;padding:16px;background:rgba(23,184,184,.08);border:2px solid rgba(23,184,184,.3);border-radius:12px">
             <div class="sh">🎨 AI Generated Image</div>
             <img x-bind:src="aiPreviewUrl || ''" style="width:100%;border-radius:10px;display:block;border:1px solid rgba(23,184,184,.3);margin:12px 0" alt="AI preview"/>
             <!-- Action Buttons -->
@@ -383,6 +394,17 @@
             <button class="btn btn-ghost" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="playPreview('squad')">▶ Play Effects</button>
             <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="exportVideo('squad')">🎬 Export Video</button>
           </div>
+
+          <!-- AI Preview (Single Image) -->
+          <div x-show="aiPreviewUrl" class="ai-preview-img" style="margin-top:24px;padding:16px;background:rgba(23,184,184,.08);border:2px solid rgba(23,184,184,.3);border-radius:12px">
+            <div class="sh">🎨 AI Generated Image</div>
+            <img x-bind:src="aiPreviewUrl || ''" style="width:100%;border-radius:10px;display:block;border:1px solid rgba(23,184,184,.3);margin:12px 0" alt="AI preview"/>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-gold" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="saveAIPreviewAsPost()">✓ Save as Post</button>
+              <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="generateSquadAIOnly()">🔄 Regenerate</button>
+              <button class="btn btn-red" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="resetAIGeneration()">✕ Discard</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -437,6 +459,17 @@
             <button class="btn btn-ghost" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="playPreview('motm')">▶ Play Effects</button>
             <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="exportVideo('motm')">🎬 Export Video</button>
           </div>
+
+          <!-- AI Preview (Single Image) -->
+          <div x-show="aiPreviewUrl" class="ai-preview-img" style="margin-top:24px;padding:16px;background:rgba(23,184,184,.08);border:2px solid rgba(23,184,184,.3);border-radius:12px">
+            <div class="sh">🎨 AI Generated Image</div>
+            <img x-bind:src="aiPreviewUrl || ''" style="width:100%;border-radius:10px;display:block;border:1px solid rgba(23,184,184,.3);margin:12px 0" alt="AI preview"/>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-gold" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="saveAIPreviewAsPost()">✓ Save as Post</button>
+              <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="generateMOTMAIOnly()">🔄 Regenerate</button>
+              <button class="btn btn-red" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="resetAIGeneration()">✕ Discard</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -481,6 +514,17 @@
           <div style="display:flex;gap:8px;margin-top:10px">
             <button class="btn btn-ghost" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="playPreview('milestone')">▶ Play Effects</button>
             <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="exportVideo('milestone')">🎬 Export Video</button>
+          </div>
+
+          <!-- AI Preview (Single Image) -->
+          <div x-show="aiPreviewUrl" class="ai-preview-img" style="margin-top:24px;padding:16px;background:rgba(23,184,184,.08);border:2px solid rgba(23,184,184,.3);border-radius:12px">
+            <div class="sh">🎨 AI Generated Image</div>
+            <img x-bind:src="aiPreviewUrl || ''" style="width:100%;border-radius:10px;display:block;border:1px solid rgba(23,184,184,.3);margin:12px 0" alt="AI preview"/>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-gold" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="saveAIPreviewAsPost()">✓ Save as Post</button>
+              <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="generateMilestoneAIOnly()">🔄 Regenerate</button>
+              <button class="btn btn-red" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="resetAIGeneration()">✕ Discard</button>
+            </div>
           </div>
         </div>
       </div>
@@ -2481,10 +2525,7 @@ function App(){return{
         const post = {type, meta: data, renderMode:'canvas'};
         await renderCard(cv, post, this.settings);
         const blob = await new Promise(res => cv.toBlob(b => res(b), 'image/jpeg', 0.92));
-        const blobUrl = URL.createObjectURL(blob);
-        console.log('🔗 Created canvas blob URL:', blobUrl);
-        this.aiPreviewUrl = blobUrl;
-        console.log('📍 Set aiPreviewUrl (canvas fallback) to:', this.aiPreviewUrl);
+        this.aiPreviewUrl = URL.createObjectURL(blob);
         this.aiPreviewPost = {type, meta: data, blob};
       } else {
         this.aiGeneratingProgress=60;
@@ -2519,11 +2560,7 @@ function App(){return{
         this.aiGeneratingProgress=90;
         try {
           const blob = await new Promise((resolve, reject) => freshCanvas.toBlob(b => b ? resolve(b) : reject(new Error('toBlob returned null')), 'image/jpeg', 0.92));
-          const blobUrl = URL.createObjectURL(blob);
-          console.log('🔗 Created blob URL:', blobUrl);
-          this.aiPreviewUrl = blobUrl;
-          console.log('📍 Set aiPreviewUrl to:', this.aiPreviewUrl);
-          console.log('✅ aiPreviewUrl is truthy:', !!this.aiPreviewUrl);
+          this.aiPreviewUrl = URL.createObjectURL(blob);
           this.aiPreviewPost = {type, meta: data, blob};
           console.log('✅ AI image with logos successfully exported');
         } catch(blobErr) {
@@ -2535,9 +2572,9 @@ function App(){return{
 
       this.aiGeneratingProgress=100;
 
-      // Auto-scroll to preview
+      // Auto-scroll to preview (find the visible one for the active tab)
       await this.$nextTick();
-      const preview = document.getElementById('ai-preview-img');
+      const preview = [...document.querySelectorAll('.ai-preview-img')].find(el => el.offsetParent !== null);
       if(preview) preview.scrollIntoView({behavior:'smooth', block:'center'});
       this.showToast('✨ AI image generated! Ready to save or regenerate.');
     } catch(e) {
