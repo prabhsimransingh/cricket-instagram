@@ -2628,7 +2628,10 @@ function App(){return{
   // If chasing team (batted second) wins → "by X wickets" (10 - wickets lost when target reached)
   autoCalcMargin(){
     const m = this.mf;
-    if(!m.battedFirst) return;
+    if(!m.battedFirst) {
+      // Default to 'us' batted first if not set
+      m.battedFirst = 'us';
+    }
     // Parse "156/5" → runs=156, wkts=5
     const parseScore = (s) => {
       if(!s) return {runs:0, wkts:0};
