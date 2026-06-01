@@ -733,8 +733,8 @@
           </div>
         </div>
         <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:8px" x-text="`${aiGeneratingProgress}%`"></div>
-        <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:8px;font-weight:500">Pollinations.ai</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.4)">⏱️ 15-30 seconds total</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:8px;font-weight:500">OpenAI DALL-E 3</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.4)">⏱️ 30-60 seconds total</div>
       </div>
     </div>
     <style>
@@ -872,28 +872,11 @@
           <div x-show="settings.ayrshareKey" style="margin-top:8px;font-size:11px;color:rgba(100,255,150,.7)">✓ Ayrshare key set — Imgur not required</div>
         </div>
         <div style="margin-bottom:12px"><label class="lbl">Groq API Key (AI Captions) <a href="https://console.groq.com" target="_blank" style="color:#f0b429;font-size:10px;margin-left:4px">Get free →</a></label><input class="inp" type="password" x-model="settings.groqKey" placeholder="gsk_…"/></div>
-<div style="margin-bottom:12px;padding:12px;border:1px solid rgba(139,196,0,.3);border-radius:10px;background:rgba(139,196,0,.06)">
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;color:rgba(139,196,0,.95)">
-            <input type="checkbox" x-model="settings.aiCharacters" style="cursor:pointer;width:18px;height:18px"/>
-            ✨ AI Character Art for Matches (Pollinations)
-          </label>
-          <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:8px">Generates character art for home/away teams. Free, requires internet. <a href="https://pollinations.ai" target="_blank" style="color:#8bc400">Learn more</a></div>
-        </div>
-<div style="margin-bottom:12px;padding:12px;border:1px solid rgba(255,139,196,.3);border-radius:10px;background:rgba(255,139,196,.06)">
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;color:rgba(255,139,196,.95)">
-            <input type="checkbox" x-model="settings.aiFullCard" style="cursor:pointer;width:18px;height:18px"/>
-            🎨 AI Full Card Mode (Experimental)
-          </label>
-          <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:8px">Generate entire card image via Pollinations (slower, stunning visuals)</div>
-        </div>
 
-        <!-- DALL-E 3 Settings -->
+        <!-- OpenAI Settings -->
         <div style="margin-bottom:12px;padding:12px;border:2px solid rgba(88,166,255,.4);border-radius:10px;background:rgba(88,166,255,.08)">
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;color:rgba(88,166,255,.95);margin-bottom:10px">
-            <input type="checkbox" x-model="settings.useDallE" style="cursor:pointer;width:18px;height:18px"/>
-            🚀 Use DALL-E 3 (Professional AI - $5 free credit)
-          </label>
-          <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:10px">Switch from Pollinations to OpenAI DALL-E 3 for professional-quality cricket posters. Get $5 free credit when you sign up.</div>
+          <div style="font-size:13px;font-weight:600;color:rgba(88,166,255,.95);margin-bottom:10px">🚀 OpenAI DALL-E 3 (Required)</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:10px">Professional AI image generation for cricket posters. Get $5 free credit when you sign up.</div>
           <div style="margin-bottom:10px">
             <label class="lbl">DALL-E API Key <a href="https://platform.openai.com/account/api-keys" target="_blank" style="color:#58a6ff;font-size:10px;margin-left:4px">Get key →</a></label>
             <input class="inp" type="password" x-model="settings.dalleApiKey" placeholder="sk-proj-…"/>
@@ -947,29 +930,8 @@ const Store = {
 
 
 // ═══════════════════════════════════════════════════════
-//  POLLINATIONS.AI — AI Character Generation
-// ═══════════════════════════════════════════════════════
-// In-memory cache for generated character images
+// Character generation disabled - using OpenAI only
 const CharCache={};
-async function generateCharacter(teamName,side='home'){
-  const s=Store.getSettings();if(!s.aiCharacters)return null;
-  const cacheKey=`${teamName}-${side}`;
-  if(CharCache[cacheKey])return CharCache[cacheKey];
-  const isBatsman=side==='home';
-  const prompt=isBatsman?
-    `cricket batsman dramatic action pose, ${teamName}, blue electric aura, dramatic lighting, dark background, PNG transparent, 8k`:
-    `${teamName} warrior mascot, fire orange aura, dynamic action pose, dark background, PNG transparent, 8k`;
-  try{
-    const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=512&height=896&nologo=true&seed=${teamName.slice(0,8)}-${side}`;
-    const img=new Image();
-    return new Promise((res)=>{
-      const timeout=setTimeout(()=>{CharCache[cacheKey]='';res(null);},8000);
-      img.onload=()=>{clearTimeout(timeout);CharCache[cacheKey]=url;res(url);};
-      img.onerror=()=>{clearTimeout(timeout);res(null);};
-      img.crossOrigin='anonymous';img.src=url;
-    });
-  }catch(e){return null;}
-}
 
 async function loadCharacterImg(url){
   if(!url)return null;
@@ -1516,94 +1478,9 @@ Create a dramatic, cinematic sports photography style image of a cricket match:
   }
 }
 
-// AI Full Card generation - Router (chooses GPT Image or Pollinations)
+// AI Full Card generation - uses GPT Image 1.5
 async function generateFixtureAI(d,cfg){
-  // If GPT Image is enabled and has API key, use GPT Image 1.5
-  if(cfg.useDallE&&cfg.dalleApiKey){
-    console.log('Using GPT Image 1.5 for generation');
-    return await generateFixtureAI_DALLE(d,cfg);
-  }
-  // Otherwise fall back to Pollinations
-  return await generateFixtureAI_Pollinations(d,cfg);
-}
-
-// Pollinations.ai version
-async function generateFixtureAI_Pollinations(d,cfg){
-  const club=(cfg.clubName||'Cricket Club').toUpperCase();
-  const opp=(d.opponent||'TBC').toUpperCase();
-  const venue=d.venue||'TBC';
-  const comp=d.competition||'Cricket';
-
-  // Better structured prompt (avoids conflicting instructions)
-  const prompt=`Professional cricket match day poster. ${club} vs ${opp}, ${comp} at ${venue}.
-    Professional sports photography, cinematic 8k photorealism, dramatic stadium floodlights,
-    night cricket match, pristine grass cricket field, intense competitive energy,
-    championship event aesthetic, golden warm stadium lighting, high contrast sharp focus,
-    9:16 vertical Instagram story format, premium sports poster design.`;
-
-  // Negative prompt (tell AI what NOT to generate)
-  const negPrompt=`text, watermark, logo, faces, people, blurry, cartoon, illustration,
-    CGI, low quality, generic stock photo, oversaturated, artificial, numbers, words`;
-
-  // Seed for reproducibility
-  const seed=Math.floor(Math.random()*1000000);
-
-  try{
-    // Add negative_prompt and seed parameters
-    const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?`
-      +`width=1080&height=1920&nologo=true&model=flux-pro&enhance=true`
-      +`&negative_prompt=${encodeURIComponent(negPrompt)}&seed=${seed}`;
-
-    console.log('🎨 Fetching AI image from Pollinations.ai...');
-
-    const img=new Image();
-    return new Promise((res)=>{
-      const timeout=setTimeout(()=>{
-        console.warn('⏱️ AI image timeout (20s)');
-        res(null);
-      },20000); // Increased from 15s to 20s
-
-      img.onload=()=>{
-        clearTimeout(timeout);
-        console.log('✅ AI image loaded successfully');
-        try{
-          const cv=document.createElement('canvas');
-          cv.width=1080;cv.height=1920;
-          const ctx=cv.getContext('2d');
-          ctx.drawImage(img,0,0);
-
-          // Add vignette effect where logos will be placed
-          // Dark vignette in top corners for better logo visibility
-          const vignette=(x,y)=>{
-            const grad=ctx.createRadialGradient(x,y,0,x,y,180);
-            grad.addColorStop(0,'rgba(0,0,0,0)');
-            grad.addColorStop(0.7,'rgba(0,0,0,0.15)');
-            grad.addColorStop(1,'rgba(0,0,0,0.4)');
-            ctx.fillStyle=grad;ctx.fillRect(x-150,y-150,300,300);
-          };
-          vignette(100,100);vignette(980,100); // Top-left and top-right
-
-          // Draw logos on top
-          drawClubLogo(ctx,cfg).then(()=>drawLeagueLogo(ctx,cfg)).then(()=>res(cv));
-        }catch(e){
-          console.error('Canvas error:', e);
-          res(null);
-        }
-      };
-
-      img.onerror=(err)=>{
-        clearTimeout(timeout);
-        console.error('❌ AI image load failed:', err);
-        res(null);
-      };
-
-      img.crossOrigin='anonymous';
-      img.src=url;
-    });
-  }catch(e){
-    console.error('❌ generateFixtureAI error:', e);
-    return null;
-  }
+  return await generateFixtureAI_DALLE(d,cfg);
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -1705,12 +1582,7 @@ async function generateAI(type, data, cfg) {
   }
 
   const prompt = promptBuilder(data, cfg);
-
-  // Use GPT Image if available, otherwise Pollinations
-  if(cfg.useDallE && cfg.dalleApiKey) {
-    return await generateWithGPTImage(prompt, cfg);
-  }
-  return await generateWithPollinations(prompt, cfg);
+  return await generateWithGPTImage(prompt, cfg);
 }
 
 // GPT Image generation wrapper
@@ -1775,57 +1647,6 @@ async function generateWithGPTImage(prompt, cfg) {
   } catch(e) {
     console.error('❌ GPT Image error:', e);
     clearTimeout(timeoutId);
-    return null;
-  }
-}
-
-// Pollinations generation wrapper
-async function generateWithPollinations(prompt, cfg) {
-  const negPrompt = `text, watermark, logo, faces, people, blurry, cartoon, illustration,
-    CGI, low quality, generic stock photo, oversaturated, artificial, numbers, words`;
-  const seed = Math.floor(Math.random() * 1000000);
-
-  try {
-    const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?`
-      + `width=1080&height=1536&nologo=true&model=flux-pro&enhance=true`
-      + `&negative_prompt=${encodeURIComponent(negPrompt)}&seed=${seed}`;
-
-    console.log('🎨 Fetching AI image from Pollinations.ai...');
-
-    const img = new Image();
-    img.crossOrigin = 'anonymous';  // CRITICAL: avoid tainted canvas (logos can't draw on tainted ctx for export)
-    return new Promise((res) => {
-      const timeout = setTimeout(() => {
-        console.warn('⏱️ AI image timeout (20s)');
-        res(null);
-      }, 20000);
-
-      img.onload = () => {
-        clearTimeout(timeout);
-        try {
-          const cv = document.createElement('canvas');
-          cv.width = 1080;
-          cv.height = 1536;
-          const ctx = cv.getContext('2d');
-          // Stretch to fill canvas (avoid black bars if returned size differs)
-          ctx.drawImage(img, 0, 0, cv.width, cv.height);
-          res(cv);
-        } catch(e) {
-          console.error('Canvas error:', e);
-          res(null);
-        }
-      };
-
-      img.onerror = (err) => {
-        clearTimeout(timeout);
-        console.error('❌ AI image load failed:', err);
-        res(null);
-      };
-
-      img.src = url;
-    });
-  } catch(e) {
-    console.error('❌ Pollinations error:', e);
     return null;
   }
 }
