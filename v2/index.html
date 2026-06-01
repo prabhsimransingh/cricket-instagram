@@ -1377,7 +1377,7 @@ async function generateAI(type, data, cfg) {
 // Returns a 1080x1536 canvas; logos are composited later by generateAICardForType.
 async function generateWithGemini(prompt, cfg) {
   // Tell the model to keep top corners dark/uniform so logos blend in seamlessly
-  const enhancedPrompt = `${prompt}\n\nFORMAT: 9:16 vertical poster (portrait). COMPOSITION REQUIREMENT: The top-left and top-right corners (about 160x160 pixels each) must be DARK, uniform, and visually quiet — like a subtle vignette or shadow. No bright details, no text, no graphics, no logos, no faces in those corner areas, so logos can be placed there cleanly.`;
+  const enhancedPrompt = `${prompt}\n\nFORMAT: vertical portrait poster. COMPOSITION REQUIREMENT: The top-left and top-right corners (about 160x160 pixels each) must be DARK, uniform, and visually quiet — like a subtle vignette or shadow. No bright details, no text, no graphics, no logos, no faces in those corner areas, so logos can be placed there cleanly.`;
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 120000);
@@ -1392,7 +1392,9 @@ async function generateWithGemini(prompt, cfg) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: enhancedPrompt }] }]
+          contents: [{ parts: [{ text: enhancedPrompt }] }],
+          // Request true 2:3 portrait (832x1248) so it fills the 1080x1536 canvas with no crop/distortion
+          generationConfig: { responseModalities: ['IMAGE'], imageConfig: { aspectRatio: '2:3' } }
         }),
         signal: controller.signal
       }
