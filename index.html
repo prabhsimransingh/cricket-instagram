@@ -2895,33 +2895,42 @@ function App(){return{
         this.aiPreviewPost = {type, meta: data, blob};
       } else {
         this.aiGeneratingProgress=60;
-        // Composite AI image with overlays (logos, text)
-        const ctx = aiCanvas.getContext('2d');
-        // Defensive: ensure logos always present (fall back to built-in if user wiped them)
+        // CRITICAL FIX: Canvas may be tainted by external AI image.
+        // Create a fresh canvas and draw everything on it to ensure logos are included.
+        const freshCanvas = document.createElement('canvas');
+        freshCanvas.width = aiCanvas.width;
+        freshCanvas.height = aiCanvas.height;
+        const freshCtx = freshCanvas.getContext('2d');
+
+        // Draw the AI image onto the fresh, untainted canvas
+        freshCtx.drawImage(aiCanvas, 0, 0);
+
+        // Now draw logos on the fresh canvas (not tainted)
         const cfgWithLogos = {
           ...this.settings,
           clubLogo: this.settings.clubLogo || CHAMPIONS_LOGO_B64,
           leagueLogo: this.settings.leagueLogo || NACL_LOGO_B64,
         };
-        console.log('🎨 Drawing logos:', {hasClubLogo: !!cfgWithLogos.clubLogo, hasLeagueLogo: !!cfgWithLogos.leagueLogo, canvasSize: {w:aiCanvas.width, h:aiCanvas.height}});
+        console.log('🎨 Drawing logos on fresh canvas:', {hasClubLogo: !!cfgWithLogos.clubLogo, hasLeagueLogo: !!cfgWithLogos.leagueLogo, canvasSize: {w:freshCanvas.width, h:freshCanvas.height}});
         try {
           console.log('🎨 About to draw club logo...');
-          await drawClubLogo(ctx, cfgWithLogos);
+          await drawClubLogo(freshCtx, cfgWithLogos);
           console.log('✅ Club logo drawn');
           console.log('🎨 About to draw league logo...');
-          await drawLeagueLogo(ctx, cfgWithLogos);
+          await drawLeagueLogo(freshCtx, cfgWithLogos);
           console.log('✅ League logo drawn');
         } catch(logoErr) {
-          console.warn('⚠ Logo drawing error (canvas may be tainted):', logoErr);
+          console.error('❌ Logo drawing error:', logoErr);
         }
 
         this.aiGeneratingProgress=90;
         try {
-          const blob = await new Promise((resolve, reject) => aiCanvas.toBlob(b => b ? resolve(b) : reject(new Error('toBlob returned null - canvas may be tainted')), 'image/jpeg', 0.92));
+          const blob = await new Promise((resolve, reject) => freshCanvas.toBlob(b => b ? resolve(b) : reject(new Error('toBlob returned null')), 'image/jpeg', 0.92));
           this.aiPreviewUrl = URL.createObjectURL(blob);
           this.aiPreviewPost = {type, meta: data, blob};
+          console.log('✅ AI image with logos successfully exported');
         } catch(blobErr) {
-          console.error('❌ toBlob failed (tainted canvas?):', blobErr);
+          console.error('❌ toBlob failed:', blobErr);
           this.showToast('⚠ Image export failed - try again', false);
           throw blobErr;
         }
