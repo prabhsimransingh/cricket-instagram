@@ -1151,10 +1151,11 @@ function jerseyBg(ctx,P,A,postType){
 
 // ─── Draw NACL logo (top-right) ─ Seamless integration ──────
 async function drawLeagueLogo(ctx,cfg){
-  if(!cfg||!cfg.leagueLogo)return;
-  const img=await loadImg(cfg.leagueLogo);if(!img)return;
+  if(!cfg||!cfg.leagueLogo){console.warn('⚠ drawLeagueLogo: missing cfg or leagueLogo');return;}
+  const img=await loadImg(cfg.leagueLogo);if(!img){console.error('❌ drawLeagueLogo: failed to load image',{src:cfg.leagueLogo?.substring(0,50)});return;}
   // Circular watermark (centre, clipped) - keep as subtle bg
-  const wR=140,wCx=W/2,wCy=H/2;
+  const canvasH=ctx.canvas.height||H;
+  const wR=140,wCx=W/2,wCy=canvasH/2;
   ctx.save();
   ctx.beginPath();ctx.arc(wCx,wCy,wR,0,Math.PI*2);ctx.clip();
   ctx.globalAlpha=0.05;
@@ -1200,8 +1201,8 @@ async function drawJersey(ctx){
   ctx.restore();
 }
 async function drawClubLogo(ctx,cfg){
-  if(!cfg||!cfg.clubLogo)return;
-  const img=await loadImg(cfg.clubLogo);if(!img)return;
+  if(!cfg||!cfg.clubLogo){console.warn('⚠ drawClubLogo: missing cfg or clubLogo');return;}
+  const img=await loadImg(cfg.clubLogo);if(!img){console.error('❌ drawClubLogo: failed to load image',{src:cfg.clubLogo?.substring(0,50)});return;}
   // Top-left SEAMLESS badge (no harsh white bg, no thick ring)
   const r=70,cx=r+24,cy=r+24;
   // Soft drop shadow for depth
@@ -2899,9 +2900,17 @@ function App(){return{
           clubLogo: this.settings.clubLogo || CHAMPIONS_LOGO_B64,
           leagueLogo: this.settings.leagueLogo || NACL_LOGO_B64,
         };
-        console.log('🎨 Drawing logos:', {hasClubLogo: !!cfgWithLogos.clubLogo, hasLeagueLogo: !!cfgWithLogos.leagueLogo});
-        await drawClubLogo(ctx, cfgWithLogos);
-        await drawLeagueLogo(ctx, cfgWithLogos);
+        console.log('🎨 Drawing logos:', {hasClubLogo: !!cfgWithLogos.clubLogo, hasLeagueLogo: !!cfgWithLogos.leagueLogo, canvasSize: {w:aiCanvas.width, h:aiCanvas.height}});
+        try {
+          console.log('🎨 About to draw club logo...');
+          await drawClubLogo(ctx, cfgWithLogos);
+          console.log('✅ Club logo drawn');
+          console.log('🎨 About to draw league logo...');
+          await drawLeagueLogo(ctx, cfgWithLogos);
+          console.log('✅ League logo drawn');
+        } catch(logoErr) {
+          console.warn('⚠ Logo drawing error (canvas may be tainted):', logoErr);
+        }
 
         this.aiGeneratingProgress=90;
         try {
