@@ -3,9 +3,6 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
-<meta http-equiv="Pragma" content="no-cache"/>
-<meta http-equiv="Expires" content="0"/>
 <title>WicketGram — Cricket Club Posts</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Oswald:wght@600;700&family=Bebas+Neue&display=swap"/>
@@ -135,12 +132,6 @@
       <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.35)">
         <span class="hdr-badge" x-show="posts.filter(p=>p.status==='approved').length" style="background:rgba(63,185,80,.15);color:#3fb950;padding:2px 10px;border-radius:20px;font-weight:600" x-text="posts.filter(p=>p.status==='approved').length+' ready'"></span>
       </div>
-      <div style="display:flex;gap:4px;border-radius:8px;background:rgba(255,255,255,.05);padding:2px">
-        <button style="padding:6px 12px;font-size:11px;font-weight:600;border:none;border-radius:6px;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)" :style="version==='main'?'background:rgba(240,180,41,.15);color:#f0b429':''" @click="switchVersion('main')">Main</button>
-        <button style="padding:6px 12px;font-size:11px;font-weight:600;border:none;border-radius:6px;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)" :style="version==='v2'?'background:rgba(240,180,41,.15);color:#f0b429':''" @click="switchVersion('v2')">V2</button>
-        <button style="padding:6px 12px;font-size:11px;font-weight:600;border:none;border-radius:6px;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)" :style="version==='v3'?'background:rgba(240,180,41,.15);color:#f0b429':''" @click="switchVersion('v3')">V3</button>
-        <button style="padding:6px 12px;font-size:11px;font-weight:600;border:none;border-radius:6px;cursor:pointer;transition:all .15s;background:transparent;color:rgba(255,255,255,.4)" :style="version==='v4'?'background:rgba(240,180,41,.15);color:#f0b429':''" @click="switchVersion('v4')">V4</button>
-      </div>
       <button class="btn btn-ghost" style="padding:7px 14px;font-size:12px" @click="tab='settings'">⚙ Settings</button>
     </div>
   </div>
@@ -150,12 +141,185 @@
 
   <!-- TABS -->
   <div class="tab-bar">
-    <div class="tab" :class="{active:tab==='create'}" @click="tab='create'">✚ Create Post</div>
+    <div class="tab" :class="{active:tab==='queue'}" @click="tab='queue'">
+      📬 Queue
+      <span x-show="posts.length" style="background:rgba(240,180,41,.2);color:#f0b429;font-size:10px;padding:1px 7px;border-radius:10px;margin-left:4px;font-weight:700" x-text="posts.length"></span>
+    </div>
+    <div class="tab" :class="{active:tab==='new'}" @click="tab='new'">✚ New Post</div>
+    <div class="tab" :class="{active:tab==='history'}" @click="tab='history'">📜 History</div>
     <div class="tab" :class="{active:tab==='settings'}" @click="tab='settings'">⚙ Settings</div>
   </div>
 
-  <!-- ══ CREATE POST ══ -->
-  <div x-show="tab==='create'" style="padding-top:28px">
+  <!-- ══ QUEUE ══ -->
+  <div x-show="tab==='queue'" style="padding-top:28px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <h2 style="font-size:20px;font-weight:700">Post Queue</h2>
+      <button class="btn btn-ghost" style="font-size:12px" @click="tab='new'">+ New Post</button>
+    </div>
+    <div x-show="!posts.length" style="text-align:center;padding:80px 20px;color:rgba(255,255,255,.3)">
+      <div style="font-size:52px;margin-bottom:12px">📭</div>
+      <p style="font-size:16px;font-weight:600;color:rgba(255,255,255,.45)">Queue is empty</p>
+      <p style="font-size:13px;margin-top:4px">Create a post using the New Post tab</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px">
+    <template x-for="post in posts" :key="post.id">
+      <div class="post-card" style="display:grid;grid-template-columns:200px 1fr;min-height:200px">
+
+        <!-- LEFT: square graphic preview with type overlay -->
+        <div class="post-thumb" style="position:relative;aspect-ratio:9/16;background:#060a0e;overflow:hidden;border-right:1px solid rgba(255,255,255,.06)">
+          <canvas :id="'thumb-'+post.id" width="400" height="711" style="width:100%;height:100%;display:block;object-fit:cover" x-init="$nextTick(()=>renderThumb(post))"></canvas>
+          <!-- type badge overlaid bottom-left of thumbnail -->
+          <div style="position:absolute;bottom:10px;left:10px">
+            <span class="type-pill" :class="'type-'+post.type"
+              x-text="post.type==='motm'?'🌟 Man of Match':post.type==='squad'?'📋 Playing XI':post.type==='match'?'🏆 Match Result':post.type==='fixture'?'⚡ Match Day':post.type==='milestone'?'🎯 Milestone':'📸 Photo'">
+            </span>
+          </div>
+          <!-- status dot top-right -->
+          <div style="position:absolute;top:10px;right:10px">
+            <span class="badge" :class="'badge-'+post.status" x-text="post.status"></span>
+          </div>
+        </div>
+
+        <!-- RIGHT: meta + caption + actions -->
+        <div class="post-content" style="padding:18px 22px;display:flex;flex-direction:column;gap:10px;min-width:0">
+
+          <!-- Title row -->
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+            <div style="font-size:15px;font-weight:700;color:#e6edf3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" x-text="postTitle(post)"></div>
+            <span style="font-size:11px;color:rgba(255,255,255,.22);white-space:nowrap" x-text="fmtDate(post.createdAt)"></span>
+          </div>
+
+          <!-- Caption textarea -->
+          <textarea class="inp" x-model="post.caption" @change="saveQueue()" rows="3"
+            style="resize:none;font-size:13px;line-height:1.55;flex:1" placeholder="Caption…"></textarea>
+
+          <!-- AI caption options (collapsed by default, expandable) -->
+          <div x-show="post.captions&&post.captions.length>1">
+            <div class="sh" style="margin-bottom:8px">✨ AI Caption Options</div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <template x-for="(c,i) in post.captions||[]" :key="i">
+                <div class="cap-card" :class="{selected:post.caption===c.caption}" @click="post.caption=c.caption;saveQueue()">
+                  <div style="font-size:10px;font-weight:700;color:#f0b429;margin-bottom:3px;text-transform:uppercase" x-text="c.tone"></div>
+                  <div style="font-size:12px;color:rgba(255,255,255,.7);line-height:1.45" x-text="c.caption"></div>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <!-- ── EDIT PANEL ── -->
+          <div x-show="post._editing" style="background:rgba(0,0,0,.35);border:1px solid rgba(20,184,166,.25);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px">
+            <div style="font-size:13px;font-weight:700;color:#17b8b8;margin-bottom:2px">✏ Edit Post Details</div>
+
+            <!-- MATCH fields -->
+            <template x-if="post.type==='match'">
+              <div class="fg2s" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <div><label class="lbl" style="font-size:11px">Opponent</label><input class="inp" style="font-size:13px" x-model="post.meta.opponent" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Result</label>
+                  <select class="inp" style="font-size:13px" x-model="post.meta.result" @change="debouncedThumb(post)">
+                    <option>won</option><option>lost</option><option>tie</option>
+                  </select></div>
+                <div><label class="lbl" style="font-size:11px">Our Score</label><input class="inp" style="font-size:13px" x-model="post.meta.ourScore" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Their Score</label><input class="inp" style="font-size:13px" x-model="post.meta.theirScore" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Won/Lost By</label><input class="inp" style="font-size:13px" x-model="post.meta.margin" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Venue</label><input class="inp" style="font-size:13px" x-model="post.meta.venue" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Top Batter</label><input class="inp" style="font-size:13px" x-model="post.meta.batterName" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Runs (balls)</label>
+                  <div style="display:flex;gap:4px">
+                    <input class="inp" style="font-size:13px;width:50%" x-model.number="post.meta.batterRuns" @input="debouncedThumb(post)" placeholder="Runs"/>
+                    <input class="inp" style="font-size:13px;width:50%" x-model.number="post.meta.batterBalls" @input="debouncedThumb(post)" placeholder="Balls"/>
+                  </div></div>
+                <div><label class="lbl" style="font-size:11px">Top Bowler</label><input class="inp" style="font-size:13px" x-model="post.meta.bowlerName" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Wkts / Runs</label>
+                  <div style="display:flex;gap:4px">
+                    <input class="inp" style="font-size:13px;width:50%" x-model.number="post.meta.bowlerWkts" @input="debouncedThumb(post)" placeholder="Wkts"/>
+                    <input class="inp" style="font-size:13px;width:50%" x-model.number="post.meta.bowlerRuns" @input="debouncedThumb(post)" placeholder="Runs"/>
+                  </div></div>
+              </div>
+            </template>
+
+            <!-- FIXTURE fields -->
+            <template x-if="post.type==='fixture'">
+              <div class="fg2s" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <div><label class="lbl" style="font-size:11px">Opponent</label><input class="inp" style="font-size:13px" x-model="post.meta.opponent" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Date & Time</label><input class="inp" type="datetime-local" style="font-size:13px" x-model="post.meta.datetime" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Venue</label><input class="inp" style="font-size:13px" x-model="post.meta.venue" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Competition</label><input class="inp" style="font-size:13px" x-model="post.meta.competition" @input="debouncedThumb(post)"/></div>
+              </div>
+            </template>
+
+            <!-- MOTM fields -->
+            <template x-if="post.type==='motm'">
+              <div class="fg2s" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <div><label class="lbl" style="font-size:11px">Player Name</label><input class="inp" style="font-size:13px" x-model="post.meta.name" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Opponent</label><input class="inp" style="font-size:13px" x-model="post.meta.opponent" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Runs</label><input class="inp" style="font-size:13px" x-model.number="post.meta.runs" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Wickets</label><input class="inp" style="font-size:13px" x-model.number="post.meta.wkts" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Strike Rate</label><input class="inp" style="font-size:13px" x-model="post.meta.sr" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Fielding</label><input class="inp" style="font-size:13px" x-model="post.meta.fielding" @input="debouncedThumb(post)"/></div>
+              </div>
+            </template>
+
+            <!-- MILESTONE fields -->
+            <template x-if="post.type==='milestone'">
+              <div class="fg2s" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <div><label class="lbl" style="font-size:11px">Title</label><input class="inp" style="font-size:13px" x-model="post.meta.title" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Player/Team</label><input class="inp" style="font-size:13px" x-model="post.meta.name" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Number</label><input class="inp" style="font-size:13px" x-model="post.meta.number" @input="debouncedThumb(post)"/></div>
+                <div><label class="lbl" style="font-size:11px">Season</label><input class="inp" style="font-size:13px" x-model="post.meta.season" @input="debouncedThumb(post)"/></div>
+                <div style="grid-column:1/-1"><label class="lbl" style="font-size:11px">Subtitle</label><input class="inp" style="font-size:13px" x-model="post.meta.subtitle" @input="debouncedThumb(post)"/></div>
+              </div>
+            </template>
+
+            <!-- SQUAD — edit players -->
+            <template x-if="post.type==='squad'">
+              <div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+                  <div><label class="lbl" style="font-size:11px">Opponent</label><input class="inp" style="font-size:13px" x-model="post.meta.opponent" @input="debouncedThumb(post)"/></div>
+                  <div><label class="lbl" style="font-size:11px">Competition</label><input class="inp" style="font-size:13px" x-model="post.meta.competition" @input="debouncedThumb(post)"/></div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+                  <template x-for="(pl,pi) in (post.meta.players||[])" :key="pi">
+                    <div style="display:flex;gap:4px;align-items:center">
+                      <span style="font-size:11px;color:rgba(255,255,255,.35);width:16px" x-text="pi+1+'.'"></span>
+                      <input class="inp" style="font-size:12px;flex:2" x-model="pl.name" @input="debouncedThumb(post)" placeholder="Name"/>
+                      <select class="inp" style="font-size:12px;flex:1;padding:4px" x-model="pl.role" @change="debouncedThumb(post)">
+                        <option value="">Role</option><option>Captain</option><option>Batter</option><option>Bowler</option><option>All-rounder</option><option>WK</option>
+                      </select>
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </template>
+
+            <button class="btn btn-green" style="font-size:13px;align-self:flex-start" @click="post._editing=false;saveQueue();showToast('✅ Saved!')">✓ Done Editing</button>
+          </div>
+
+          <!-- Action buttons -->
+<div class="act-btns" style="display:flex;flex-wrap:wrap;gap:8px;padding-top:4px;border-top:1px solid rgba(255,255,255,.06)">
+            <button class="btn btn-green" x-show="post.status!=='approved'" @click="approvePost(post)" style="font-size:13px">✓ Approve</button>
+            <button class="btn" @click="downloadPost(post)" :disabled="downloading===post.id"
+              style="font-size:13px;background:linear-gradient(135deg,#17b8b8,#0e8f8f);color:#fff;border:none">
+              <span x-show="downloading!==post.id">⬇ Download</span>
+              <span x-show="downloading===post.id" style="display:flex;align-items:center;gap:6px"><span class="spin"></span>Saving…</span>
+            </button>
+            <button class="btn btn-gold" @click="publishNow(post)" :disabled="publishing===post.id" style="font-size:13px"
+              :title="settings.ayrshareKey?'Post via Ayrshare':'Add Ayrshare key in Settings to post directly'">
+              <span x-show="publishing!==post.id">📱 Post to Instagram</span>
+              <span x-show="publishing===post.id" style="display:flex;align-items:center;gap:6px"><span class="spin"></span>Posting…</span>
+            </button>
+            <button class="btn btn-ghost" @click="regenCaptions(post)" :disabled="!settings.groqKey" style="font-size:13px">✨ AI Captions</button>
+            <button class="btn btn-ghost" @click="post._editing=!post._editing;$nextTick(()=>{})" style="font-size:13px">✏ Edit Details</button>
+            <button class="btn btn-red" @click="rejectPost(post)" style="font-size:13px;margin-left:auto">✕ Remove</button>
+          </div>
+        </div>
+
+      </div>
+    </template>
+    </div>
+  </div>
+
+  <!-- ══ NEW POST ══ -->
+  <div x-show="tab==='new'" style="padding-top:28px">
     <h2 style="font-size:20px;font-weight:700;margin-bottom:20px">Create New Post</h2>
     <!-- Post type picker — card style -->
     <div class="rg3 type-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px">
@@ -220,43 +384,37 @@
             </div>
           </div>
           <div class="glass" style="padding:24px">
-            <!-- Opponent & Victory -->
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div style="margin-bottom:16px;padding:12px;background:rgba(139,196,0,.08);border-radius:8px;border:1px solid rgba(139,196,0,.25);display:flex;gap:12px;align-items:center">
+              <span style="font-size:12px;font-weight:600;color:rgba(139,196,0,.95)">🎨 Render Style:</span>
+              <select x-model="mf._renderMode" style="flex:1;padding:8px 12px;border-radius:6px;background:rgba(255,255,255,.05);color:#fff;border:1px solid rgba(255,255,255,.15);font-size:12px;font-family:Inter">
+                <option value="canvas">Canvas</option>
+                <option value="ai-chars" selected>+ AI Characters</option>
+                <option value="ai-full">🎨 AI Full Card</option>
+              </select>
+            </div>
+            <div class="fg2" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
               <div><label class="lbl">Opponent *</label><input class="inp" x-model="mf.opponent" @input="debouncedPreview('match')" placeholder="Brick Lane CC"/></div>
-              <div><label class="lbl">Which Team Won? *</label>
-                <select class="inp" x-model="mf.victory" @change="autoCalcMargin(); debouncedPreview('match')">
-                  <option value="team_a">Our Team Won</option>
-                  <option value="team_b">Opposition Won</option>
-                  <option value="tie">Tie / No Result</option>
+              <div><label class="lbl">Result *</label>
+                <select class="inp" x-model="mf.result" @change="autoCalcMargin();debouncedPreview('match')">
+                  <option value="won">Won</option><option value="lost">Lost</option><option value="tied">Tied</option><option value="no result">No Result</option>
                 </select>
               </div>
             </div>
-
-            <!-- Team A (Our Team) Score Details -->
-            <div class="divider" style="margin-top:14px"></div>
-            <div class="sh" style="margin-top:10px">🏟️ Our Team</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-top:10px">
-              <div><label class="lbl">Score (Runs)</label><input class="inp" type="number" x-model.number="mf.ourScore" @input="autoCalcMargin(); debouncedPreview('match')" placeholder="156" min="0"/></div>
-              <div><label class="lbl">Wickets Lost</label><input class="inp" type="number" x-model.number="mf.ourWicketsLost" @input="autoCalcMargin(); debouncedPreview('match')" placeholder="5" min="0" max="10"/></div>
-              <div><label class="lbl">Overs Faced</label><input class="inp" x-model="mf.ourOvers" @input="autoCalcMargin(); debouncedPreview('match')" placeholder="20"/></div>
-              <div><label class="lbl">Full Score</label><input class="inp" :value="mf.ourScore && mf.ourWicketsLost!==undefined ? mf.ourScore + '/' + mf.ourWicketsLost : '—'" readonly style="background:rgba(255,255,255,0.1);opacity:0.7;cursor:default"/></div>
+            <div style="margin-top:14px"><label class="lbl">Who Batted First? *</label>
+              <select class="inp" x-model="mf.battedFirst" @change="autoCalcMargin();debouncedPreview('match')">
+                <option value="us">We Batted First (we defended a total)</option>
+                <option value="them">They Batted First (we chased the target)</option>
+              </select>
+              <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:4px;line-height:1.5">
+                🏏 Cricket margin rule (auto-applied):<br>
+                • Team batting first wins → <strong>"won by X runs"</strong> (defended total)<br>
+                • Team batting second wins → <strong>"won by X wickets"</strong> (chased target, X = 10 − wickets lost)
+              </div>
             </div>
-
-            <!-- Team B (Opposition) Score Details -->
-            <div class="divider" style="margin-top:14px"></div>
-            <div class="sh" style="margin-top:10px">🏏 Opposition</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-top:10px">
-              <div><label class="lbl">Score (Runs)</label><input class="inp" type="number" x-model.number="mf.theirScore" @input="autoCalcMargin(); debouncedPreview('match')" placeholder="143" min="0"/></div>
-              <div><label class="lbl">Wickets Lost</label><input class="inp" type="number" x-model.number="mf.theirWicketsLost" @input="autoCalcMargin(); debouncedPreview('match')" placeholder="8" min="0" max="10"/></div>
-              <div><label class="lbl">Overs Faced</label><input class="inp" x-model="mf.theirOvers" @input="autoCalcMargin(); debouncedPreview('match')" placeholder="20"/></div>
-              <div><label class="lbl">Full Score</label><input class="inp" :value="mf.theirScore && mf.theirWicketsLost!==undefined ? mf.theirScore + '/' + mf.theirWicketsLost : '—'" readonly style="background:rgba(255,255,255,0.1);opacity:0.7;cursor:default"/></div>
-            </div>
-
-            <!-- Auto-calculated Margin -->
-            <div class="divider" style="margin-top:14px"></div>
-            <div class="sh" style="margin-top:10px">📊 Margin (Auto-Calculated)</div>
-            <div style="padding:10px;background:rgba(23,184,184,0.1);border-radius:6px;border:1px solid rgba(23,184,184,0.3);font-size:13px;color:rgba(255,255,255,0.8)">
-              <strong x-text="mf.margin || 'Fill scores above to calculate'"></strong>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:14px">
+              <div><label class="lbl">Our Score (e.g., 156/5)</label><input class="inp" x-model="mf.ourScore" @input="autoCalcMargin();debouncedPreview('match')" placeholder="156/5"/></div>
+              <div><label class="lbl">Their Score (e.g., 143/8)</label><input class="inp" x-model="mf.theirScore" @input="autoCalcMargin();debouncedPreview('match')" placeholder="143/8"/></div>
+              <div><label class="lbl">Margin (auto)</label><input class="inp" x-model="mf.margin" :readonly="mf.battedFirst" :style="mf.battedFirst?'background:rgba(255,255,255,.03);opacity:.8':''" placeholder="13 runs"/></div>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
               <div><label class="lbl">Venue</label><input class="inp" x-model="mf.venue" @input="debouncedPreview('match')" placeholder="Victoria Park"/></div>
@@ -296,7 +454,7 @@
               </button>
             </div>
             <button class="btn btn-blue" style="width:100%;justify-content:center;padding:13px;font-size:15px;display:flex;align-items:center;gap:8px" @click="generateMatchAIOnly()" :disabled="aiGenerating||!mf.opponent">
-              <span x-show="!aiGenerating">🎨 Enhance with AI</span>
+              <span x-show="!aiGenerating">🎨 Generate AI Card</span>
               <span x-show="aiGenerating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
             </button>
           </div>
@@ -309,30 +467,6 @@
             <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="exportVideo('match')">🎬 Export Video</button>
           </div>
           <p style="font-size:11px;color:rgba(255,255,255,.2);text-align:center;margin-top:6px">Updates as you type</p>
-
-          <!-- AI Preview (Match) -->
-          <div x-show="aiPreviewUrl" id="ai-preview-img-match" style="margin-top:24px;padding:16px;background:rgba(23,184,184,.08);border:2px solid rgba(23,184,184,.3);border-radius:12px">
-            <div class="sh">🎨 AI Generated Image</div>
-            <div style="display:flex;justify-content:center;margin:12px 0">
-              <img :src="aiPreviewUrl" style="max-width:320px;height:auto;border-radius:10px;display:block;border:2px solid rgba(23,184,184,.3)" alt="AI preview"/>
-            </div>
-            <!-- Action Buttons -->
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-              <button class="btn btn-gold" style="flex:1;justify-content:center;font-size:13px;padding:10px" @click="publishAI()" :disabled="aiGenerating">
-                📱 Share Image
-              </button>
-              <button class="btn" style="flex:1;justify-content:center;font-size:13px;padding:10px;background:#E1306C;color:#fff;border:none;cursor:pointer;border-radius:6px" @click="shareToInstagramApp()" :disabled="aiGenerating">
-                📲 Instagram App
-              </button>
-              <button class="btn" style="flex:1;justify-content:center;font-size:13px;padding:10px;background:#666;color:#fff;border:none;cursor:pointer;border-radius:6px" @click="copyImage()" :disabled="aiGenerating">
-                📋 Copy
-              </button>
-              <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:13px;padding:10px" @click="regenerateAI()" :disabled="aiGenerating">
-                <span x-show="!aiGenerating">🔄 Regenerate</span>
-                <span x-show="aiGenerating" style="display:flex;align-items:center;gap:6px"><span class="spin"></span>Generating...</span>
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -342,6 +476,14 @@
       <div style="display:grid;grid-template-columns:1fr 340px;gap:28px;align-items:start" class="rg2">
         <div>
           <div class="glass" style="padding:24px">
+            <div style="margin-bottom:16px;padding:12px;background:rgba(255,139,196,.08);border-radius:8px;border:1px solid rgba(255,139,196,.25);display:flex;gap:12px;align-items:center">
+              <span style="font-size:12px;font-weight:600;color:rgba(255,139,196,.95)">🎨 Render Style:</span>
+              <select x-model="ff._renderMode" style="flex:1;padding:8px 12px;border-radius:6px;background:rgba(255,255,255,.05);color:#fff;border:1px solid rgba(255,255,255,.15);font-size:12px;font-family:Inter">
+                <option value="canvas">Canvas</option>
+                <option value="ai-chars" selected>+ AI Characters</option>
+                <option value="ai-full">🎨 AI Full Card</option>
+              </select>
+            </div>
             <div class="fg2" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
               <div><label class="lbl">Opponent *</label><input class="inp" x-model="ff.opponent" @input="debouncedPreview('fixture')" placeholder="Hackney Hawks"/></div>
               <div><label class="lbl">Match Date & Time *</label><input class="inp" type="datetime-local" x-model="ff.datetime" @input="debouncedPreview('fixture')"/></div>
@@ -366,7 +508,7 @@
               </button>
             </div>
             <button class="btn btn-blue" style="width:100%;justify-content:center;padding:13px;font-size:15px;display:flex;align-items:center;gap:8px" @click="generateFixtureAIOnly()" :disabled="aiGenerating||!ff.opponent">
-              <span x-show="!aiGenerating">🎨 Enhance with AI</span>
+              <span x-show="!aiGenerating">🎨 Generate AI Card</span>
               <span x-show="aiGenerating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
             </button>
           </div>
@@ -382,25 +524,12 @@
           <!-- AI Preview (Single Image) -->
           <div x-show="aiPreviewUrl" id="ai-preview-img" style="margin-top:24px;padding:16px;background:rgba(23,184,184,.08);border:2px solid rgba(23,184,184,.3);border-radius:12px">
             <div class="sh">🎨 AI Generated Image</div>
-            <div style="display:flex;justify-content:center;margin:12px 0">
-              <img :src="aiPreviewUrl" style="max-width:320px;height:auto;border-radius:10px;display:block;border:2px solid rgba(23,184,184,.3)" alt="AI preview"/>
-            </div>
-
+            <img :src="aiPreviewUrl" style="width:100%;border-radius:10px;display:block;border:1px solid rgba(23,184,184,.3);margin:12px 0" alt="AI preview"/>
             <!-- Action Buttons -->
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-              <button class="btn btn-gold" style="flex:1;justify-content:center;font-size:13px;padding:10px" @click="publishAI()" :disabled="aiGenerating">
-                📱 Share Image
-              </button>
-              <button class="btn" style="flex:1;justify-content:center;font-size:13px;padding:10px;background:#E1306C;color:#fff;border:none;cursor:pointer;border-radius:6px" @click="shareToInstagramApp()" :disabled="aiGenerating">
-                📲 Instagram App
-              </button>
-              <button class="btn" style="flex:1;justify-content:center;font-size:13px;padding:10px;background:#666;color:#fff;border:none;cursor:pointer;border-radius:6px" @click="copyImage()" :disabled="aiGenerating">
-                📋 Copy
-              </button>
-              <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:13px;padding:10px" @click="regenerateAI()" :disabled="aiGenerating">
-                <span x-show="!aiGenerating">🔄 Regenerate</span>
-                <span x-show="aiGenerating" style="display:flex;align-items:center;gap:6px"><span class="spin"></span>Generating...</span>
-              </button>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-gold" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="saveAIPreviewAsPost()">✓ Save as Post</button>
+              <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="generateFixtureAIOnly()">🔄 Regenerate</button>
+              <button class="btn btn-red" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="resetAIGeneration()">✕ Discard</button>
             </div>
           </div>
         </div>
@@ -440,7 +569,7 @@
               </button>
             </div>
             <button class="btn btn-blue" style="width:100%;justify-content:center;padding:13px;font-size:15px;display:flex;align-items:center;gap:8px" @click="generateSquadAIOnly()" :disabled="aiGenerating||!qf.opponent">
-              <span x-show="!aiGenerating">🎨 Enhance with AI</span>
+              <span x-show="!aiGenerating">🎨 Generate AI Card</span>
               <span x-show="aiGenerating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
             </button>
           </div>
@@ -451,30 +580,6 @@
           <div style="display:flex;gap:8px;margin-top:10px">
             <button class="btn btn-ghost" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="playPreview('squad')">▶ Play Effects</button>
             <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="exportVideo('squad')">🎬 Export Video</button>
-          </div>
-
-          <!-- AI Preview (Squad) -->
-          <div x-show="aiPreviewUrl" id="ai-preview-img-squad" style="margin-top:24px;padding:16px;background:rgba(23,184,184,.08);border:2px solid rgba(23,184,184,.3);border-radius:12px">
-            <div class="sh">🎨 AI Generated Image</div>
-            <div style="display:flex;justify-content:center;margin:12px 0">
-              <img :src="aiPreviewUrl" style="max-width:320px;height:auto;border-radius:10px;display:block;border:2px solid rgba(23,184,184,.3)" alt="AI preview"/>
-            </div>
-            <!-- Action Buttons -->
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-              <button class="btn btn-gold" style="flex:1;justify-content:center;font-size:13px;padding:10px" @click="publishAI()" :disabled="aiGenerating">
-                📱 Share Image
-              </button>
-              <button class="btn" style="flex:1;justify-content:center;font-size:13px;padding:10px;background:#E1306C;color:#fff;border:none;cursor:pointer;border-radius:6px" @click="shareToInstagramApp()" :disabled="aiGenerating">
-                📲 Instagram App
-              </button>
-              <button class="btn" style="flex:1;justify-content:center;font-size:13px;padding:10px;background:#666;color:#fff;border:none;cursor:pointer;border-radius:6px" @click="copyImage()" :disabled="aiGenerating">
-                📋 Copy
-              </button>
-              <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:13px;padding:10px" @click="regenerateAI()" :disabled="aiGenerating">
-                <span x-show="!aiGenerating">🔄 Regenerate</span>
-                <span x-show="aiGenerating" style="display:flex;align-items:center;gap:6px"><span class="spin"></span>Generating...</span>
-              </button>
-            </div>
           </div>
         </div>
       </div>
@@ -518,7 +623,7 @@
               </button>
             </div>
             <button class="btn btn-blue" style="width:100%;justify-content:center;padding:13px;font-size:15px;display:flex;align-items:center;gap:8px" @click="generateMOTMAIOnly()" :disabled="aiGenerating||!gf.name">
-              <span x-show="!aiGenerating">🎨 Enhance with AI</span>
+              <span x-show="!aiGenerating">🎨 Generate AI Card</span>
               <span x-show="aiGenerating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
             </button>
           </div>
@@ -529,30 +634,6 @@
           <div style="display:flex;gap:8px;margin-top:10px">
             <button class="btn btn-ghost" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="playPreview('motm')">▶ Play Effects</button>
             <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="exportVideo('motm')">🎬 Export Video</button>
-          </div>
-
-          <!-- AI Preview (MOTM) -->
-          <div x-show="aiPreviewUrl" id="ai-preview-img-motm" style="margin-top:24px;padding:16px;background:rgba(23,184,184,.08);border:2px solid rgba(23,184,184,.3);border-radius:12px">
-            <div class="sh">🎨 AI Generated Image</div>
-            <div style="display:flex;justify-content:center;margin:12px 0">
-              <img :src="aiPreviewUrl" style="max-width:320px;height:auto;border-radius:10px;display:block;border:2px solid rgba(23,184,184,.3)" alt="AI preview"/>
-            </div>
-            <!-- Action Buttons -->
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-              <button class="btn btn-gold" style="flex:1;justify-content:center;font-size:13px;padding:10px" @click="publishAI()" :disabled="aiGenerating">
-                📱 Share Image
-              </button>
-              <button class="btn" style="flex:1;justify-content:center;font-size:13px;padding:10px;background:#E1306C;color:#fff;border:none;cursor:pointer;border-radius:6px" @click="shareToInstagramApp()" :disabled="aiGenerating">
-                📲 Instagram App
-              </button>
-              <button class="btn" style="flex:1;justify-content:center;font-size:13px;padding:10px;background:#666;color:#fff;border:none;cursor:pointer;border-radius:6px" @click="copyImage()" :disabled="aiGenerating">
-                📋 Copy
-              </button>
-              <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:13px;padding:10px" @click="regenerateAI()" :disabled="aiGenerating">
-                <span x-show="!aiGenerating">🔄 Regenerate</span>
-                <span x-show="aiGenerating" style="display:flex;align-items:center;gap:6px"><span class="spin"></span>Generating...</span>
-              </button>
-            </div>
           </div>
         </div>
       </div>
@@ -587,7 +668,7 @@
               </button>
             </div>
             <button class="btn btn-blue" style="width:100%;justify-content:center;padding:13px;font-size:15px;display:flex;align-items:center;gap:8px" @click="generateMilestoneAIOnly()" :disabled="aiGenerating||!lf.title">
-              <span x-show="!aiGenerating">🎨 Enhance with AI</span>
+              <span x-show="!aiGenerating">🎨 Generate AI Card</span>
               <span x-show="aiGenerating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
             </button>
           </div>
@@ -598,30 +679,6 @@
           <div style="display:flex;gap:8px;margin-top:10px">
             <button class="btn btn-ghost" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="playPreview('milestone')">▶ Play Effects</button>
             <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="exportVideo('milestone')">🎬 Export Video</button>
-          </div>
-
-          <!-- AI Preview (Milestone) -->
-          <div x-show="aiPreviewUrl" id="ai-preview-img-milestone" style="margin-top:24px;padding:16px;background:rgba(23,184,184,.08);border:2px solid rgba(23,184,184,.3);border-radius:12px">
-            <div class="sh">🎨 AI Generated Image</div>
-            <div style="display:flex;justify-content:center;margin:12px 0">
-              <img :src="aiPreviewUrl" style="max-width:320px;height:auto;border-radius:10px;display:block;border:2px solid rgba(23,184,184,.3)" alt="AI preview"/>
-            </div>
-            <!-- Action Buttons -->
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-              <button class="btn btn-gold" style="flex:1;justify-content:center;font-size:13px;padding:10px" @click="publishAI()" :disabled="aiGenerating">
-                📱 Share Image
-              </button>
-              <button class="btn" style="flex:1;justify-content:center;font-size:13px;padding:10px;background:#E1306C;color:#fff;border:none;cursor:pointer;border-radius:6px" @click="shareToInstagramApp()" :disabled="aiGenerating">
-                📲 Instagram App
-              </button>
-              <button class="btn" style="flex:1;justify-content:center;font-size:13px;padding:10px;background:#666;color:#fff;border:none;cursor:pointer;border-radius:6px" @click="copyImage()" :disabled="aiGenerating">
-                📋 Copy
-              </button>
-              <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:13px;padding:10px" @click="regenerateAI()" :disabled="aiGenerating">
-                <span x-show="!aiGenerating">🔄 Regenerate</span>
-                <span x-show="aiGenerating" style="display:flex;align-items:center;gap:6px"><span class="spin"></span>Generating...</span>
-              </button>
-            </div>
           </div>
         </div>
       </div>
@@ -647,7 +704,7 @@
           <div style="display:flex;flex-direction:column;gap:10px;margin-top:18px">
             <button class="btn btn-gold" style="width:100%;justify-content:center;padding:13px;font-size:15px"
               @click="submitPhoto()" :disabled="creating||aiGenerating||!pf.photoDataURL">
-              <span x-show="!creating">✓ Create Post</span>
+              <span x-show="!creating">📸 Add to Queue</span>
               <span x-show="creating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Processing…</span>
             </button>
             <button class="btn btn-blue" style="width:100%;justify-content:center;padding:13px;font-size:15px;display:flex;align-items:center;gap:8px" @click="generatePhotoAIOnly()" :disabled="aiGenerating||!pf.photoDataURL">
@@ -662,30 +719,6 @@
           <div style="display:flex;gap:8px;margin-top:10px">
             <button class="btn btn-ghost" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="playPreview('photo')">▶ Play Effects</button>
             <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="exportVideo('photo')">🎬 Export Video</button>
-          </div>
-
-          <!-- AI Preview (Photo) -->
-          <div x-show="aiPreviewUrl" id="ai-preview-img-photo" style="margin-top:24px;padding:16px;background:rgba(23,184,184,.08);border:2px solid rgba(23,184,184,.3);border-radius:12px">
-            <div class="sh">🎨 AI Enhanced Image</div>
-            <div style="display:flex;justify-content:center;margin:12px 0">
-              <img :src="aiPreviewUrl" style="max-width:320px;height:auto;border-radius:10px;display:block;border:2px solid rgba(23,184,184,.3)" alt="AI preview"/>
-            </div>
-            <!-- Action Buttons -->
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-              <button class="btn btn-gold" style="flex:1;justify-content:center;font-size:13px;padding:10px" @click="publishAI()" :disabled="aiGenerating">
-                📱 Share Image
-              </button>
-              <button class="btn" style="flex:1;justify-content:center;font-size:13px;padding:10px;background:#E1306C;color:#fff;border:none;cursor:pointer;border-radius:6px" @click="shareToInstagramApp()" :disabled="aiGenerating">
-                📲 Instagram App
-              </button>
-              <button class="btn" style="flex:1;justify-content:center;font-size:13px;padding:10px;background:#666;color:#fff;border:none;cursor:pointer;border-radius:6px" @click="copyImage()" :disabled="aiGenerating">
-                📋 Copy
-              </button>
-              <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:13px;padding:10px" @click="regenerateAI()" :disabled="aiGenerating">
-                <span x-show="!aiGenerating">🔄 Regenerate</span>
-                <span x-show="aiGenerating" style="display:flex;align-items:center;gap:6px"><span class="spin"></span>Generating...</span>
-              </button>
-            </div>
           </div>
         </div>
       </div>
@@ -703,7 +736,7 @@
         </div>
         <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:8px" x-text="`${aiGeneratingProgress}%`"></div>
         <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:8px;font-weight:500">OpenAI DALL-E 3</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.4)">⏱️ 10-30 seconds total</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.4)">⏱️ 30-60 seconds total</div>
       </div>
     </div>
     <style>
@@ -714,7 +747,8 @@
     <div x-show="createdPost&&!aiGenerating" style="margin-top:28px" class="glass" x-cloak>
       <div style="padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px">
         <span style="font-size:20px">✅</span>
-        <span style="font-weight:700;font-size:16px">Ready! Copy image & caption or post directly</span>
+        <span style="font-weight:700;font-size:16px">Post added to queue!</span>
+        <button class="btn btn-ghost" style="margin-left:auto;font-size:12px" @click="tab='queue'">View Queue →</button>
       </div>
       <div style="padding:20px 24px;display:flex;gap:20px;align-items:flex-start">
         <canvas id="created-thumb" width="160" height="285" style="width:120px;height:215px;border-radius:10px;flex-shrink:0;background:#0a0a0a;object-fit:contain"></canvas>
@@ -722,29 +756,53 @@
           <div class="sh" style="margin-bottom:10px">Select a caption:</div>
           <div style="display:flex;flex-direction:column;gap:8px">
             <template x-for="(c,i) in createdPost?.captions||[]" :key="i">
-              <div class="cap-card" :class="{selected:createdPost.caption===c.caption}" @click="createdPost.caption=c.caption">
+              <div class="cap-card" :class="{selected:createdPost.caption===c.caption}" @click="createdPost.caption=c.caption;saveQueue()">
                 <div style="font-size:10px;font-weight:700;color:#f0b429;margin-bottom:3px;text-transform:uppercase" x-text="c.tone"></div>
                 <div style="font-size:12px;color:rgba(255,255,255,.75);line-height:1.45" x-text="c.caption"></div>
               </div>
             </template>
             <div x-show="!createdPost?.captions?.length" style="font-size:13px;color:rgba(255,255,255,.3)">
-              No AI captions generated yet — captions are automatically created with AI images.
+              No AI captions generated — edit the caption field in the queue, or add a Groq key in Settings.
             </div>
           </div>
 <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
-            <button class="btn" @click="copyImage()" style="font-size:13px;background:linear-gradient(135deg,#17b8b8,#0e8f8f);color:#fff;border:none">
-              📋 Copy Image
+            <button class="btn" @click="downloadPost(createdPost)" :disabled="downloading===createdPost?.id"
+              style="font-size:13px;background:linear-gradient(135deg,#17b8b8,#0e8f8f);color:#fff;border:none">
+              <span x-show="downloading!==createdPost?.id">⬇ Download PNG</span>
+              <span x-show="downloading===createdPost?.id" style="display:flex;align-items:center;gap:6px"><span class="spin"></span>Saving…</span>
             </button>
-            <button class="btn btn-ghost" @click="copyCaption()" style="font-size:13px">
-              📄 Copy Caption
-            </button>
-            <button class="btn btn-gold" @click="publishNow(createdPost)" :disabled="publishing===createdPost?.id" style="font-size:13px;margin-left:auto">
+            <button class="btn btn-gold" @click="publishNow(createdPost)" :disabled="publishing===createdPost?.id" style="font-size:13px">
               <span x-show="publishing!==createdPost?.id">📱 Post to Instagram</span>
               <span x-show="publishing===createdPost?.id" style="display:flex;align-items:center;gap:6px"><span class="spin"></span>Posting…</span>
             </button>
+            <button class="btn btn-ghost" @click="approvePost(createdPost)">✓ Approve for later</button>
           </div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- ══ HISTORY ══ -->
+  <div x-show="tab==='history'" style="padding-top:28px">
+    <h2 style="font-size:20px;font-weight:700;margin-bottom:20px">Posted History</h2>
+    <div x-show="!history.length" style="text-align:center;padding:80px 20px;color:rgba(255,255,255,.3)">
+      <div style="font-size:48px;margin-bottom:12px">📜</div>
+      <p style="font-size:16px;font-weight:600;color:rgba(255,255,255,.45)">No posts yet</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px">
+    <template x-for="post in history" :key="post.id">
+      <div class="post-card" style="overflow:hidden">
+        <canvas :id="'hist-'+post.id" width="520" height="520" style="width:100%;aspect-ratio:9/16;display:block"
+          x-init="$nextTick(()=>renderThumb(post,'hist-'+post.id))"></canvas>
+        <div style="padding:14px">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+            <span class="badge badge-posted">Posted</span>
+            <span style="font-size:11px;color:rgba(255,255,255,.3)" x-text="fmtDate(post.postedAt||post.createdAt)"></span>
+          </div>
+          <p style="font-size:12px;color:rgba(255,255,255,.55);line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical" x-text="post.caption||'—'"></p>
+        </div>
+      </div>
+    </template>
     </div>
   </div>
 
@@ -803,14 +861,31 @@
       <div class="glass" style="padding:24px">
         <div class="sh">🔑 API Keys</div>
         <p style="font-size:12px;color:rgba(255,255,255,.3);margin-bottom:14px;line-height:1.5">Stored in your browser only — never sent anywhere except the respective APIs.</p>
-        <div style="margin-bottom:12px;padding:12px;border:2px solid rgba(139,196,0,.25);border-radius:10px;background:rgba(139,196,0,.08)">
-          <label class="lbl">OpenAI API Key <a href="https://platform.openai.com/account/api-keys" target="_blank" style="color:#f0b429;font-size:10px;margin-left:4px">Get free key →</a></label>
-          <input class="inp" type="password" x-model="settings.openaiKey" placeholder="sk-proj-…"/>
-          <div style="font-size:11px;color:rgba(139,196,0,.8);margin-top:8px;line-height:1.5">
-            ✓ One key for everything:<br/>
-            • Auto-generate captions (gpt-3.5-turbo)<br/>
-            • Generate AI cricket posters (DALL-E 3 / gpt-image-1.5)<br/>
-            <strong>Get $5 free credit when you sign up!</strong>
+        <!-- Ayrshare — recommended -->
+        <div style="margin-bottom:18px;padding:14px;border:1.5px solid rgba(240,180,41,.35);border-radius:12px;background:rgba(240,180,41,.06)">
+          <div style="font-weight:700;color:rgba(240,180,41,.95);font-size:13px;margin-bottom:4px">⭐ Ayrshare — Recommended for Instagram posting</div>
+          <p style="font-size:11px;color:rgba(255,255,255,.45);margin-bottom:10px;line-height:1.6">
+            1. Sign up free at <a href="https://ayrshare.com" target="_blank" style="color:#f0b429">ayrshare.com</a><br>
+            2. Connect your Instagram in their dashboard<br>
+            3. Copy your API Key below — done!
+          </p>
+          <label class="lbl">Ayrshare API Key</label>
+          <input class="inp" type="password" x-model="settings.ayrshareKey" placeholder="AYS-…"/>
+          <div x-show="settings.ayrshareKey" style="margin-top:8px;font-size:11px;color:rgba(100,255,150,.7)">✓ Ayrshare key set — Imgur not required</div>
+        </div>
+        <div style="margin-bottom:12px"><label class="lbl">Groq API Key (AI Captions) <a href="https://console.groq.com" target="_blank" style="color:#f0b429;font-size:10px;margin-left:4px">Get free →</a></label><input class="inp" type="password" x-model="settings.groqKey" placeholder="gsk_…"/></div>
+
+        <!-- OpenAI Settings -->
+        <div style="margin-bottom:12px;padding:12px;border:2px solid rgba(88,166,255,.4);border-radius:10px;background:rgba(88,166,255,.08)">
+          <div style="font-size:13px;font-weight:600;color:rgba(88,166,255,.95);margin-bottom:10px">🚀 OpenAI DALL-E 3 (Required)</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:10px">Professional AI image generation for cricket posters. Get $5 free credit when you sign up.</div>
+          <div style="margin-bottom:10px">
+            <label class="lbl">DALL-E API Key <a href="https://platform.openai.com/account/api-keys" target="_blank" style="color:#58a6ff;font-size:10px;margin-left:4px">Get key →</a></label>
+            <input class="inp" type="password" x-model="settings.dalleApiKey" placeholder="sk-proj-…"/>
+          </div>
+          <div style="font-size:11px;color:rgba(88,166,255,.7);display:flex;align-items:center;gap:6px">
+            <span x-show="settings.dalleApiKey">✓ DALL-E key set — ready to generate professional images</span>
+            <span x-show="!settings.dalleApiKey">→ Add your API key to enable DALL-E 3 generation</span>
           </div>
         </div>
 
@@ -826,10 +901,17 @@
       <div style="grid-column:1/-1;display:flex;gap:12px;flex-wrap:wrap">
         <button class="btn btn-gold" style="font-size:15px;padding:12px 28px" @click="saveSettings()">💾 Save Settings</button>
         <button class="btn btn-ghost" @click="testInstagram()" :disabled="!settings.igToken&&!settings.ayrshareKey">Test Connection</button>
-        <button class="btn btn-blue" @click="checkForUpdates()">🔄 Check for Updates</button>
         <button class="btn btn-red" @click="clearAll()" style="margin-left:auto">⚠ Clear All Data</button>
       </div>
       <div x-show="igStatus" class="glass-sm" style="grid-column:1/-1;padding:14px;font-size:13px" :class="igOk?'text-green-400':'text-red-400'" x-text="igStatus"></div>
+      <div class="glass" style="padding:24px;grid-column:1/-1">
+        <div class="sh" style="margin-bottom:14px">📖 Setup Guide</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;font-size:13px;color:rgba(255,255,255,.55)" class="rg3">
+          <div style="border:1px solid rgba(240,180,41,.25);border-radius:10px;padding:14px;background:rgba(240,180,41,.04)"><p style="font-weight:700;color:rgba(240,180,41,.9);margin-bottom:6px">⭐ 1. Ayrshare (Recommended)</p><p>Sign up free at <a href="https://ayrshare.com" target="_blank" style="color:#f0b429">ayrshare.com</a> → Social Accounts → Connect Instagram. Go to API Keys, copy your key. No Facebook app setup needed.</p></div>
+          <div><p style="font-weight:700;color:rgba(255,255,255,.85);margin-bottom:6px">2. Groq (AI Captions)</p><p>Free at <a href="https://console.groq.com" target="_blank" style="color:#f0b429">console.groq.com</a> → API Keys. Powers all caption generation using Llama 3.3.</p></div>
+          <div><p style="font-weight:700;color:rgba(255,255,255,.85);margin-bottom:6px">3. Imgur (Backup image hosting)</p><p>Only needed if Ayrshare image upload fails. Register free at <a href="https://api.imgur.com/oauth2/addclient" target="_blank" style="color:#f0b429">api.imgur.com</a> — "OAuth 2 without callback".</p></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -844,35 +926,14 @@ const Store = {
   setQueue:    v  => localStorage.setItem('cc_q', JSON.stringify(v)),
   getHistory:  () => JSON.parse(localStorage.getItem('cc_hist')||'[]'),
   setHistory:  v  => localStorage.setItem('cc_hist', JSON.stringify(v)),
-  getSettings:()=>{const s=JSON.parse(localStorage.getItem('cc_cfg')||'{}');return{clubName:'Champions',primary:'#152244',accent:'#17b8b8',leagueLogo:NACL_LOGO_B64,clubLogo:CHAMPIONS_LOGO_B64,openaiKey:'',ayrshareKey:'',igToken:'',igAccountId:'',imgurClientId:'',...s};},
+  getSettings:()=>{const s=JSON.parse(localStorage.getItem('cc_cfg')||'{}');return{clubName:'Champions',primary:'#152244',accent:'#17b8b8',leagueLogo:NACL_LOGO_B64,clubLogo:CHAMPIONS_LOGO_B64,groqKey:'',ayrshareKey:'',igToken:'',igAccountId:'',imgurClientId:'',useDallE:false,dalleApiKey:'',...s};},
   setSettings:v=>{const s={...v};if(s.leagueLogo===NACL_LOGO_B64)delete s.leagueLogo;if(s.clubLogo===CHAMPIONS_LOGO_B64)delete s.clubLogo;try{localStorage.setItem('cc_cfg',JSON.stringify(s));}catch(e){console.warn('Settings:',e);}},
 };
 
 
 // ═══════════════════════════════════════════════════════
-//  POLLINATIONS.AI — AI Character Generation
-// ═══════════════════════════════════════════════════════
-// In-memory cache for generated character images
+// Character generation disabled - using OpenAI only
 const CharCache={};
-async function generateCharacter(teamName,side='home'){
-  const s=Store.getSettings();if(!s.aiCharacters)return null;
-  const cacheKey=`${teamName}-${side}`;
-  if(CharCache[cacheKey])return CharCache[cacheKey];
-  const isBatsman=side==='home';
-  const prompt=isBatsman?
-    `cricket batsman dramatic action pose, ${teamName}, blue electric aura, dramatic lighting, dark background, PNG transparent, 8k`:
-    `${teamName} warrior mascot, fire orange aura, dynamic action pose, dark background, PNG transparent, 8k`;
-  try{
-    const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=512&height=896&nologo=true&seed=${teamName.slice(0,8)}-${side}`;
-    const img=new Image();
-    return new Promise((res)=>{
-      const timeout=setTimeout(()=>{CharCache[cacheKey]='';res(null);},8000);
-      img.onload=()=>{clearTimeout(timeout);CharCache[cacheKey]=url;res(url);};
-      img.onerror=()=>{clearTimeout(timeout);res(null);};
-      img.crossOrigin='anonymous';img.src=url;
-    });
-  }catch(e){return null;}
-}
 
 async function loadCharacterImg(url){
   if(!url)return null;
@@ -883,7 +944,6 @@ async function loadCharacterImg(url){
 //  COLOUR HELPERS
 // ═══════════════════════════════════════════════════════
 const W=1080,H=1920,S=1080;
-const APP_VERSION='v4'; // Update this with each release
 function hexRGB(h='#000'){h=h.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');return[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
 function rgb(r,g,b,a=1){return a<1?`rgba(${r},${g},${b},${a})`:`rgb(${r},${g},${b})`;}
 function lerpC(a,b,t){return a.map((v,i)=>Math.round(v+(b[i]-v)*t));}
@@ -891,37 +951,7 @@ function darken(c,f){return c.map(v=>Math.round(v*f));}
 
 function rr(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();}
 
-async function loadImg(src){
-  return new Promise(res=>{
-    try{
-      const i=new Image();
-      // For base64 images, don't set crossOrigin
-      // For URLs, set crossOrigin to allow canvas operations
-      if(!src.startsWith('data:')){
-        i.crossOrigin='anonymous';
-      }
-      i.onload=()=>{
-        console.log('✓ Image loaded:',src.substring(0,50));
-        res(i);
-      };
-      i.onerror=(e)=>{
-        console.error('✗ Image failed to load:',src.substring(0,50),e);
-        res(null);
-      };
-      i.src=src;
-      // Timeout in case loading hangs
-      setTimeout(()=>{
-        if(!i.complete){
-          console.warn('⚠ Image load timeout:',src.substring(0,50));
-          res(null);
-        }
-      },5000);
-    }catch(e){
-      console.error('✗ loadImg error:',e);
-      res(null);
-    }
-  });
-}
+async function loadImg(src){return new Promise(res=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>res(null);i.src=src;});}
 
 function drawPhoto(ctx,src,dim=0.5){return new Promise(res=>{const img=new Image();img.onload=()=>{const{width:iw,height:ih}=img;const sc=Math.max(W/iw,H/ih),dw=iw*sc,dh=ih*sc;ctx.drawImage(img,(W-dw)/2,(H-dh)/2,dw,dh);if(dim>0){ctx.fillStyle=`rgba(0,0,0,${dim})`;ctx.fillRect(0,0,W,H);}res();};img.onerror=res;img.src=src;});}
 
@@ -1083,32 +1113,38 @@ function jerseyBg(ctx,P,A,postType){
   ctx.fillStyle=bv;ctx.fillRect(0,0,W,H);
 }
 
-// ─── Draw NACL logo (top-right) ─────────────────────────────
+// ─── Draw NACL logo (top-right) ─ Seamless integration ──────
 async function drawLeagueLogo(ctx,cfg){
-  if(!cfg||!cfg.leagueLogo)return;
-  const img=await loadImg(cfg.leagueLogo);if(!img)return;
-  // Circular watermark (centre, clipped)
-  const wR=140,wCx=W/2,wCy=H/2;
+  if(!cfg||!cfg.leagueLogo){console.warn('⚠ drawLeagueLogo: missing cfg or leagueLogo');return;}
+  const img=await loadImg(cfg.leagueLogo);if(!img){console.error('❌ drawLeagueLogo: failed to load image',{src:cfg.leagueLogo?.substring(0,50)});return;}
+  // Circular watermark (centre, clipped) - keep as subtle bg
+  const canvasH=ctx.canvas.height||H;
+  const wR=140,wCx=W/2,wCy=canvasH/2;
   ctx.save();
   ctx.beginPath();ctx.arc(wCx,wCy,wR,0,Math.PI*2);ctx.clip();
   ctx.globalAlpha=0.05;
   ctx.drawImage(img,wCx-wR,wCy-wR,wR*2,wR*2);
   ctx.restore();
-  // Top-right circular badge
-  const r=68,cx=S-r-22,cy=r+18;
-  const zoom=1.3;
+  // Top-right SEAMLESS badge (no harsh white bg, no thick ring)
+  const r=70,cx=S-r-24,cy=r+24;
+  // Soft drop shadow for depth
   ctx.save();
+  ctx.shadowColor='rgba(0,0,0,0.55)';ctx.shadowBlur=24;ctx.shadowOffsetY=4;
   ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
-  ctx.fillStyle='#ffffff';ctx.fill();
-  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.clip();
-  ctx.drawImage(img,cx-r*zoom,cy-r*zoom,r*2*zoom,r*2*zoom);
+  ctx.fillStyle='rgba(0,0,0,0.35)';ctx.fill();
   ctx.restore();
-  // Outer ring — red then thin gold
+  // Clip and fit logo with contain (preserves aspect)
+  ctx.save();
+  ctx.beginPath();ctx.arc(cx,cy,r-3,0,Math.PI*2);ctx.clip();
+  const lw=img.naturalWidth||img.width||1, lh=img.naturalHeight||img.height||1;
+  const target=(r-6)*2, scale=Math.min(target/lw,target/lh);
+  const dw=lw*scale, dh=lh*scale;
+  ctx.drawImage(img,cx-dw/2,cy-dh/2,dw,dh);
+  ctx.restore();
+  // Subtle white rim (blends, doesn't shout)
   ctx.save();
   ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
-  ctx.strokeStyle='#cc1e1e';ctx.lineWidth=4;ctx.stroke();
-  ctx.beginPath();ctx.arc(cx,cy,r+5,0,Math.PI*2);
-  ctx.strokeStyle='rgba(255,185,0,0.7)';ctx.lineWidth=2;ctx.stroke();
+  ctx.strokeStyle='rgba(255,255,255,0.18)';ctx.lineWidth=1.5;ctx.stroke();
   ctx.restore();
 }
 
@@ -1129,23 +1165,28 @@ async function drawJersey(ctx){
   ctx.restore();
 }
 async function drawClubLogo(ctx,cfg){
-  if(!cfg||!cfg.clubLogo)return;
-  const img=await loadImg(cfg.clubLogo);if(!img)return;
-  // Top-left circular badge
-  const r=68,cx=r+18,cy=r+16;
-  const zoom=1.95;
+  if(!cfg||!cfg.clubLogo){console.warn('⚠ drawClubLogo: missing cfg or clubLogo');return;}
+  const img=await loadImg(cfg.clubLogo);if(!img){console.error('❌ drawClubLogo: failed to load image',{src:cfg.clubLogo?.substring(0,50)});return;}
+  // Top-left SEAMLESS badge (no harsh white bg, no thick ring)
+  const r=70,cx=r+24,cy=r+24;
+  // Soft drop shadow for depth
   ctx.save();
+  ctx.shadowColor='rgba(0,0,0,0.55)';ctx.shadowBlur=24;ctx.shadowOffsetY=4;
   ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
-  ctx.fillStyle='#ffffff';ctx.fill();
-  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.clip();
-  ctx.drawImage(img,cx-r*zoom,cy-r*zoom,r*2*zoom,r*2*zoom);
+  ctx.fillStyle='rgba(0,0,0,0.35)';ctx.fill();
   ctx.restore();
-  // Outer ring — teal then thin lime
+  // Clip and fit logo with contain (preserves aspect)
+  ctx.save();
+  ctx.beginPath();ctx.arc(cx,cy,r-3,0,Math.PI*2);ctx.clip();
+  const lw=img.naturalWidth||img.width||1, lh=img.naturalHeight||img.height||1;
+  const target=(r-6)*2, scale=Math.min(target/lw,target/lh);
+  const dw=lw*scale, dh=lh*scale;
+  ctx.drawImage(img,cx-dw/2,cy-dh/2,dw,dh);
+  ctx.restore();
+  // Subtle white rim
   ctx.save();
   ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
-  ctx.strokeStyle='#14b8a6';ctx.lineWidth=4;ctx.stroke();
-  ctx.beginPath();ctx.arc(cx,cy,r+5,0,Math.PI*2);
-  ctx.strokeStyle='rgba(139,196,0,0.7)';ctx.lineWidth=2;ctx.stroke();
+  ctx.strokeStyle='rgba(255,255,255,0.18)';ctx.lineWidth=1.5;ctx.stroke();
   ctx.restore();
 }
 
@@ -1169,6 +1210,9 @@ async function drawMatchCard(ctx,d,cfg){
   // Both logos
   await drawClubLogo(ctx,cfg);
   await drawLeagueLogo(ctx,cfg);
+
+  // Note: Champions & NaCL logos are now integrated into AI-generated images
+  // via OpenAI Image Edit API (sent as reference images to generation endpoint)
 
   // Header: club name + date
   const hX=cfg.clubLogo?172:50;
@@ -1298,6 +1342,149 @@ async function drawMatchCard(ctx,d,cfg){
 // ═══════════════════════════════════════════════════════
 //  DALLE-3 INTEGRATION
 // ═══════════════════════════════════════════════════════
+async function generateFixtureAI_DALLE(d,cfg){
+  const club=(cfg.clubName||'Cricket Club').toUpperCase();
+  const opp=(d.opponent||'TBC').toUpperCase();
+  const venue=d.venue||'TBC';
+  const comp=d.competition||'Cricket';
+
+  // DALL-E 3 optimized prompt (it understands context much better)
+  const prompt=`Professional cricket match day Instagram story poster for ${club} vs ${opp}, ${comp} at ${venue}.
+
+Create a dramatic, cinematic sports photography style image of a cricket match:
+- Professional stadium at night with powerful floodlights
+- Championship atmosphere, intense competitive energy
+- Pristine green cricket field, perfectly maintained
+- Dark dramatic sky with golden floodlight illumination
+- High contrast, sharp focus, professional sports broadcast quality
+- Colors: Teal and gold accents (brand colors)
+- 9:16 vertical format, optimized for Instagram Story
+- Magazine-quality sports poster aesthetic`;
+
+  try{
+    console.log('🎨 Fetching AI image from GPT Image 1.5...');
+    console.log('API Key set:', cfg.dalleApiKey?'YES':'NO');
+
+    // Use AbortController for timeout
+    const controller=new AbortController();
+    const timeoutId=setTimeout(()=>controller.abort(),120000);
+
+    const response=await fetch('https://api.openai.com/v1/images/generations',{
+      method:'POST',
+      headers:{
+        'Authorization':`Bearer ${cfg.dalleApiKey}`,
+        'Content-Type':'application/json'
+      },
+      body:JSON.stringify({
+        model:'gpt-image-1.5',
+        prompt:prompt,
+        n:1,
+        size:'1024x1536'
+      }),
+      signal:controller.signal
+    });
+
+    clearTimeout(timeoutId);
+
+    if(!response.ok){
+      const errText=await response.text();
+      console.error('❌ DALL-E API error ('+response.status+'):',errText);
+      let errMsg='DALL-E API failed';
+      try{const e=JSON.parse(errText);errMsg=e.error?.message||e.message||errMsg;}catch{}
+      throw new Error(errMsg);
+    }
+
+    const data=await response.json();
+    console.log('📥 Full API Response:', JSON.stringify(data, null, 2));
+    if(!data.data||!data.data[0]){
+      console.error('❌ Invalid response format:',data);
+      throw new Error('No image data in response');
+    }
+
+    // Handle both response formats:
+    // - GPT Image models return base64_json
+    // - DALL-E models return url
+    let imageUrl;
+    if(data.data[0].b64_json){
+      console.log('✅ Got base64 image from GPT Image model');
+      imageUrl=`data:image/png;base64,${data.data[0].b64_json}`;
+    } else if(data.data[0].url){
+      console.log('✅ Got URL image from DALL-E model');
+      imageUrl=data.data[0].url;
+    } else {
+      console.error('❌ No b64_json or url in response:',data.data[0]);
+      throw new Error('No image data (b64_json or url) in response');
+    }
+    console.log('✅ DALL-E image URL received:',imageUrl.substring(0,80)+'...');
+
+    // Fetch the image and convert to canvas
+    console.log('Loading image from URL...');
+    const img=new Image();
+    return new Promise((res)=>{
+      const timeout=setTimeout(()=>{
+        console.warn('⏱️ Image download timeout (30s)');
+        res(null);
+      },30000); // Increased to 30 seconds
+
+      img.onload=()=>{
+        clearTimeout(timeout);
+        console.log('✅ DALL-E image loaded successfully');
+        try{
+          const cv=document.createElement('canvas');
+          cv.width=1080;cv.height=1920;
+          const ctx=cv.getContext('2d');
+          ctx.drawImage(img,0,0);
+          console.log('✅ Image drawn to canvas ('+img.width+'x'+img.height+')');
+
+          // Add vignette effect for logos
+          const vignette=(x,y)=>{
+            const grad=ctx.createRadialGradient(x,y,0,x,y,180);
+            grad.addColorStop(0,'rgba(0,0,0,0)');
+            grad.addColorStop(0.7,'rgba(0,0,0,0.15)');
+            grad.addColorStop(1,'rgba(0,0,0,0.4)');
+            ctx.fillStyle=grad;ctx.fillRect(x-150,y-150,300,300);
+          };
+          vignette(100,100);vignette(980,100);
+          console.log('✅ Vignette applied');
+
+          // Draw logos on top
+          drawClubLogo(ctx,cfg).then(()=>{console.log('✅ Club logo drawn');return drawLeagueLogo(ctx,cfg);}).then(()=>{console.log('✅ League logo drawn');res(cv);}).catch(e=>{console.warn('⚠ Logo drawing failed:',e);res(cv);});
+        }catch(e){
+          console.error('❌ Canvas error:',e);
+          res(null);
+        }
+      };
+
+      img.onerror=(err)=>{
+        clearTimeout(timeout);
+        console.error('❌ DALL-E image load FAILED - Check CORS or URL expiration',err);
+        console.log('Image URL was:',imageUrl.substring(0,100)+'...');
+        res(null);
+      };
+
+      img.onabort=()=>{
+        clearTimeout(timeout);
+        console.error('❌ Image load ABORTED (network issue?)');
+        res(null);
+      };
+
+      img.crossOrigin='anonymous';
+      console.log('📥 Loading DALL-E image from:',imageUrl.substring(0,100)+'...');
+      img.src=imageUrl;
+    });
+
+  }catch(e){
+    console.error('❌ DALL-E error:',e.message);
+    console.error('Stack:',e.stack);
+    return null;
+  }
+}
+
+// AI Full Card generation - uses GPT Image 1.5
+async function generateFixtureAI(d,cfg){
+  return await generateFixtureAI_DALLE(d,cfg);
+}
+
 // ═══════════════════════════════════════════════════════════════════════
 // PROMPT BUILDERS FOR ALL POST TYPES
 // ═══════════════════════════════════════════════════════════════════════
@@ -1305,38 +1492,18 @@ async function drawMatchCard(ctx,d,cfg){
 function buildPrompt_match(data, cfg) {
   const club = (cfg.clubName || 'Champions Cricket Club').toUpperCase();
   const opp = (data.opponent || 'Opposition').toUpperCase();
-  const victory = data.victory || data.result; // Support both new (victory) and old (result) fields
-
-  // Build context based on victory
-  let scoreContext = '';
-  let motivationalTone = '';
-
-  if(victory === 'team_a' || victory === 'won'){
-    scoreContext = `${club} triumphed over ${opp}, scoring ${data.ourScore} while holding them to ${data.theirScore}. Victory by ${data.margin || 'a convincing margin'}.`;
-    motivationalTone = '💪 Dominant performance. Highlight the confidence, skill, and team unity. Celebratory energy, victory moment.';
-  }else if(victory === 'team_b' || victory === 'lost'){
-    scoreContext = `Despite a strong effort, ${club} fell short against ${opp}. Scored ${data.ourScore} but opposition reached ${data.theirScore}. Lost by ${data.margin || 'a narrow margin'}.`;
-    motivationalTone = '🔥 Resilient effort despite loss. Show growth mindset and determination. Make it inspirational and motivating with message: "Stronger Next Time!"';
-  }else{
-    scoreContext = `${club} vs ${opp} resulted in ${data.margin || 'a tie / no result'}.`;
-    motivationalTone = 'Balanced, competitive match energy.';
-  }
-
+  const score = data.result === 'won'
+    ? `${data.ourScore}/${data.theirScore} victory`
+    : `fell short at ${data.ourScore}/${data.theirScore}`;
   const venue = data.venue || 'Cricket Ground';
   const comp = data.competition || 'Match';
-  const date = data.date ? `, ${data.date}` : '';
-  const playerHighlight = data.batterName ? `${data.batterName} shone with ${data.batterRuns} runs off ${data.batterBalls || '?'} balls (${data.batterFours || 0}x4, ${data.batterSixes || 0}x6)` : '';
-  const bowlerHighlight = data.bowlerName ? `${data.bowlerName} was exceptional: ${data.bowlerWkts || 0}/${data.bowlerRuns || 0} in ${data.bowlerOvers || '?'} overs` : '';
 
-  return `Professional cricket match result social media poster for ${club}.
-    ${scoreContext}
-    Venue: ${venue}${date}. Competition: ${comp}.
-    ${playerHighlight ? `Key performer: ${playerHighlight}.` : ''}
-    ${bowlerHighlight ? `Outstanding bowling: ${bowlerHighlight}.` : ''}
-    ${motivationalTone}
-    Design: Cinematic cricket action shot with vibrant colors, professional sports photography aesthetic,
-    ${victory === 'team_a' || victory === 'won' ? 'golden celebratory lighting' : 'dynamic dramatic lighting'}, championship quality,
-    high contrast sharp focus, 9:16 vertical Instagram format, premium sports design.`;
+  return `Professional cricket match result celebration poster. ${club} vs ${opp} at ${venue}.
+    Final score: ${score}. ${data.result === 'won' ? 'Victory celebration moment' : 'Intense match moment'}.
+    Professional sports photography, cinematic 8k photorealism, dramatic stadium floodlights,
+    cricket action shot, pristine grass field, competitive energy, championship aesthetic,
+    golden warm stadium lighting, high contrast sharp focus, dynamic composition.
+    9:16 vertical Instagram format, premium sports design, celebration ${data.result === 'won' ? 'energy' : 'drama'}.`;
 }
 
 function buildPrompt_fixture(data, cfg) {
@@ -1345,14 +1512,12 @@ function buildPrompt_fixture(data, cfg) {
   const venue = data.venue || 'Cricket Ground';
   const comp = data.competition || 'Cricket';
   const format = (data.format || 'T20').toUpperCase();
-  const dateTime = data.datetime ? `, ${data.datetime}` : '';
 
-  return `Professional cricket match day announcement poster. ${club} vs ${opp}, ${format} ${comp} at ${venue}${dateTime}.
-    Match announcement, exciting fixture alert, upcoming cricket event.
+  return `Professional cricket match day announcement poster. ${club} vs ${opp}, ${format} ${comp} at ${venue}.
     Professional sports photography, cinematic 8k photorealism, dramatic stadium floodlights,
     night cricket match, pristine grass cricket field, intense competitive energy,
     championship event aesthetic, golden warm stadium lighting, high contrast sharp focus,
-    action-ready atmosphere, awaiting match energy, anticipation building.
+    action-ready atmosphere, awaiting match energy.
     9:16 vertical Instagram story format, premium sports poster design.`;
 }
 
@@ -1374,25 +1539,13 @@ function buildPrompt_motm(data, cfg) {
   const club = (cfg.clubName || 'Champions Cricket Club').toUpperCase();
   const opp = (data.opponent || 'Opposition').toUpperCase();
   const venue = data.venue || 'Cricket Ground';
-  const date = data.date ? `, ${data.date}` : '';
-  const batting = data.runs ? `${data.runs} runs off ${data.balls || '?'} balls` : '';
-  const bowling = data.wkts ? `${data.wkts} wickets for ${data.conc || '?'} runs` : '';
-  const sr = data.sr ? ` (SR: ${data.sr})` : '';
-  const overs = data.overs ? ` in ${data.overs} overs` : '';
-  const fielding = data.fielding ? `, ${data.fielding} fielding contributions` : '';
+  const playerStats = `${data.runs} runs${data.balls ? ` off ${data.balls} balls` : ''}${data.wkts ? `, ${data.wkts} wickets` : ''}`;
 
-  let statsText = '';
-  if(batting && bowling) statsText = `${batting}${sr} and ${bowling}${overs}${fielding}`;
-  else if(batting) statsText = `${batting}${sr}${fielding}`;
-  else if(bowling) statsText = `${bowling}${overs}${fielding}`;
-  else statsText = 'Outstanding performance';
-
-  return `Man of the Match highlight graphic. ${data.name} for ${club} vs ${opp} at ${venue}${date}.
-    Outstanding performance: ${statsText}. Player portrait with match statistics display.
-    Award-winning performance, individual excellence moment, championship highlight.
-    Professional cricket player action shot, dramatic spotlight lighting, celebration energy,
-    premium sports photography, cinematic 8k quality, victorious athletic energy,
-    golden accent lighting, high contrast sharp focus, trophy-worthy moment.
+  return `Man of the Match highlight graphic. ${data.name} for ${club} vs ${opp} at ${venue}.
+    Outstanding performance: ${playerStats}. Player portrait with match statistics display.
+    Professional cricket player action shot, championship moment, dramatic spotlight lighting,
+    celebration and excellence energy, premium sports photography, cinematic 8k quality,
+    victorious athletic energy, golden accent lighting, high contrast sharp focus.
     9:16 vertical Instagram format, award-winning moment aesthetic.`;
 }
 
@@ -1400,25 +1553,21 @@ function buildPrompt_milestone(data, cfg) {
   const club = (cfg.clubName || 'Champions Cricket Club').toUpperCase();
   const title = data.title || 'Milestone Achievement';
   const season = data.season || 'Season';
-  const subtitle = data.subtitle ? ` - ${data.subtitle}` : '';
 
-  return `Celebration graphic: ${club} ${title} - ${data.name} achieved ${data.number} ${title.toLowerCase()} in ${season}${subtitle}.
-    Individual milestone achievement, personal excellence, championship record.
-    Celebration confetti energy, achievement highlight design, trophy aesthetic,
-    premium sports graphic, victorious moment, cinematic lighting, dramatic composition,
-    inspiring achievement energy, gold and bronze accent colors, record-breaking moment.
+  return `Celebration graphic: ${club} ${title} - ${data.name} achieved ${data.number} ${title.toLowerCase()} in ${season}.
+    Championship milestone celebration, gold and bronze accent colors, trophy aesthetic,
+    celebration confetti energy, achievement highlight design, premium sports graphic,
+    victorious moment, cinematic lighting, dramatic composition, inspiring achievement energy.
     9:16 vertical Instagram format, celebratory poster design, premium quality.`;
 }
 
 function buildPrompt_photo(data, cfg) {
   const club = (cfg.clubName || 'Champions Cricket Club').toUpperCase();
-  const caption = data.caption ? ` - ${data.caption}` : '';
 
-  return `Professional cricket club social media photo enhancement. ${club} action shot${caption}.
+  return `Professional cricket club social media photo enhancement. ${club} action shot.
     Enhance lighting and contrast, cinematic 8k quality, championship aesthetic,
-    professional sports photography, dramatic lighting, high impact visual design,
-    premium color grading, vibrant tones, dynamic composition, engaging visual storytelling.
-    9:16 vertical Instagram format, premium photo quality, professional editing.`;
+    professional sports photography, dramatic lighting, high impact visual design.
+    9:16 vertical Instagram format, premium photo quality.`;
 }
 
 // Generic AI generation function for all post types
@@ -1434,37 +1583,19 @@ async function generateAI(type, data, cfg) {
     default: return null;
   }
 
-  // Log collected data for verification
-  console.log('🎨 AI Generation Data Captured:');
-  console.log('  type:', type);
-  console.log('  data:', JSON.stringify(data, null, 2));
-  console.log('  config (club):', cfg.clubName || 'Not set');
-
   const prompt = promptBuilder(data, cfg);
-
-  console.log('🎨 Generated Prompt:');
-  console.log(prompt);
-
-  // Validate API configuration
-  console.log('🎨 AI Generation Check:');
-  console.log('  openaiKey:', cfg.openaiKey ? '✓ present' : '✗ missing');
-
-  if(!cfg.openaiKey) {
-    throw new Error('❌ OpenAI API key is missing. Add your key in Settings → "OpenAI API Key" field. Get a free key with $5 credit at platform.openai.com');
-  }
-
-  console.log('🎨 → Using GPT Image (gpt-image-1.5)');
   return await generateWithGPTImage(prompt, cfg);
 }
 
 // GPT Image generation wrapper
 async function generateWithGPTImage(prompt, cfg) {
-  console.log('🎨 [GPT Image] Starting generation with gpt-image-1.5');
-  console.log('🎨 [GPT Image] API Key present:', !!cfg.openaiKey);
+  // Generate AI image, then composite REAL logo PNGs on top (pixel-perfect, reliable)
+  // Tell AI to keep top corners dark/uniform so logos blend in seamlessly
+  const enhancedPrompt = `${prompt}\n\nCOMPOSITION REQUIREMENT: The top-left and top-right corners (about 160x160 pixels each) must be DARK, uniform, and visually quiet — like a subtle vignette or shadow. No bright details, no text, no graphics, no logos, no faces in these corner areas. The corners should fade into a darker tone so logos can be placed there seamlessly without clashing with the design.`;
 
   const body = JSON.stringify({
     model: 'gpt-image-1.5',
-    prompt: prompt,
+    prompt: enhancedPrompt,
     n: 1,
     size: '1024x1536'
   });
@@ -1473,11 +1604,10 @@ async function generateWithGPTImage(prompt, cfg) {
   const timeoutId = setTimeout(() => controller.abort(), 120000);
 
   try {
-    console.log('🎨 [GPT Image] Calling OpenAI endpoint...');
     const response = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${cfg.openaiKey}`,
+        'Authorization': `Bearer ${cfg.dalleApiKey}`,
         'Content-Type': 'application/json'
       },
       body: body,
@@ -1487,65 +1617,41 @@ async function generateWithGPTImage(prompt, cfg) {
     clearTimeout(timeoutId);
     const data = await response.json();
 
-    console.log('🎨 [GPT Image] Response status:', response.status, response.ok ? '✓' : '✗');
-
     if(!response.ok) {
-      const errorMsg = data.error?.message || data.message || JSON.stringify(data);
-      console.error('❌ GPT Image API error (Status ' + response.status + '):', errorMsg);
-      throw new Error('API Error (' + response.status + '): ' + errorMsg);
+      console.error('❌ GPT Image API error:', data);
+      return null;
     }
-
-    console.log('🎨 [GPT Image] Success! Data received:', !!data.data, !!data.data[0]);
 
     let imageUrl;
-    if(data.data && data.data[0]) {
-      if(data.data[0].b64_json) {
-        imageUrl = `data:image/png;base64,${data.data[0].b64_json}`;
-        console.log('🎨 [GPT Image] Using b64_json response');
-      } else if(data.data[0].url) {
-        imageUrl = data.data[0].url;
-        console.log('🎨 [GPT Image] Using URL response');
-      } else {
-        console.error('❌ GPT Image: No image data in response:', data.data[0]);
-        return null;
-      }
-    } else {
-      console.error('❌ GPT Image: Invalid response structure:', data);
-      return null;
-    }
-
-    console.log('🎨 [GPT Image] Converting image to blob...');
-
-    // Get the original image blob (no cropping)
     if(data.data[0].b64_json) {
-      // Convert base64 to blob
-      const binaryString = atob(data.data[0].b64_json);
-      const bytes = new Uint8Array(binaryString.length);
-      for(let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
-      const blob = new Blob([bytes], {type: 'image/png'});
-      console.log('🎨 [GPT Image] Blob created from b64_json ✓');
-      return blob;
+      imageUrl = `data:image/png;base64,${data.data[0].b64_json}`;
     } else if(data.data[0].url) {
-      // Fetch and convert URL to blob
-      const imgResponse = await fetch(imageUrl);
-      const blob = await imgResponse.blob();
-      console.log('🎨 [GPT Image] Blob created from URL ✓');
-      return blob;
+      imageUrl = data.data[0].url;
     } else {
-      console.error('❌ GPT Image: No valid image data');
       return null;
     }
+
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    return new Promise((res) => {
+      img.onload = () => {
+        const cv = document.createElement('canvas');
+        cv.width = 1080;
+        cv.height = 1536;
+        const ctx = cv.getContext('2d');
+        ctx.drawImage(img, 0, 0, cv.width, cv.height);
+        // Logos are added later by drawClubLogo/drawLeagueLogo in generateAICardForType
+        res(cv);
+      };
+      img.onerror = () => res(null);
+      img.src = imageUrl;
+    });
   } catch(e) {
+    console.error('❌ GPT Image error:', e);
     clearTimeout(timeoutId);
-    console.error('❌ GPT Image error (exception):', e.message);
-    // Re-throw API errors so they bubble up with details
-    if(e.message.includes('API Error')) throw e;
     return null;
   }
 }
-
 
 async function drawFixtureCard(ctx,d,cfg){
   const P=hexRGB(cfg.primary||'#152244'),A=hexRGB(cfg.accent||'#17b8b8');
@@ -1717,96 +1823,35 @@ async function drawFixtureCard(ctx,d,cfg){
 //  3. PLAYING XI  — IPL team-announcement style
 // ═══════════════════════════════════════════════════════
 async function drawSquadCard(ctx,d,cfg){
-  const P=hexRGB(cfg.primary||'#1a472a'),A=hexRGB(cfg.accent||'#f0b429');
-  const club=(cfg.clubName||'Cricket Club').toUpperCase();
-
-  // Rich dark background
-  ctx.fillStyle='#060c08';ctx.fillRect(0,0,S,S);
-  // Pitch arc texture
-  ctx.strokeStyle=rgb(...P,.22);ctx.lineWidth=1.5;
-  for(let r2=130;r2<780;r2+=118){ctx.beginPath();ctx.arc(S/2,S+260,r2,Math.PI,2*Math.PI);ctx.stroke();}
-  // Top glow from club color
-  const tg=ctx.createRadialGradient(S/2,0,0,S/2,0,520);
-  tg.addColorStop(0,rgb(...P,.48));tg.addColorStop(.55,rgb(...P,.12));tg.addColorStop(1,'transparent');
-  ctx.fillStyle=tg;ctx.fillRect(0,0,S,S);
-  // Right-side dark tint for contrast
-  const rg=ctx.createLinearGradient(S*.5,0,S,0);
-  rg.addColorStop(0,'transparent');rg.addColorStop(1,'rgba(0,0,0,.4)');
-  ctx.fillStyle=rg;ctx.fillRect(0,0,S,S);
-
-  // Top accent bar + left strip
-  ctx.fillStyle=rgb(...A);ctx.fillRect(0,0,S,10);
-  ctx.fillStyle=rgb(...A,.8);ctx.fillRect(0,10,6,S-10);
-
-  // ── PLAYING XI header ──
-  // PLAYING XI — centred so it clears both side badges
-  ctx.font='700 92px "Oswald"';
-  const piW=ctx.measureText('PLAYING XI').width;
-  ctx.fillStyle='rgba(0,0,0,.42)';ctx.fillText('PLAYING XI',(S-piW)/2+2,122);
-  ctx.fillStyle=rgb(...A);ctx.shadowColor=rgb(...A,.22);ctx.shadowBlur=22;
-  ctx.fillText('PLAYING XI',(S-piW)/2,120);ctx.shadowBlur=0;
-
-  // Subtitle
-  const sub=`${club}${d.opponent?' · vs '+d.opponent.toUpperCase():''}${d.date?' · '+fmtD(d.date):''}`;
-  const subW=ctx.measureText(sub.slice(0,54));
-  ctx.font='500 19px "Inter"';ctx.fillStyle='rgba(255,255,255,.38)';
-  ctx.fillText(sub.slice(0,54),(S-ctx.measureText(sub.slice(0,54)).width)/2,158);
-  if(d.competition){
-    ctx.font='600 14px "Inter"';
-    const cw=ctx.measureText(d.competition.toUpperCase()).width;
-    rr(ctx,S-174-cw,134,cw+20,30,15);
-    ctx.fillStyle=rgb(...A,.1);ctx.fill();ctx.strokeStyle=rgb(...A,.25);ctx.lineWidth=1;ctx.stroke();
-    ctx.fillStyle=rgb(...A,.72);ctx.fillText(d.competition.toUpperCase(),S-164-cw,153);
+  const S=1024,W=1536;const P=hexRGB(cfg.primary||'#1a472a'),A=hexRGB(cfg.accent||'#f0b429');const club=(cfg.clubName||'CHAMPIONS').toUpperCase();
+  // Modern gradient background (navy → bright blue)
+  const bgGrad=ctx.createLinearGradient(0,0,0,W);bgGrad.addColorStop(0,'#0a1932');bgGrad.addColorStop(1,'#1a3a7f');ctx.fillStyle=bgGrad;ctx.fillRect(0,0,S,W);
+  // Header gradient (blue → cyan)
+  const headerGrad=ctx.createLinearGradient(0,0,0,150);headerGrad.addColorStop(0,'#007a96');headerGrad.addColorStop(1,'#00a0d8');ctx.fillStyle=headerGrad;ctx.fillRect(0,0,S,150);
+  // Team name
+  ctx.font='bold 85px Arial';ctx.fillStyle='#ffffff';ctx.textAlign='center';ctx.fillText(club+' PLAYING XI',S/2,90);
+  // Role colors mapping
+  const roleColors={'Batsman':'#3b82f6','Opening':'#60a5fa','Middle Order':'#3b82f6','Bowler':'#ef4444','Pacer':'#ef4444','Spinner':'#f97316','All-rounder':'#22c55e','Wicket-keeper':'#a855f7'};
+  // Players
+  const players=d.players||[];const startY=170;const rowHeight=105;
+  for(let idx=0;idx<players.length&&idx<11;idx++){const player=players[idx];const y=startY+(idx*rowHeight);
+    // Player card background (semi-transparent)
+    ctx.fillStyle='rgba(255,255,255,0.08)';ctx.strokeStyle='rgba(100,160,240,0.3)';ctx.lineWidth=2;ctx.fillRect(35,y,954,95);ctx.strokeRect(35,y,954,95);
+    // Jersey number avatar
+    const avatarX=85;const avatarY=y+47;ctx.beginPath();ctx.arc(avatarX,avatarY,30,0,Math.PI*2);ctx.fillStyle='#4688dc';ctx.fill();ctx.strokeStyle='rgba(150,200,255,0.7)';ctx.lineWidth=2;ctx.stroke();
+    // Jersey number
+    ctx.font='bold 42px Arial';ctx.fillStyle='#ffffff';ctx.textAlign='center';ctx.fillText(String(idx+1),avatarX,avatarY+14);
+    // Player name
+    ctx.font='bold 36px Arial';ctx.fillStyle='#ffffff';ctx.textAlign='left';ctx.fillText((player.name||'Player').toUpperCase().slice(0,24),145,y+30);
+    // Role badge
+    const role=player.role||'Player';const badgeColor=roleColors[role]||'#6496c8';ctx.fillStyle=badgeColor;ctx.fillRect(145,y+50,635,26);ctx.font='bold 20px Arial';ctx.fillStyle='#ffffff';ctx.textAlign='center';ctx.fillText(role.toUpperCase(),145+635/2,y+66);
   }
-
-  ctx.beginPath();ctx.moveTo(50,174);ctx.lineTo(S-50,174);ctx.strokeStyle=rgb(...A,.2);ctx.lineWidth=1.5;ctx.stroke();
-
-  // ── Role colour map ──
-  const RC={Batter:[63,185,80],Bowler:[88,166,255],WK:A,'All-rounder':[200,130,255],Captain:A};
-
-  const players=d.players||[];
-  const col1=players.slice(0,6),col2=players.slice(6,11);
-  const rowH=82,startY=184,colW=(S-120)/2;
-
-  function drawPlayer2(p,i,x,y){
-    const isCap=p.role==='Captain';
-    const rc=RC[p.role]||[139,148,158];
-    const rh=rowH-9;
-    // Row bg with side gradient
-    rr(ctx,x,y,colW,rh,12);
-    const rbg=ctx.createLinearGradient(x,y,x+colW,y);
-    rbg.addColorStop(0,'rgba(255,255,255,.082)');rbg.addColorStop(1,'rgba(255,255,255,.024)');
-    ctx.fillStyle=rbg;ctx.fill();
-    ctx.strokeStyle='rgba(255,255,255,.072)';ctx.lineWidth=1;ctx.stroke();
-    // Left role-colour strip (thicker, more visible)
-    rr(ctx,x,y,6,rh,2);ctx.fillStyle=rgb(...rc,isCap?1:.78);ctx.fill();
-    // Number circle (larger)
-    const nCX=x+30,nCY=y+rh/2;
-    ctx.beginPath();ctx.arc(nCX,nCY,22,0,Math.PI*2);
-    ctx.fillStyle=rgb(...rc,.16);ctx.fill();ctx.strokeStyle=rgb(...rc,.35);ctx.lineWidth=1.5;ctx.stroke();
-    ctx.font='700 22px "Oswald"';ctx.fillStyle=rgb(...rc,.95);
-    const num=String(i+1),nw=ctx.measureText(num).width;ctx.fillText(num,nCX-nw/2,nCY+8);
-    // Player name (bigger)
-    ctx.font=isCap?'700 34px "Oswald"':'600 32px "Oswald"';
-    ctx.fillStyle=isCap?'#ffffff':'rgba(255,255,255,.9)';
-    ctx.fillText((p.name||'TBC').slice(0,16),x+62,y+47);
-    // Role chip
-    if(p.role&&p.role!=='Captain'){
-      const rt=p.role==='All-rounder'?'AR':p.role==='Batter'?'BAT':p.role==='Bowler'?'BWL':p.role;
-      ctx.font='700 12px "Inter"';const rtw=ctx.measureText(rt).width;
-      rr(ctx,x+colW-16-rtw-16,y+18,rtw+16,24,12);
-      ctx.fillStyle=rgb(...rc,.18);ctx.fill();ctx.strokeStyle=rgb(...rc,.32);ctx.lineWidth=1;ctx.stroke();
-      ctx.fillStyle=rgb(...rc,.92);ctx.fillText(rt,x+colW-16-rtw-8,y+34);
-    }
-    if(isCap){ctx.font='700 20px "Inter"';ctx.fillStyle=rgb(...A,.92);ctx.fillText('(C)',x+colW-56,y+47);}
-  }
-
-  col1.forEach((p,i)=>drawPlayer2(p,i,50,startY+i*rowH));
-  col2.forEach((p,i)=>drawPlayer2(p,i+6,50+colW+20,startY+i*rowH));
-
-  await drawClubLogo(ctx,cfg);
-  await drawLeagueLogo(ctx,cfg);
-  footerBar(ctx,JKT.teal,'',club,club);
+  // Footer divider
+  const footerY=startY+(11*rowHeight)+40;ctx.strokeStyle='rgba(100,160,240,0.3)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(50,footerY);ctx.lineTo(974,footerY);ctx.stroke();
+  // Footer text
+  ctx.font='bold 26px Arial';ctx.fillStyle='rgba(120,200,255,0.8)';ctx.textAlign='center';ctx.fillText('READY TO WIN',S/2,footerY+50);
+  // Logos
+  await drawClubLogo(ctx,cfg);await drawLeagueLogo(ctx,cfg);footerBar(ctx,JKT.teal,'',club,club);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -2019,7 +2064,7 @@ function wrapText(ctx,text,x,y,maxW,lh){const words=text.split(' ');let line='';
 //  SAMPLE DATA
 // ═══════════════════════════════════════════════════════
 const SAMPLES={
-  match:{opponent:'Brick Lane CC',result:'won',ourScore:187,theirScore:163,margin:'24 runs',victory:'team_a',ourOvers:'20',theirOvers:'19.4',ourWicketsLost:6,theirWicketsLost:9,venue:'Victoria Park',date:'2025-06-15',competition:'East London T20 League',batterName:'Ravinder Singh',batterRuns:84,batterBalls:52,batterFours:9,batterSixes:4,bowlerName:'Harpreet Dhaliwal',bowlerWkts:3,bowlerRuns:28,bowlerOvers:'4.0',photoDataURL:'',photoName:''},
+  match:{opponent:'Brick Lane CC',result:'won',battedFirst:'us',ourScore:'187/6',theirScore:'163/9',margin:'24 runs',venue:'Victoria Park',date:'2025-06-15',competition:'East London T20 League',batterName:'Ravinder Singh',batterRuns:84,batterBalls:52,batterFours:9,batterSixes:4,bowlerName:'Harpreet Dhaliwal',bowlerWkts:3,bowlerRuns:28,bowlerOvers:'4.0',photoDataURL:'',photoName:''},
   fixture:{opponent:'Hackney Hawks',datetime:'2025-06-22T14:00',venue:'Victoria Park, East London',competition:'East London T20 League',format:'T20',photoDataURL:'',photoName:''},
   squad:{opponent:'Hackney Hawks',date:'2025-06-22',competition:'East London T20 League',players:[{name:'Harpreet Singh',role:'Captain'},{name:'Ravinder Singh',role:'Batter'},{name:'Jag Dhaliwal',role:'Batter'},{name:'Manpreet Gill',role:'All-rounder'},{name:'Bobby Sandhu',role:'All-rounder'},{name:'Kiran Bains',role:'WK'},{name:'Dev Randhawa',role:'Bowler'},{name:'Sunny Basra',role:'Bowler'},{name:'Taz Grewal',role:'Bowler'},{name:'Pav Mann',role:'Bowler'},{name:'Roop Chana',role:'Bowler'}]},
   motm:{name:'Harpreet Singh',opponent:'Brick Lane CC',date:'2025-06-15',runs:84,balls:52,sr:'161.5',wkts:2,conc:18,overs:'4.0',fielding:'2 catches',photoDataURL:'',photoName:''},
@@ -2267,18 +2312,22 @@ async function renderCard(canvas,post,cfg){
   const ctx=canvas.getContext('2d');
   ctx.clearRect(0,0,W,H);
   const d=post.meta||{};
+  const mode=post.renderMode||'canvas';
   try{
-    // Always use canvas rendering for preview
-    const aiChars=false;
-    console.log('🎨 Rendering',post.type,'card');
+    // AI Full Card mode
+    if(post.type==='fixture'&&mode==='ai-full'){
+      const img=await generateFixtureAI(d,cfg);
+      if(img){ctx.drawImage(img,0,0,W,H);return;}
+    }
+    // AI Characters mode — disable for now, use canvas
+    const aiChars=mode==='ai-chars';
     if(post.type==='match')         await drawMatchCard(ctx,d,cfg);
     else if(post.type==='fixture'){cfg.aiCharacters=aiChars;await drawFixtureCard(ctx,d,cfg);}
     else if(post.type==='squad')    await drawSquadCard(ctx,d,cfg);
     else if(post.type==='motm')     await drawMOTMCard(ctx,d,cfg);
     else if(post.type==='milestone')await drawMilestoneCard(ctx,d,cfg);
     else if(post.type==='photo')    await drawPhotoCard(ctx,{photoDataURL:d.photoDataURL,caption:post.caption},cfg);
-    console.log('🎨 Card rendered successfully');
-  }catch(e){console.error('❌ Canvas error:',e);throw e;}
+  }catch(e){console.warn('Canvas error',e);}
 }
 
 // ═══════════════════════════════════════════════════════
@@ -2306,7 +2355,7 @@ function parseCSV(raw){
 }
 
 // ═══════════════════════════════════════════════════════
-//  AI CAPTIONS (OpenAI)
+//  AI CAPTIONS (Groq)
 // ═══════════════════════════════════════════════════════
 async function generateCaptions(type,data,cfg){
   const club=cfg.clubName||'Cricket Club';
@@ -2319,8 +2368,8 @@ async function generateCaptions(type,data,cfg){
     milestone:`Milestone: ${data.title}${data.number?' — '+data.number:''}${data.name?' achieved by '+data.name:''}\nReturn ONLY JSON: [{"tone":"proud","caption":"..."},{"tone":"celebratory","caption":"..."},{"tone":"tribute","caption":"..."}]`,
   };
   const prompt=prompts[type];if(!prompt)return[{tone:'general',caption:''}];
-  const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Authorization':`Bearer ${cfg.openaiKey}`,'Content-Type':'application/json'},body:JSON.stringify({model:'gpt-3.5-turbo',max_tokens:900,messages:[{role:'system',content:sys},{role:'user',content:prompt}]})});
-  if(!r.ok){const e=await r.json();throw new Error(e.error?.message||'OpenAI error');}
+  const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Authorization':`Bearer ${cfg.groqKey}`,'Content-Type':'application/json'},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:900,messages:[{role:'system',content:sys},{role:'user',content:prompt}]})});
+  if(!r.ok){const e=await r.json();throw new Error(e.error?.message||'Groq error');}
   const j=await r.json();
   const txt=j.choices[0].message.content.trim().replace(/^```(?:json)?\n?/,'').replace(/\n?```$/,'');
   return JSON.parse(txt);
@@ -2377,13 +2426,13 @@ async function publishToInstagram(url,caption,cfg){
 //  ALPINE APP
 // ═══════════════════════════════════════════════════════
 function App(){return{
-  tab:'create', newTab:'match', version:'v2',
+  tab:'queue', newTab:'match',
   posts:[], history:[], settings:Store.getSettings(),
   toast:{show:false,msg:'',ok:true}, publishing:null, downloading:null, creating:false, aiGenerating:null, aiGeneratingProgress:0, aiGeneratingStatus:'', aiPreviewUrl:null, aiPreviewPost:null,
   igStatus:'', igOk:false, createdPost:null,
   // forms
-  mf:{opponent:'',result:'won',ourScore:'',theirScore:'',margin:'',venue:'',date:'',competition:'',victory:'team_a',ourOvers:'20',theirOvers:'20',ourWicketsLost:0,theirWicketsLost:0,batterName:'',batterRuns:0,batterBalls:0,batterFours:0,batterSixes:0,bowlerName:'',bowlerWkts:0,bowlerRuns:0,bowlerOvers:'',photoDataURL:'',photoName:''},
-  ff:{opponent:'',datetime:'',venue:'',competition:'',format:'T20',photoDataURL:'',photoName:''},
+  mf:{opponent:'',result:'won',battedFirst:'us',ourScore:'',theirScore:'',margin:'',venue:'',date:'',competition:'',batterName:'',batterRuns:0,batterBalls:0,batterFours:0,batterSixes:0,bowlerName:'',bowlerWkts:0,bowlerRuns:0,bowlerOvers:'',photoDataURL:'',photoName:''},
+  ff:{opponent:'',datetime:'',venue:'',competition:'',format:'T20',photoDataURL:'',photoName:'',_renderMode:'ai-full'},
   qf:{opponent:'',date:'',competition:'',players:Array.from({length:11},()=>({name:'',role:''}))},
   gf:{name:'',opponent:'',date:'',runs:0,balls:0,sr:'',wkts:0,conc:0,overs:'',fielding:'',photoDataURL:'',photoName:''},
   lf:{title:'',name:'',number:'',season:'',subtitle:'',photoDataURL:'',photoName:''},
@@ -2391,69 +2440,78 @@ function App(){return{
   _pt:null,
 
   async init(){
-    // Detect version from URL parameter
-    const params = new URLSearchParams(window.location.search);
-    const versionParam = params.get('version');
-    if(versionParam === 'main' || versionParam === 'v2' || versionParam === 'v3' || versionParam === 'v4' || versionParam === 'v5' || versionParam === 'v6' || versionParam === 'v7' || versionParam === 'v8' || versionParam === 'v9' || versionParam === 'v10' || versionParam === 'v11' || versionParam === 'v12') {
-      this.version = versionParam;
-    }
-
-    // Clear service workers on load
-    await this.clearServiceWorkers();
-
     this.posts=Store.getQueue();this.history=Store.getHistory();
-
-    // Restore AI preview from localStorage if available
-    const savedType = localStorage.getItem('aiPreviewPost_type');
-    const savedUrl = localStorage.getItem('aiPreviewPost_url');
-    if(savedType && savedUrl) {
-      this.aiPreviewUrl = savedUrl;
-      this.aiPreviewPost = {type: savedType, meta: {}, blob: null};
-      console.log('🎨 AI preview restored from localStorage');
-    }
-
     await this.$nextTick();
     ['match','fixture','squad','motm','milestone'].forEach(t=>this.drawPreview(t));
   },
 
-  async clearServiceWorkers(){
-    if('serviceWorker' in navigator){
-      try{
-        const regs=await navigator.serviceWorker.getRegistrations();
-        regs.forEach(reg=>reg.unregister());
-        console.log('✓ Service workers cleared');
-      }catch(e){console.warn('⚠ Error clearing service workers:',e.message);}
-    }
-  },
-
-  async checkForUpdates(){
-    this.showToast('🔄 Checking for updates...');
-    try{
-      // Clear all caches (but NOT localStorage - that has your API keys!)
-      if('caches' in window){
-        const names=await caches.keys();
-        await Promise.all(names.map(name=>caches.delete(name)));
-        console.log('✓ Caches cleared');
-      }
-      // Clear service workers
-      await this.clearServiceWorkers();
-      console.log('✓ Service workers cleared');
-      // Force hard reload with cache-bust query param
-      this.showToast('✨ Refreshing with latest version...');
-      setTimeout(()=>{
-        location.href=location.href.split('?')[0]+'?v='+Date.now();
-      },1000);
-    }catch(e){
-      this.showToast('❌ Error: '+e.message,false);
-      console.error(e);
-    }
-  },
-
   debouncedPreview(t){clearTimeout(this._pt);this._pt=setTimeout(()=>this.drawPreview(t),200);},
+  // ── Auto-calculate margin from cricket rules ──
+  // If defending team (batted first) wins → "by X runs" (their score - their score)
+  // If chasing team (batted second) wins → "by X wickets" (10 - wickets lost when target reached)
+  // ── Cricket margin calculator ─────────────────────────────────
+  // Rule: Whoever bats FIRST defends a total → wins "by X runs"
+  //       Whoever bats SECOND chases the target → wins "by X wickets"
+  //       (X wickets = 10 minus wickets lost when target was reached)
+  autoCalcMargin(){
+    const m = this.mf;
+    if(!m.battedFirst) m.battedFirst = 'us'; // default
+
+    // Parse "156/5" → {runs:156, wkts:5}
+    const parseScore = (s) => {
+      if(!s) return {runs:0, wkts:0};
+      const parts = String(s).split('/');
+      return {runs: parseInt(parts[0])||0, wkts: parseInt(parts[1])||0};
+    };
+    const our = parseScore(m.ourScore);
+    const their = parseScore(m.theirScore);
+    const weBattedFirst = m.battedFirst === 'us';
+
+    // ── Auto-detect Won/Lost from scores when both are entered ──
+    // (skip if user explicitly picked tied/no result)
+    if(m.result !== 'tied' && m.result !== 'no result' && our.runs && their.runs){
+      if(our.runs > their.runs) m.result = weBattedFirst ? 'won' : 'lost';
+      else if(our.runs < their.runs) m.result = weBattedFirst ? 'lost' : 'won';
+      else m.result = 'tied';
+    }
+
+    const result = m.result;
+
+    if(result === 'tied' || result === 'no result'){
+      m.margin = result === 'tied' ? 'Match Tied' : 'No Result';
+      return;
+    }
+
+    // ── Margin calculation: who won, did they bat first or chase? ──
+    // Defending team won → margin = run difference ("X runs")
+    // Chasing team won  → margin = wickets remaining ("X wickets")
+    if(result === 'won'){
+      if(weBattedFirst){
+        // We batted first AND we won → we defended → "X runs"
+        const diff = our.runs - their.runs;
+        m.margin = diff > 0 ? `${diff} runs` : '';
+      } else {
+        // They batted first, we chased AND we won → "X wickets"
+        const wktsRemaining = 10 - our.wkts;
+        m.margin = wktsRemaining > 0 ? `${wktsRemaining} wickets` : 'last wicket';
+      }
+    } else if(result === 'lost'){
+      if(weBattedFirst){
+        // We batted first, they chased AND they won → "X wickets"
+        const wktsRemaining = 10 - their.wkts;
+        m.margin = wktsRemaining > 0 ? `${wktsRemaining} wickets` : 'last wicket';
+      } else {
+        // They batted first AND they won → they defended → "X runs"
+        const diff = their.runs - our.runs;
+        m.margin = diff > 0 ? `${diff} runs` : '';
+      }
+    }
+  },
 
   debouncedThumb(post){
     clearTimeout(post._tt);
     post._tt=setTimeout(()=>{
+      this.saveQueue();
       const el=document.getElementById('thumb-'+post.id);
       if(el){el.width=400;el.height=711;renderCard(el,post,this.settings).catch(()=>{});}
     },350);
@@ -2476,13 +2534,6 @@ function App(){return{
 
   async renderThumb(post,id){const c=document.getElementById(id||'thumb-'+post.id);if(c)await renderCard(c,post,this.settings);},
 
-  switchVersion(v){
-    this.version = v;
-    const url = new URL(window.location);
-    url.searchParams.set('version', v);
-    window.history.replaceState({}, '', url);
-  },
-
   saveQueue(){Store.setQueue(this.posts);},
   saveSettings(){Store.setSettings(this.settings);this.showToast('⚙ Settings saved!');},
   showToast(msg,ok=true){this.toast={show:true,msg,ok};setTimeout(()=>{this.toast.show=false;},3000);},
@@ -2494,26 +2545,12 @@ function App(){return{
     this.downloading=post.id;
     try{
       const cv=document.createElement('canvas');cv.width=W;cv.height=H;
-      console.log('📥 Creating canvas',W,H);
       await renderCard(cv,post,this.settings);
-      console.log('📥 Card rendered successfully');
       const type=post.type||'post';
       const opp=(post.meta?.opponent||'').replace(/\s+/g,'-').toLowerCase();
       const fname=`wicketgram-${type}${opp?'-'+opp:''}-${Date.now()}.jpg`;
-      console.log('📥 Converting to blob...');
       // toBlob — memory-safe (no giant data URL string that OOM-crashes mobile tabs)
-      const blob=await new Promise((res,rej)=>{
-        try{
-          cv.toBlob(b=>{
-            console.log('📥 toBlob callback fired, blob:',b);
-            if(b)res(b);
-            else rej(new Error('toBlob returned null'));
-          },'image/jpeg',0.92);
-          // Timeout in case toBlob hangs
-          setTimeout(()=>rej(new Error('toBlob timeout')),10000);
-        }catch(e){rej(e);}
-      });
-      console.log('📥 Blob created:',blob.size);
+      const blob=await new Promise((res,rej)=>cv.toBlob(b=>b?res(b):rej(new Error('Canvas toBlob failed')),'image/jpeg',0.92));
       // Always do a direct file download — blob URL works on Samsung/Android Chrome
       // and triggers the native "save to Downloads/Gallery" flow without a share sheet
       const url=URL.createObjectURL(blob);
@@ -2524,8 +2561,8 @@ function App(){return{
       setTimeout(()=>URL.revokeObjectURL(url),30000);
       this.showToast('⬇ Saving to Gallery / Downloads…');
     }catch(e){
-      console.error('❌ downloadPost error:',e);
       this.showToast('Download failed: '+e.message,false);
+      console.error('downloadPost',e);
     }
     finally{this.downloading=null;}
   },
@@ -2536,24 +2573,8 @@ function App(){return{
     try{
       // Render card → blob (memory-safe, no OOM crash)
       const cv=document.createElement('canvas');cv.width=W;cv.height=H;
-      console.log('📤 Creating canvas for publish',W,H);
       await renderCard(cv,post,s);
-      console.log('📤 Card rendered, converting to blob...');
-      const blob=await new Promise((res,rej)=>{
-        try{
-          cv.toBlob(b=>{
-            console.log('📤 toBlob callback fired, blob:',b);
-            if(b)res(b);
-            else rej(new Error('toBlob returned null'));
-          },'image/jpeg',0.92);
-          setTimeout(()=>rej(new Error('toBlob timeout (5s)')),5000);
-        }catch(e){
-          console.error('📤 toBlob error:',e.message);
-          if(e.message.includes('tainted')) rej(new Error('Canvas is tainted - image CORS issue'));
-          else rej(e);
-        }
-      });
-      console.log('📤 Blob created:',blob.size);
+      const blob=await new Promise((res,rej)=>cv.toBlob(b=>b?res(b):rej(new Error('Canvas failed')),'image/jpeg',0.92));
       const igFile=new File([blob],'instagram-post.jpg',{type:'image/jpeg'});
 
       // ── PATH A: Mobile (Android/iOS) — Web Share API opens Instagram app directly ──
@@ -2570,7 +2591,8 @@ function App(){return{
         const done={...post,status:'posted',postedAt:new Date().toISOString(),mediaId:'shared-'+Date.now()};
         const h=Store.getHistory();h.unshift(done);Store.setHistory(h.slice(0,100));
         this.history=Store.getHistory();
-        this.createdPost=null;
+        this.posts=this.posts.filter(p=>p.id!==post.id);this.saveQueue();
+        if(this.createdPost?.id===post.id)this.createdPost=null;
         this.showToast('🎉 Choose Instagram in the share sheet!');
         return;
       }
@@ -2608,7 +2630,8 @@ function App(){return{
       const done={...post,status:'posted',postedAt:new Date().toISOString(),mediaId:mid};
       const h=Store.getHistory();h.unshift(done);Store.setHistory(h.slice(0,100));
       this.history=Store.getHistory();
-      this.createdPost=null;
+      this.posts=this.posts.filter(p=>p.id!==post.id);this.saveQueue();
+      if(this.createdPost?.id===post.id)this.createdPost=null;
       this.showToast('🎉 Posted to Instagram!');
     }catch(e){
       if(e.name==='AbortError')return; // user dismissed share sheet
@@ -2618,85 +2641,19 @@ function App(){return{
   },
 
   async regenCaptions(post){
-    if(!this.settings.openaiKey)return this.showToast('OpenAI key not set in Settings',false);
-    try{const c=await generateCaptions(post.type,post.meta||{},this.settings);post.captions=c;post.caption=c[0]?.caption||post.caption;this.showToast('✨ Fresh captions!');}
+    if(!this.settings.groqKey)return this.showToast('Groq key not set',false);
+    try{const c=await generateCaptions(post.type,post.meta||{},this.settings);post.captions=c;post.caption=c[0]?.caption||post.caption;this.saveQueue();this.showToast('✨ Fresh captions!');}
     catch(e){this.showToast(`AI error: ${e.message}`,false);}
-  },
-
-  async publishAI(){
-    if(!this.aiPreviewPost?.blob)return this.showToast('No image to post',false);
-    this.publishing='ai-post';
-    const s=this.settings;
-    try{
-      const blob=this.aiPreviewPost.blob;
-      const caption=this.aiPreviewPost.caption||'';
-      const igFile=new File([blob],'instagram-post.jpg',{type:'image/jpeg'});
-
-      if(navigator.canShare&&navigator.canShare({files:[igFile]})){
-        this.showToast('📱 Opening Instagram…');
-        await navigator.share({files:[igFile],title:s.clubName||'Cricket Post',text:caption});
-        const done={type:this.aiPreviewPost.type,status:'posted',caption,postedAt:new Date().toISOString(),mediaId:'shared-'+Date.now()};
-        const h=Store.getHistory();h.unshift(done);Store.setHistory(h.slice(0,100));
-        this.history=Store.getHistory();
-        this.aiPreviewPost=null;this.aiPreviewUrl=null;
-        this.showToast('🎉 Posted to Instagram!');
-        return;
-      }
-
-      const url=URL.createObjectURL(blob);
-      const a=document.createElement('a');a.href=url;a.download='instagram-post.jpg';
-      document.body.appendChild(a);a.click();document.body.removeChild(a);
-      setTimeout(()=>URL.revokeObjectURL(url),15000);
-      this.showToast('📥 Image downloaded — open Instagram on your phone to post',false);
-    }catch(e){
-      if(e.name==='AbortError')return;
-      this.showToast('❌ '+e.message,false);console.error(e);
-    }finally{this.publishing=null;}
-  },
-
-  async shareToInstagramApp(){
-    if(!this.aiPreviewPost?.blob){
-      this.showToast('❌ No image to share',false);
-      return;
-    }
-    try{
-      // Copy image to clipboard FIRST
-      await navigator.clipboard.write([
-        new ClipboardItem({ "image/png": this.aiPreviewPost.blob })
-      ]);
-      this.showToast('✅ Image copied to clipboard!');
-
-      // Open Instagram app
-      const ua = navigator.userAgent.toLowerCase();
-      if(ua.includes('android')){
-        // Android: Use intent:// scheme
-        window.location.href = 'intent://instagram.com#Intent;package=com.instagram.android;scheme=https;end';
-      }else if(ua.includes('iphone')||ua.includes('ipad')){
-        // iOS: Use instagram:// scheme
-        window.location.href = 'instagram://';
-      }else{
-        this.showToast('📝 Image ready! Open Instagram and paste (Cmd+V)', false);
-        return;
-      }
-
-      // Show instruction toast after app opens
-      setTimeout(() => {
-        this.showToast('📝 App opening... Paste image in Instagram (Cmd+V or Ctrl+V)', false);
-      }, 500);
-    }catch(e){
-      this.showToast('❌ Copy failed: ' + e.message,false);
-      console.error(e);
-    }
   },
 
   async _createPost(type,meta){
     this.creating=true;this.createdPost=null;
     try{
       let captions=[];
-      if(this.settings.openaiKey){try{captions=await generateCaptions(type,meta,this.settings);}catch(e){this.showToast('AI captions failed — post created without captions',false);}}
+      if(this.settings.groqKey){try{captions=await generateCaptions(type,meta,this.settings);}catch(e){this.showToast('AI captions failed — post created without captions',false);}}
       const renderMode=meta._renderMode||'canvas';
       const post={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),type,status:'draft',caption:captions[0]?.caption||'',captions,meta,renderMode,createdAt:new Date().toISOString()};
-      this.createdPost=post;
+      this.posts.unshift(post);this.saveQueue();this.createdPost=post;
       await this.$nextTick();
 
       // AI Full Card mode: generate image with progress bar
@@ -2725,27 +2682,7 @@ function App(){return{
     finally{this.creating=false;}
   },
 
-  autoCalcMargin(){
-    const victory = this.mf.victory;
-    const ourScore = parseInt(this.mf.ourScore) || 0;
-    const theirScore = parseInt(this.mf.theirScore) || 0;
-    const ourWkts = parseInt(this.mf.ourWicketsLost) || 0;
-    const theirWkts = parseInt(this.mf.theirWicketsLost) || 0;
-
-    if(victory === 'team_a'){
-      // We won - margin is runs difference
-      const diff = ourScore - theirScore;
-      this.mf.margin = diff > 0 ? `${diff} runs` : '0 runs';
-    }else if(victory === 'team_b'){
-      // We lost - margin is wickets remaining for opposition
-      const wktsRemaining = 10 - theirWkts;
-      this.mf.margin = wktsRemaining > 0 ? `by ${wktsRemaining} wickets` : 'all out';
-    }else{
-      this.mf.margin = 'Tie / No Result';
-    }
-  },
-
-  async submitMatch(){this.autoCalcMargin(); await this._createPost('match',{...this.mf});},
+  async submitMatch(){await this._createPost('match',{...this.mf});},
   async submitFixture(){await this._createPost('fixture',{...this.ff});},
   async submitSquad(){await this._createPost('squad',{...this.qf,players:[...this.qf.players]});},
   async submitMOTM(){await this._createPost('motm',{...this.gf});},
@@ -2780,22 +2717,60 @@ function App(){return{
       // Generate AI image
       this.aiGeneratingProgress=30;
       console.log(`🎨 Generating AI card for ${type}...`);
-      const blob = await generateAI(type, data, this.settings);
+      const aiCanvas = await generateAI(type, data, this.settings);
 
-      if(!blob) {
-        throw new Error('AI image generation failed. Check your API key has image generation credits and try again.');
+      if(!aiCanvas) {
+        this.showToast('⚠ AI generation failed - using canvas version', false);
+        const cv = document.createElement('canvas');
+        cv.width = W;
+        cv.height = H;
+        const post = {type, meta: data, renderMode:'canvas'};
+        await renderCard(cv, post, this.settings);
+        const blob = await new Promise(res => cv.toBlob(b => res(b), 'image/jpeg', 0.92));
+        this.aiPreviewUrl = URL.createObjectURL(blob);
+        this.aiPreviewPost = {type, meta: data, blob};
+      } else {
+        this.aiGeneratingProgress=60;
+        // CRITICAL FIX: Canvas may be tainted by external AI image.
+        // Create a fresh canvas and draw everything on it to ensure logos are included.
+        const freshCanvas = document.createElement('canvas');
+        freshCanvas.width = aiCanvas.width;
+        freshCanvas.height = aiCanvas.height;
+        const freshCtx = freshCanvas.getContext('2d');
+
+        // Draw the AI image onto the fresh, untainted canvas
+        freshCtx.drawImage(aiCanvas, 0, 0);
+
+        // Now draw logos on the fresh canvas (not tainted)
+        const cfgWithLogos = {
+          ...this.settings,
+          clubLogo: this.settings.clubLogo || CHAMPIONS_LOGO_B64,
+          leagueLogo: this.settings.leagueLogo || NACL_LOGO_B64,
+        };
+        console.log('🎨 Drawing logos on fresh canvas:', {hasClubLogo: !!cfgWithLogos.clubLogo, hasLeagueLogo: !!cfgWithLogos.leagueLogo, canvasSize: {w:freshCanvas.width, h:freshCanvas.height}});
+        try {
+          console.log('🎨 About to draw club logo...');
+          await drawClubLogo(freshCtx, cfgWithLogos);
+          console.log('✅ Club logo drawn');
+          console.log('🎨 About to draw league logo...');
+          await drawLeagueLogo(freshCtx, cfgWithLogos);
+          console.log('✅ League logo drawn');
+        } catch(logoErr) {
+          console.error('❌ Logo drawing error:', logoErr);
+        }
+
+        this.aiGeneratingProgress=90;
+        try {
+          const blob = await new Promise((resolve, reject) => freshCanvas.toBlob(b => b ? resolve(b) : reject(new Error('toBlob returned null')), 'image/jpeg', 0.92));
+          this.aiPreviewUrl = URL.createObjectURL(blob);
+          this.aiPreviewPost = {type, meta: data, blob};
+          console.log('✅ AI image with logos successfully exported');
+        } catch(blobErr) {
+          console.error('❌ toBlob failed:', blobErr);
+          this.showToast('⚠ Image export failed - try again', false);
+          throw blobErr;
+        }
       }
-
-      this.aiGeneratingProgress=90;
-      console.log('🎨 AI image blob created:', blob.size, 'bytes');
-      this.aiPreviewUrl = URL.createObjectURL(blob);
-      this.aiPreviewPost = {type, meta: data, blob};
-
-      // Save to localStorage for persistence across refreshes
-      const blobUrl = URL.createObjectURL(blob);
-      localStorage.setItem('aiPreviewPost_type', type);
-      localStorage.setItem('aiPreviewPost_url', blobUrl);
-      console.log('🎨 AI preview saved to localStorage');
 
       this.aiGeneratingProgress=100;
 
@@ -2803,7 +2778,7 @@ function App(){return{
       await this.$nextTick();
       const preview = document.getElementById('ai-preview-img');
       if(preview) preview.scrollIntoView({behavior:'smooth', block:'center'});
-      this.showToast('✨ AI image generated! Regenerate or post to Instagram.');
+      this.showToast('✨ AI image generated! Ready to save or regenerate.');
     } catch(e) {
       this.showToast('⚠ AI generation failed: '+e.message, false);
       console.error('AI generation error:', e);
@@ -2843,54 +2818,46 @@ function App(){return{
     this.aiPreviewPost=null;
   },
 
-  async copyImage(){
-    if(!this.aiPreviewPost?.blob){
-      this.showToast('❌ No image to copy',false);
-      return;
-    }
-    try {
-      await navigator.clipboard.write([
-        new ClipboardItem({ "image/png": this.aiPreviewPost.blob })
-      ]);
-      this.showToast('✅ Image copied to clipboard!');
-    } catch(e) {
-      this.showToast('❌ Failed to copy image: ' + e.message, false);
-    }
+  async saveAIPreviewAsPost(){
+    if(!this.aiPreviewPost)return;
+    const type = this.aiPreviewPost.type;
+    let captions=[];
+    if(this.settings.groqKey){try{captions=await generateCaptions(type,this.aiPreviewPost.meta,this.settings);}catch(e){}}
+    const post={
+      id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),
+      type:type,
+      status:'draft',
+      caption:captions[0]?.caption||'',
+      captions,
+      meta:this.aiPreviewPost.meta,
+      renderMode:'ai-full',
+      createdAt:new Date().toISOString()
+    };
+    this.posts.unshift(post);this.saveQueue();this.createdPost=post;
+    await this.$nextTick();
+    this.renderThumb(post,'created-thumb');
+    this.aiPreviewUrl=null;this.aiPreviewPost=null;
+    this.showToast('✨ Post added to queue!');
   },
-
-  copyCaption(){
-    if(!this.aiPreviewPost?.caption)return;
-    navigator.clipboard.writeText(this.aiPreviewPost.caption).then(()=>{
-      this.showToast('✅ Caption copied to clipboard!');
-    }).catch(()=>{
-      this.showToast('❌ Failed to copy caption',false);
-    });
-  },
-
-  async regenerateAI(){
-    if(!this.aiPreviewPost?.type)return;
-    await this.generateAICardForType(this.aiPreviewPost.type);
-  },
-
 
   async submitPhoto(){
     if(!this.pf.photoDataURL)return this.showToast('Select a photo first',false);
     this.creating=true;
     try{
       let caption=this.pf.caption;
-      if(!caption&&this.pf.genCaption&&this.settings.openaiKey){
-        try{const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Authorization':`Bearer ${this.settings.openaiKey}`,'Content-Type':'application/json'},body:JSON.stringify({model:'gpt-3.5-turbo',max_tokens:300,messages:[{role:'user',content:`Write a short Instagram caption for a cricket club photo. Include hashtags. Just the caption, no JSON.`}]})});const j=await r.json();caption=j.choices[0].message.content.trim();}catch{}
+      if(!caption&&this.pf.genCaption&&this.settings.groqKey){
+        try{const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Authorization':`Bearer ${this.settings.groqKey}`,'Content-Type':'application/json'},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:300,messages:[{role:'user',content:`Write a short Instagram caption for a cricket club photo. Include hashtags. Just the caption, no JSON.`}]})});const j=await r.json();caption=j.choices[0].message.content.trim();}catch{}
       }
-      // Create in-memory preview object (no persistence)
-      this.createdPost={type:'photo',caption,meta:{photoDataURL:this.pf.photoDataURL,photoName:this.pf.photoName}};
-      await this.$nextTick();
-      this.showToast('✨ Photo ready! Copy image & caption or post directly');
+      const post={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),type:'photo',status:'draft',caption,captions:[],meta:{photoDataURL:this.pf.photoDataURL,photoName:this.pf.photoName},createdAt:new Date().toISOString()};
+      this.posts.unshift(post);this.saveQueue();this.createdPost=post;
+      await this.$nextTick();this.renderThumb(post,'created-thumb');
+      this.showToast('📸 Photo post created!');
     }finally{this.creating=false;}
   },
 
   loadSample(type){
     const s=SAMPLES[type];if(!s)return;
-    if(type==='match'){Object.assign(this.mf,s);}
+    if(type==='match'){Object.assign(this.mf,s);this.autoCalcMargin();}
     else if(type==='fixture'){Object.assign(this.ff,s);}
     else if(type==='squad'){
       this.qf.opponent=s.opponent;this.qf.date=s.date;this.qf.competition=s.competition;
