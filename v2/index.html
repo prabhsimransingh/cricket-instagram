@@ -326,7 +326,7 @@
           <!-- AI Preview (Single Image) -->
           <div x-show="aiPreviewUrl" id="ai-preview-img" style="margin-top:24px;padding:16px;background:rgba(23,184,184,.08);border:2px solid rgba(23,184,184,.3);border-radius:12px">
             <div class="sh">🎨 AI Generated Image</div>
-            <img x-bind:src="aiPreviewUrl" style="width:100%;border-radius:10px;display:block;border:1px solid rgba(23,184,184,.3);margin:12px 0" alt="AI preview"/>
+            <img x-bind:src="aiPreviewUrl || ''" style="width:100%;border-radius:10px;display:block;border:1px solid rgba(23,184,184,.3);margin:12px 0" alt="AI preview"/>
             <!-- Action Buttons -->
             <div style="display:flex;gap:8px">
               <button class="btn btn-gold" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="saveAIPreviewAsPost()">✓ Save as Post</button>
