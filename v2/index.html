@@ -1384,6 +1384,12 @@ async function generateAI(type, data, cfg) {
     default: return null;
   }
 
+  // Guard: AI generation requires OpenAI API key
+  if(!cfg.dalleApiKey || !cfg.dalleApiKey.trim()){
+    console.warn('⚠ No OpenAI API key set. Open Settings → "OpenAI DALL-E API Key" and paste your sk-… key.');
+    throw new Error('Missing OpenAI API key — open Settings to add it');
+  }
+
   const prompt = promptBuilder(data, cfg);
   return await generateWithGPTImage(prompt, cfg);
 }
@@ -1395,7 +1401,7 @@ async function generateWithGPTImage(prompt, cfg) {
   const enhancedPrompt = `${prompt}\n\nCOMPOSITION REQUIREMENT: The top-left and top-right corners (about 160x160 pixels each) must be DARK, uniform, and visually quiet — like a subtle vignette or shadow. No bright details, no text, no graphics, no logos, no faces in these corner areas. The corners should fade into a darker tone so logos can be placed there seamlessly without clashing with the design.`;
 
   const body = JSON.stringify({
-    model: 'gpt-image-1.5',
+    model: 'gpt-image-1',
     prompt: enhancedPrompt,
     n: 1,
     size: '1024x1536'
@@ -1419,8 +1425,10 @@ async function generateWithGPTImage(prompt, cfg) {
     const data = await response.json();
 
     if(!response.ok) {
-      console.error('❌ GPT Image API error:', data);
-      return null;
+      const errMsg = data?.error?.message || `HTTP ${response.status}`;
+      console.error('❌ OpenAI Image API error:', data);
+      // Surface error to user instead of silently returning null
+      throw new Error(`OpenAI: ${errMsg}`);
     }
 
     let imageUrl;

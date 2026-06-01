@@ -395,26 +395,15 @@
             <div class="fg2" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
               <div><label class="lbl">Opponent *</label><input class="inp" x-model="mf.opponent" @input="debouncedPreview('match')" placeholder="Brick Lane CC"/></div>
               <div><label class="lbl">Result *</label>
-                <select class="inp" x-model="mf.result" @change="autoCalcMargin();debouncedPreview('match')">
+                <select class="inp" x-model="mf.result" @change="debouncedPreview('match')">
                   <option value="won">Won</option><option value="lost">Lost</option><option value="tied">Tied</option><option value="no result">No Result</option>
                 </select>
               </div>
             </div>
-            <div style="margin-top:14px"><label class="lbl">Who Batted First? *</label>
-              <select class="inp" x-model="mf.battedFirst" @change="autoCalcMargin();debouncedPreview('match')">
-                <option value="us">We Batted First (we defended a total)</option>
-                <option value="them">They Batted First (we chased the target)</option>
-              </select>
-              <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:4px;line-height:1.5">
-                🏏 Cricket margin rule (auto-applied):<br>
-                • Team batting first wins → <strong>"won by X runs"</strong> (defended total)<br>
-                • Team batting second wins → <strong>"won by X wickets"</strong> (chased target, X = 10 − wickets lost)
-              </div>
-            </div>
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:14px">
-              <div><label class="lbl">Our Score (e.g., 156/5)</label><input class="inp" x-model="mf.ourScore" @input="autoCalcMargin();debouncedPreview('match')" placeholder="156/5"/></div>
-              <div><label class="lbl">Their Score (e.g., 143/8)</label><input class="inp" x-model="mf.theirScore" @input="autoCalcMargin();debouncedPreview('match')" placeholder="143/8"/></div>
-              <div><label class="lbl">Margin (auto)</label><input class="inp" x-model="mf.margin" :readonly="mf.battedFirst" :style="mf.battedFirst?'background:rgba(255,255,255,.03);opacity:.8':''" placeholder="13 runs"/></div>
+              <div><label class="lbl">Our Score</label><input class="inp" x-model="mf.ourScore" @input="debouncedPreview('match')" placeholder="156/5"/></div>
+              <div><label class="lbl">Their Score</label><input class="inp" x-model="mf.theirScore" @input="debouncedPreview('match')" placeholder="143/8"/></div>
+              <div><label class="lbl">Margin</label><input class="inp" x-model="mf.margin" @input="debouncedPreview('match')" placeholder="13 runs"/></div>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
               <div><label class="lbl">Venue</label><input class="inp" x-model="mf.venue" @input="debouncedPreview('match')" placeholder="Victoria Park"/></div>
@@ -735,8 +724,8 @@
           </div>
         </div>
         <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:8px" x-text="`${aiGeneratingProgress}%`"></div>
-        <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:8px;font-weight:500">OpenAI DALL-E 3</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.4)">⏱️ 30-60 seconds total</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:8px;font-weight:500">Pollinations.ai</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.4)">⏱️ 15-30 seconds total</div>
       </div>
     </div>
     <style>
@@ -874,11 +863,28 @@
           <div x-show="settings.ayrshareKey" style="margin-top:8px;font-size:11px;color:rgba(100,255,150,.7)">✓ Ayrshare key set — Imgur not required</div>
         </div>
         <div style="margin-bottom:12px"><label class="lbl">Groq API Key (AI Captions) <a href="https://console.groq.com" target="_blank" style="color:#f0b429;font-size:10px;margin-left:4px">Get free →</a></label><input class="inp" type="password" x-model="settings.groqKey" placeholder="gsk_…"/></div>
+<div style="margin-bottom:12px;padding:12px;border:1px solid rgba(139,196,0,.3);border-radius:10px;background:rgba(139,196,0,.06)">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;color:rgba(139,196,0,.95)">
+            <input type="checkbox" x-model="settings.aiCharacters" style="cursor:pointer;width:18px;height:18px"/>
+            ✨ AI Character Art for Matches (Pollinations)
+          </label>
+          <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:8px">Generates character art for home/away teams. Free, requires internet. <a href="https://pollinations.ai" target="_blank" style="color:#8bc400">Learn more</a></div>
+        </div>
+<div style="margin-bottom:12px;padding:12px;border:1px solid rgba(255,139,196,.3);border-radius:10px;background:rgba(255,139,196,.06)">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;color:rgba(255,139,196,.95)">
+            <input type="checkbox" x-model="settings.aiFullCard" style="cursor:pointer;width:18px;height:18px"/>
+            🎨 AI Full Card Mode (Experimental)
+          </label>
+          <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:8px">Generate entire card image via Pollinations (slower, stunning visuals)</div>
+        </div>
 
-        <!-- OpenAI Settings -->
+        <!-- DALL-E 3 Settings -->
         <div style="margin-bottom:12px;padding:12px;border:2px solid rgba(88,166,255,.4);border-radius:10px;background:rgba(88,166,255,.08)">
-          <div style="font-size:13px;font-weight:600;color:rgba(88,166,255,.95);margin-bottom:10px">🚀 OpenAI DALL-E 3 (Required)</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:10px">Professional AI image generation for cricket posters. Get $5 free credit when you sign up.</div>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;color:rgba(88,166,255,.95);margin-bottom:10px">
+            <input type="checkbox" x-model="settings.useDallE" style="cursor:pointer;width:18px;height:18px"/>
+            🚀 Use DALL-E 3 (Professional AI - $5 free credit)
+          </label>
+          <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:10px">Switch from Pollinations to OpenAI DALL-E 3 for professional-quality cricket posters. Get $5 free credit when you sign up.</div>
           <div style="margin-bottom:10px">
             <label class="lbl">DALL-E API Key <a href="https://platform.openai.com/account/api-keys" target="_blank" style="color:#58a6ff;font-size:10px;margin-left:4px">Get key →</a></label>
             <input class="inp" type="password" x-model="settings.dalleApiKey" placeholder="sk-proj-…"/>
@@ -932,8 +938,29 @@ const Store = {
 
 
 // ═══════════════════════════════════════════════════════
-// Character generation disabled - using OpenAI only
+//  POLLINATIONS.AI — AI Character Generation
+// ═══════════════════════════════════════════════════════
+// In-memory cache for generated character images
 const CharCache={};
+async function generateCharacter(teamName,side='home'){
+  const s=Store.getSettings();if(!s.aiCharacters)return null;
+  const cacheKey=`${teamName}-${side}`;
+  if(CharCache[cacheKey])return CharCache[cacheKey];
+  const isBatsman=side==='home';
+  const prompt=isBatsman?
+    `cricket batsman dramatic action pose, ${teamName}, blue electric aura, dramatic lighting, dark background, PNG transparent, 8k`:
+    `${teamName} warrior mascot, fire orange aura, dynamic action pose, dark background, PNG transparent, 8k`;
+  try{
+    const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=512&height=896&nologo=true&seed=${teamName.slice(0,8)}-${side}`;
+    const img=new Image();
+    return new Promise((res)=>{
+      const timeout=setTimeout(()=>{CharCache[cacheKey]='';res(null);},8000);
+      img.onload=()=>{clearTimeout(timeout);CharCache[cacheKey]=url;res(url);};
+      img.onerror=()=>{clearTimeout(timeout);res(null);};
+      img.crossOrigin='anonymous';img.src=url;
+    });
+  }catch(e){return null;}
+}
 
 async function loadCharacterImg(url){
   if(!url)return null;
@@ -1113,38 +1140,32 @@ function jerseyBg(ctx,P,A,postType){
   ctx.fillStyle=bv;ctx.fillRect(0,0,W,H);
 }
 
-// ─── Draw NACL logo (top-right) ─ Seamless integration ──────
+// ─── Draw NACL logo (top-right) ─────────────────────────────
 async function drawLeagueLogo(ctx,cfg){
-  if(!cfg||!cfg.leagueLogo){console.warn('⚠ drawLeagueLogo: missing cfg or leagueLogo');return;}
-  const img=await loadImg(cfg.leagueLogo);if(!img){console.error('❌ drawLeagueLogo: failed to load image',{src:cfg.leagueLogo?.substring(0,50)});return;}
-  // Circular watermark (centre, clipped) - keep as subtle bg
-  const canvasH=ctx.canvas.height||H;
-  const wR=140,wCx=W/2,wCy=canvasH/2;
+  if(!cfg||!cfg.leagueLogo)return;
+  const img=await loadImg(cfg.leagueLogo);if(!img)return;
+  // Circular watermark (centre, clipped)
+  const wR=140,wCx=W/2,wCy=H/2;
   ctx.save();
   ctx.beginPath();ctx.arc(wCx,wCy,wR,0,Math.PI*2);ctx.clip();
   ctx.globalAlpha=0.05;
   ctx.drawImage(img,wCx-wR,wCy-wR,wR*2,wR*2);
   ctx.restore();
-  // Top-right SEAMLESS badge (no harsh white bg, no thick ring)
-  const r=70,cx=S-r-24,cy=r+24;
-  // Soft drop shadow for depth
-  ctx.save();
-  ctx.shadowColor='rgba(0,0,0,0.55)';ctx.shadowBlur=24;ctx.shadowOffsetY=4;
-  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
-  ctx.fillStyle='rgba(0,0,0,0.35)';ctx.fill();
-  ctx.restore();
-  // Clip and fit logo with contain (preserves aspect)
-  ctx.save();
-  ctx.beginPath();ctx.arc(cx,cy,r-3,0,Math.PI*2);ctx.clip();
-  const lw=img.naturalWidth||img.width||1, lh=img.naturalHeight||img.height||1;
-  const target=(r-6)*2, scale=Math.min(target/lw,target/lh);
-  const dw=lw*scale, dh=lh*scale;
-  ctx.drawImage(img,cx-dw/2,cy-dh/2,dw,dh);
-  ctx.restore();
-  // Subtle white rim (blends, doesn't shout)
+  // Top-right circular badge
+  const r=68,cx=S-r-22,cy=r+18;
+  const zoom=1.3;
   ctx.save();
   ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
-  ctx.strokeStyle='rgba(255,255,255,0.18)';ctx.lineWidth=1.5;ctx.stroke();
+  ctx.fillStyle='#ffffff';ctx.fill();
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.clip();
+  ctx.drawImage(img,cx-r*zoom,cy-r*zoom,r*2*zoom,r*2*zoom);
+  ctx.restore();
+  // Outer ring — red then thin gold
+  ctx.save();
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
+  ctx.strokeStyle='#cc1e1e';ctx.lineWidth=4;ctx.stroke();
+  ctx.beginPath();ctx.arc(cx,cy,r+5,0,Math.PI*2);
+  ctx.strokeStyle='rgba(255,185,0,0.7)';ctx.lineWidth=2;ctx.stroke();
   ctx.restore();
 }
 
@@ -1165,28 +1186,23 @@ async function drawJersey(ctx){
   ctx.restore();
 }
 async function drawClubLogo(ctx,cfg){
-  if(!cfg||!cfg.clubLogo){console.warn('⚠ drawClubLogo: missing cfg or clubLogo');return;}
-  const img=await loadImg(cfg.clubLogo);if(!img){console.error('❌ drawClubLogo: failed to load image',{src:cfg.clubLogo?.substring(0,50)});return;}
-  // Top-left SEAMLESS badge (no harsh white bg, no thick ring)
-  const r=70,cx=r+24,cy=r+24;
-  // Soft drop shadow for depth
-  ctx.save();
-  ctx.shadowColor='rgba(0,0,0,0.55)';ctx.shadowBlur=24;ctx.shadowOffsetY=4;
-  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
-  ctx.fillStyle='rgba(0,0,0,0.35)';ctx.fill();
-  ctx.restore();
-  // Clip and fit logo with contain (preserves aspect)
-  ctx.save();
-  ctx.beginPath();ctx.arc(cx,cy,r-3,0,Math.PI*2);ctx.clip();
-  const lw=img.naturalWidth||img.width||1, lh=img.naturalHeight||img.height||1;
-  const target=(r-6)*2, scale=Math.min(target/lw,target/lh);
-  const dw=lw*scale, dh=lh*scale;
-  ctx.drawImage(img,cx-dw/2,cy-dh/2,dw,dh);
-  ctx.restore();
-  // Subtle white rim
+  if(!cfg||!cfg.clubLogo)return;
+  const img=await loadImg(cfg.clubLogo);if(!img)return;
+  // Top-left circular badge
+  const r=68,cx=r+18,cy=r+16;
+  const zoom=1.95;
   ctx.save();
   ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
-  ctx.strokeStyle='rgba(255,255,255,0.18)';ctx.lineWidth=1.5;ctx.stroke();
+  ctx.fillStyle='#ffffff';ctx.fill();
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.clip();
+  ctx.drawImage(img,cx-r*zoom,cy-r*zoom,r*2*zoom,r*2*zoom);
+  ctx.restore();
+  // Outer ring — teal then thin lime
+  ctx.save();
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
+  ctx.strokeStyle='#14b8a6';ctx.lineWidth=4;ctx.stroke();
+  ctx.beginPath();ctx.arc(cx,cy,r+5,0,Math.PI*2);
+  ctx.strokeStyle='rgba(139,196,0,0.7)';ctx.lineWidth=2;ctx.stroke();
   ctx.restore();
 }
 
@@ -1210,9 +1226,6 @@ async function drawMatchCard(ctx,d,cfg){
   // Both logos
   await drawClubLogo(ctx,cfg);
   await drawLeagueLogo(ctx,cfg);
-
-  // Note: Champions & NaCL logos are now integrated into AI-generated images
-  // via OpenAI Image Edit API (sent as reference images to generation endpoint)
 
   // Header: club name + date
   const hX=cfg.clubLogo?172:50;
@@ -1480,9 +1493,94 @@ Create a dramatic, cinematic sports photography style image of a cricket match:
   }
 }
 
-// AI Full Card generation - uses GPT Image 1.5
+// AI Full Card generation - Router (chooses GPT Image or Pollinations)
 async function generateFixtureAI(d,cfg){
-  return await generateFixtureAI_DALLE(d,cfg);
+  // If GPT Image is enabled and has API key, use GPT Image 1.5
+  if(cfg.useDallE&&cfg.dalleApiKey){
+    console.log('Using GPT Image 1.5 for generation');
+    return await generateFixtureAI_DALLE(d,cfg);
+  }
+  // Otherwise fall back to Pollinations
+  return await generateFixtureAI_Pollinations(d,cfg);
+}
+
+// Pollinations.ai version
+async function generateFixtureAI_Pollinations(d,cfg){
+  const club=(cfg.clubName||'Cricket Club').toUpperCase();
+  const opp=(d.opponent||'TBC').toUpperCase();
+  const venue=d.venue||'TBC';
+  const comp=d.competition||'Cricket';
+
+  // Better structured prompt (avoids conflicting instructions)
+  const prompt=`Professional cricket match day poster. ${club} vs ${opp}, ${comp} at ${venue}.
+    Professional sports photography, cinematic 8k photorealism, dramatic stadium floodlights,
+    night cricket match, pristine grass cricket field, intense competitive energy,
+    championship event aesthetic, golden warm stadium lighting, high contrast sharp focus,
+    9:16 vertical Instagram story format, premium sports poster design.`;
+
+  // Negative prompt (tell AI what NOT to generate)
+  const negPrompt=`text, watermark, logo, faces, people, blurry, cartoon, illustration,
+    CGI, low quality, generic stock photo, oversaturated, artificial, numbers, words`;
+
+  // Seed for reproducibility
+  const seed=Math.floor(Math.random()*1000000);
+
+  try{
+    // Add negative_prompt and seed parameters
+    const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?`
+      +`width=1080&height=1920&nologo=true&model=flux-pro&enhance=true`
+      +`&negative_prompt=${encodeURIComponent(negPrompt)}&seed=${seed}`;
+
+    console.log('🎨 Fetching AI image from Pollinations.ai...');
+
+    const img=new Image();
+    return new Promise((res)=>{
+      const timeout=setTimeout(()=>{
+        console.warn('⏱️ AI image timeout (20s)');
+        res(null);
+      },20000); // Increased from 15s to 20s
+
+      img.onload=()=>{
+        clearTimeout(timeout);
+        console.log('✅ AI image loaded successfully');
+        try{
+          const cv=document.createElement('canvas');
+          cv.width=1080;cv.height=1920;
+          const ctx=cv.getContext('2d');
+          ctx.drawImage(img,0,0);
+
+          // Add vignette effect where logos will be placed
+          // Dark vignette in top corners for better logo visibility
+          const vignette=(x,y)=>{
+            const grad=ctx.createRadialGradient(x,y,0,x,y,180);
+            grad.addColorStop(0,'rgba(0,0,0,0)');
+            grad.addColorStop(0.7,'rgba(0,0,0,0.15)');
+            grad.addColorStop(1,'rgba(0,0,0,0.4)');
+            ctx.fillStyle=grad;ctx.fillRect(x-150,y-150,300,300);
+          };
+          vignette(100,100);vignette(980,100); // Top-left and top-right
+
+          // Draw logos on top
+          drawClubLogo(ctx,cfg).then(()=>drawLeagueLogo(ctx,cfg)).then(()=>res(cv));
+        }catch(e){
+          console.error('Canvas error:', e);
+          res(null);
+        }
+      };
+
+      img.onerror=(err)=>{
+        clearTimeout(timeout);
+        console.error('❌ AI image load failed:', err);
+        res(null);
+      };
+
+      img.crossOrigin='anonymous';
+      img.src=url;
+    });
+  }catch(e){
+    console.error('❌ generateFixtureAI error:', e);
+    return null;
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -1584,18 +1682,19 @@ async function generateAI(type, data, cfg) {
   }
 
   const prompt = promptBuilder(data, cfg);
-  return await generateWithGPTImage(prompt, cfg);
+
+  // Use GPT Image if available, otherwise Pollinations
+  if(cfg.useDallE && cfg.dalleApiKey) {
+    return await generateWithGPTImage(prompt, cfg);
+  }
+  return await generateWithPollinations(prompt, cfg);
 }
 
 // GPT Image generation wrapper
 async function generateWithGPTImage(prompt, cfg) {
-  // Generate AI image, then composite REAL logo PNGs on top (pixel-perfect, reliable)
-  // Tell AI to keep top corners dark/uniform so logos blend in seamlessly
-  const enhancedPrompt = `${prompt}\n\nCOMPOSITION REQUIREMENT: The top-left and top-right corners (about 160x160 pixels each) must be DARK, uniform, and visually quiet — like a subtle vignette or shadow. No bright details, no text, no graphics, no logos, no faces in these corner areas. The corners should fade into a darker tone so logos can be placed there seamlessly without clashing with the design.`;
-
   const body = JSON.stringify({
     model: 'gpt-image-1.5',
-    prompt: enhancedPrompt,
+    prompt: prompt,
     n: 1,
     size: '1024x1536'
   });
@@ -1632,15 +1731,13 @@ async function generateWithGPTImage(prompt, cfg) {
     }
 
     const img = new Image();
-    img.crossOrigin = 'anonymous';
     return new Promise((res) => {
       img.onload = () => {
         const cv = document.createElement('canvas');
         cv.width = 1080;
         cv.height = 1536;
         const ctx = cv.getContext('2d');
-        ctx.drawImage(img, 0, 0, cv.width, cv.height);
-        // Logos are added later by drawClubLogo/drawLeagueLogo in generateAICardForType
+        ctx.drawImage(img, 0, 0);
         res(cv);
       };
       img.onerror = () => res(null);
@@ -1649,6 +1746,55 @@ async function generateWithGPTImage(prompt, cfg) {
   } catch(e) {
     console.error('❌ GPT Image error:', e);
     clearTimeout(timeoutId);
+    return null;
+  }
+}
+
+// Pollinations generation wrapper
+async function generateWithPollinations(prompt, cfg) {
+  const negPrompt = `text, watermark, logo, faces, people, blurry, cartoon, illustration,
+    CGI, low quality, generic stock photo, oversaturated, artificial, numbers, words`;
+  const seed = Math.floor(Math.random() * 1000000);
+
+  try {
+    const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?`
+      + `width=1080&height=1536&nologo=true&model=flux-pro&enhance=true`
+      + `&negative_prompt=${encodeURIComponent(negPrompt)}&seed=${seed}`;
+
+    console.log('🎨 Fetching AI image from Pollinations.ai...');
+
+    const img = new Image();
+    return new Promise((res) => {
+      const timeout = setTimeout(() => {
+        console.warn('⏱️ AI image timeout (20s)');
+        res(null);
+      }, 20000);
+
+      img.onload = () => {
+        clearTimeout(timeout);
+        try {
+          const cv = document.createElement('canvas');
+          cv.width = 1080;
+          cv.height = 1536;
+          const ctx = cv.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          res(cv);
+        } catch(e) {
+          console.error('Canvas error:', e);
+          res(null);
+        }
+      };
+
+      img.onerror = (err) => {
+        clearTimeout(timeout);
+        console.error('❌ AI image load failed:', err);
+        res(null);
+      };
+
+      img.src = url;
+    });
+  } catch(e) {
+    console.error('❌ Pollinations error:', e);
     return null;
   }
 }
@@ -1823,35 +1969,96 @@ async function drawFixtureCard(ctx,d,cfg){
 //  3. PLAYING XI  — IPL team-announcement style
 // ═══════════════════════════════════════════════════════
 async function drawSquadCard(ctx,d,cfg){
-  const S=1024,W=1536;const P=hexRGB(cfg.primary||'#1a472a'),A=hexRGB(cfg.accent||'#f0b429');const club=(cfg.clubName||'CHAMPIONS').toUpperCase();
-  // Modern gradient background (navy → bright blue)
-  const bgGrad=ctx.createLinearGradient(0,0,0,W);bgGrad.addColorStop(0,'#0a1932');bgGrad.addColorStop(1,'#1a3a7f');ctx.fillStyle=bgGrad;ctx.fillRect(0,0,S,W);
-  // Header gradient (blue → cyan)
-  const headerGrad=ctx.createLinearGradient(0,0,0,150);headerGrad.addColorStop(0,'#007a96');headerGrad.addColorStop(1,'#00a0d8');ctx.fillStyle=headerGrad;ctx.fillRect(0,0,S,150);
-  // Team name
-  ctx.font='bold 85px Arial';ctx.fillStyle='#ffffff';ctx.textAlign='center';ctx.fillText(club+' PLAYING XI',S/2,90);
-  // Role colors mapping
-  const roleColors={'Batsman':'#3b82f6','Opening':'#60a5fa','Middle Order':'#3b82f6','Bowler':'#ef4444','Pacer':'#ef4444','Spinner':'#f97316','All-rounder':'#22c55e','Wicket-keeper':'#a855f7'};
-  // Players
-  const players=d.players||[];const startY=170;const rowHeight=105;
-  for(let idx=0;idx<players.length&&idx<11;idx++){const player=players[idx];const y=startY+(idx*rowHeight);
-    // Player card background (semi-transparent)
-    ctx.fillStyle='rgba(255,255,255,0.08)';ctx.strokeStyle='rgba(100,160,240,0.3)';ctx.lineWidth=2;ctx.fillRect(35,y,954,95);ctx.strokeRect(35,y,954,95);
-    // Jersey number avatar
-    const avatarX=85;const avatarY=y+47;ctx.beginPath();ctx.arc(avatarX,avatarY,30,0,Math.PI*2);ctx.fillStyle='#4688dc';ctx.fill();ctx.strokeStyle='rgba(150,200,255,0.7)';ctx.lineWidth=2;ctx.stroke();
-    // Jersey number
-    ctx.font='bold 42px Arial';ctx.fillStyle='#ffffff';ctx.textAlign='center';ctx.fillText(String(idx+1),avatarX,avatarY+14);
-    // Player name
-    ctx.font='bold 36px Arial';ctx.fillStyle='#ffffff';ctx.textAlign='left';ctx.fillText((player.name||'Player').toUpperCase().slice(0,24),145,y+30);
-    // Role badge
-    const role=player.role||'Player';const badgeColor=roleColors[role]||'#6496c8';ctx.fillStyle=badgeColor;ctx.fillRect(145,y+50,635,26);ctx.font='bold 20px Arial';ctx.fillStyle='#ffffff';ctx.textAlign='center';ctx.fillText(role.toUpperCase(),145+635/2,y+66);
+  const P=hexRGB(cfg.primary||'#1a472a'),A=hexRGB(cfg.accent||'#f0b429');
+  const club=(cfg.clubName||'Cricket Club').toUpperCase();
+
+  // Rich dark background
+  ctx.fillStyle='#060c08';ctx.fillRect(0,0,S,S);
+  // Pitch arc texture
+  ctx.strokeStyle=rgb(...P,.22);ctx.lineWidth=1.5;
+  for(let r2=130;r2<780;r2+=118){ctx.beginPath();ctx.arc(S/2,S+260,r2,Math.PI,2*Math.PI);ctx.stroke();}
+  // Top glow from club color
+  const tg=ctx.createRadialGradient(S/2,0,0,S/2,0,520);
+  tg.addColorStop(0,rgb(...P,.48));tg.addColorStop(.55,rgb(...P,.12));tg.addColorStop(1,'transparent');
+  ctx.fillStyle=tg;ctx.fillRect(0,0,S,S);
+  // Right-side dark tint for contrast
+  const rg=ctx.createLinearGradient(S*.5,0,S,0);
+  rg.addColorStop(0,'transparent');rg.addColorStop(1,'rgba(0,0,0,.4)');
+  ctx.fillStyle=rg;ctx.fillRect(0,0,S,S);
+
+  // Top accent bar + left strip
+  ctx.fillStyle=rgb(...A);ctx.fillRect(0,0,S,10);
+  ctx.fillStyle=rgb(...A,.8);ctx.fillRect(0,10,6,S-10);
+
+  // ── PLAYING XI header ──
+  // PLAYING XI — centred so it clears both side badges
+  ctx.font='700 92px "Oswald"';
+  const piW=ctx.measureText('PLAYING XI').width;
+  ctx.fillStyle='rgba(0,0,0,.42)';ctx.fillText('PLAYING XI',(S-piW)/2+2,122);
+  ctx.fillStyle=rgb(...A);ctx.shadowColor=rgb(...A,.22);ctx.shadowBlur=22;
+  ctx.fillText('PLAYING XI',(S-piW)/2,120);ctx.shadowBlur=0;
+
+  // Subtitle
+  const sub=`${club}${d.opponent?' · vs '+d.opponent.toUpperCase():''}${d.date?' · '+fmtD(d.date):''}`;
+  const subW=ctx.measureText(sub.slice(0,54));
+  ctx.font='500 19px "Inter"';ctx.fillStyle='rgba(255,255,255,.38)';
+  ctx.fillText(sub.slice(0,54),(S-ctx.measureText(sub.slice(0,54)).width)/2,158);
+  if(d.competition){
+    ctx.font='600 14px "Inter"';
+    const cw=ctx.measureText(d.competition.toUpperCase()).width;
+    rr(ctx,S-174-cw,134,cw+20,30,15);
+    ctx.fillStyle=rgb(...A,.1);ctx.fill();ctx.strokeStyle=rgb(...A,.25);ctx.lineWidth=1;ctx.stroke();
+    ctx.fillStyle=rgb(...A,.72);ctx.fillText(d.competition.toUpperCase(),S-164-cw,153);
   }
-  // Footer divider
-  const footerY=startY+(11*rowHeight)+40;ctx.strokeStyle='rgba(100,160,240,0.3)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(50,footerY);ctx.lineTo(974,footerY);ctx.stroke();
-  // Footer text
-  ctx.font='bold 26px Arial';ctx.fillStyle='rgba(120,200,255,0.8)';ctx.textAlign='center';ctx.fillText('READY TO WIN',S/2,footerY+50);
-  // Logos
-  await drawClubLogo(ctx,cfg);await drawLeagueLogo(ctx,cfg);footerBar(ctx,JKT.teal,'',club,club);
+
+  ctx.beginPath();ctx.moveTo(50,174);ctx.lineTo(S-50,174);ctx.strokeStyle=rgb(...A,.2);ctx.lineWidth=1.5;ctx.stroke();
+
+  // ── Role colour map ──
+  const RC={Batter:[63,185,80],Bowler:[88,166,255],WK:A,'All-rounder':[200,130,255],Captain:A};
+
+  const players=d.players||[];
+  const col1=players.slice(0,6),col2=players.slice(6,11);
+  const rowH=82,startY=184,colW=(S-120)/2;
+
+  function drawPlayer2(p,i,x,y){
+    const isCap=p.role==='Captain';
+    const rc=RC[p.role]||[139,148,158];
+    const rh=rowH-9;
+    // Row bg with side gradient
+    rr(ctx,x,y,colW,rh,12);
+    const rbg=ctx.createLinearGradient(x,y,x+colW,y);
+    rbg.addColorStop(0,'rgba(255,255,255,.082)');rbg.addColorStop(1,'rgba(255,255,255,.024)');
+    ctx.fillStyle=rbg;ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,.072)';ctx.lineWidth=1;ctx.stroke();
+    // Left role-colour strip (thicker, more visible)
+    rr(ctx,x,y,6,rh,2);ctx.fillStyle=rgb(...rc,isCap?1:.78);ctx.fill();
+    // Number circle (larger)
+    const nCX=x+30,nCY=y+rh/2;
+    ctx.beginPath();ctx.arc(nCX,nCY,22,0,Math.PI*2);
+    ctx.fillStyle=rgb(...rc,.16);ctx.fill();ctx.strokeStyle=rgb(...rc,.35);ctx.lineWidth=1.5;ctx.stroke();
+    ctx.font='700 22px "Oswald"';ctx.fillStyle=rgb(...rc,.95);
+    const num=String(i+1),nw=ctx.measureText(num).width;ctx.fillText(num,nCX-nw/2,nCY+8);
+    // Player name (bigger)
+    ctx.font=isCap?'700 34px "Oswald"':'600 32px "Oswald"';
+    ctx.fillStyle=isCap?'#ffffff':'rgba(255,255,255,.9)';
+    ctx.fillText((p.name||'TBC').slice(0,16),x+62,y+47);
+    // Role chip
+    if(p.role&&p.role!=='Captain'){
+      const rt=p.role==='All-rounder'?'AR':p.role==='Batter'?'BAT':p.role==='Bowler'?'BWL':p.role;
+      ctx.font='700 12px "Inter"';const rtw=ctx.measureText(rt).width;
+      rr(ctx,x+colW-16-rtw-16,y+18,rtw+16,24,12);
+      ctx.fillStyle=rgb(...rc,.18);ctx.fill();ctx.strokeStyle=rgb(...rc,.32);ctx.lineWidth=1;ctx.stroke();
+      ctx.fillStyle=rgb(...rc,.92);ctx.fillText(rt,x+colW-16-rtw-8,y+34);
+    }
+    if(isCap){ctx.font='700 20px "Inter"';ctx.fillStyle=rgb(...A,.92);ctx.fillText('(C)',x+colW-56,y+47);}
+  }
+
+  col1.forEach((p,i)=>drawPlayer2(p,i,50,startY+i*rowH));
+  col2.forEach((p,i)=>drawPlayer2(p,i+6,50+colW+20,startY+i*rowH));
+
+  await drawClubLogo(ctx,cfg);
+  await drawLeagueLogo(ctx,cfg);
+  footerBar(ctx,JKT.teal,'',club,club);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -2064,7 +2271,7 @@ function wrapText(ctx,text,x,y,maxW,lh){const words=text.split(' ');let line='';
 //  SAMPLE DATA
 // ═══════════════════════════════════════════════════════
 const SAMPLES={
-  match:{opponent:'Brick Lane CC',result:'won',battedFirst:'us',ourScore:'187/6',theirScore:'163/9',margin:'24 runs',venue:'Victoria Park',date:'2025-06-15',competition:'East London T20 League',batterName:'Ravinder Singh',batterRuns:84,batterBalls:52,batterFours:9,batterSixes:4,bowlerName:'Harpreet Dhaliwal',bowlerWkts:3,bowlerRuns:28,bowlerOvers:'4.0',photoDataURL:'',photoName:''},
+  match:{opponent:'Brick Lane CC',result:'won',ourScore:'187/6',theirScore:'163/9',margin:'24 runs',venue:'Victoria Park',date:'2025-06-15',competition:'East London T20 League',batterName:'Ravinder Singh',batterRuns:84,batterBalls:52,batterFours:9,batterSixes:4,bowlerName:'Harpreet Dhaliwal',bowlerWkts:3,bowlerRuns:28,bowlerOvers:'4.0',photoDataURL:'',photoName:''},
   fixture:{opponent:'Hackney Hawks',datetime:'2025-06-22T14:00',venue:'Victoria Park, East London',competition:'East London T20 League',format:'T20',photoDataURL:'',photoName:''},
   squad:{opponent:'Hackney Hawks',date:'2025-06-22',competition:'East London T20 League',players:[{name:'Harpreet Singh',role:'Captain'},{name:'Ravinder Singh',role:'Batter'},{name:'Jag Dhaliwal',role:'Batter'},{name:'Manpreet Gill',role:'All-rounder'},{name:'Bobby Sandhu',role:'All-rounder'},{name:'Kiran Bains',role:'WK'},{name:'Dev Randhawa',role:'Bowler'},{name:'Sunny Basra',role:'Bowler'},{name:'Taz Grewal',role:'Bowler'},{name:'Pav Mann',role:'Bowler'},{name:'Roop Chana',role:'Bowler'}]},
   motm:{name:'Harpreet Singh',opponent:'Brick Lane CC',date:'2025-06-15',runs:84,balls:52,sr:'161.5',wkts:2,conc:18,overs:'4.0',fielding:'2 catches',photoDataURL:'',photoName:''},
@@ -2431,7 +2638,7 @@ function App(){return{
   toast:{show:false,msg:'',ok:true}, publishing:null, downloading:null, creating:false, aiGenerating:null, aiGeneratingProgress:0, aiGeneratingStatus:'', aiPreviewUrl:null, aiPreviewPost:null,
   igStatus:'', igOk:false, createdPost:null,
   // forms
-  mf:{opponent:'',result:'won',battedFirst:'us',ourScore:'',theirScore:'',margin:'',venue:'',date:'',competition:'',batterName:'',batterRuns:0,batterBalls:0,batterFours:0,batterSixes:0,bowlerName:'',bowlerWkts:0,bowlerRuns:0,bowlerOvers:'',photoDataURL:'',photoName:''},
+  mf:{opponent:'',result:'won',ourScore:'',theirScore:'',margin:'',venue:'',date:'',competition:'',batterName:'',batterRuns:0,batterBalls:0,batterFours:0,batterSixes:0,bowlerName:'',bowlerWkts:0,bowlerRuns:0,bowlerOvers:'',photoDataURL:'',photoName:''},
   ff:{opponent:'',datetime:'',venue:'',competition:'',format:'T20',photoDataURL:'',photoName:'',_renderMode:'ai-full'},
   qf:{opponent:'',date:'',competition:'',players:Array.from({length:11},()=>({name:'',role:''}))},
   gf:{name:'',opponent:'',date:'',runs:0,balls:0,sr:'',wkts:0,conc:0,overs:'',fielding:'',photoDataURL:'',photoName:''},
@@ -2446,67 +2653,6 @@ function App(){return{
   },
 
   debouncedPreview(t){clearTimeout(this._pt);this._pt=setTimeout(()=>this.drawPreview(t),200);},
-  // ── Auto-calculate margin from cricket rules ──
-  // If defending team (batted first) wins → "by X runs" (their score - their score)
-  // If chasing team (batted second) wins → "by X wickets" (10 - wickets lost when target reached)
-  // ── Cricket margin calculator ─────────────────────────────────
-  // Rule: Whoever bats FIRST defends a total → wins "by X runs"
-  //       Whoever bats SECOND chases the target → wins "by X wickets"
-  //       (X wickets = 10 minus wickets lost when target was reached)
-  autoCalcMargin(){
-    const m = this.mf;
-    if(!m.battedFirst) m.battedFirst = 'us'; // default
-
-    // Parse "156/5" → {runs:156, wkts:5}
-    const parseScore = (s) => {
-      if(!s) return {runs:0, wkts:0};
-      const parts = String(s).split('/');
-      return {runs: parseInt(parts[0])||0, wkts: parseInt(parts[1])||0};
-    };
-    const our = parseScore(m.ourScore);
-    const their = parseScore(m.theirScore);
-    const weBattedFirst = m.battedFirst === 'us';
-
-    // ── Auto-detect Won/Lost from scores when both are entered ──
-    // (skip if user explicitly picked tied/no result)
-    if(m.result !== 'tied' && m.result !== 'no result' && our.runs && their.runs){
-      if(our.runs > their.runs) m.result = weBattedFirst ? 'won' : 'lost';
-      else if(our.runs < their.runs) m.result = weBattedFirst ? 'lost' : 'won';
-      else m.result = 'tied';
-    }
-
-    const result = m.result;
-
-    if(result === 'tied' || result === 'no result'){
-      m.margin = result === 'tied' ? 'Match Tied' : 'No Result';
-      return;
-    }
-
-    // ── Margin calculation: who won, did they bat first or chase? ──
-    // Defending team won → margin = run difference ("X runs")
-    // Chasing team won  → margin = wickets remaining ("X wickets")
-    if(result === 'won'){
-      if(weBattedFirst){
-        // We batted first AND we won → we defended → "X runs"
-        const diff = our.runs - their.runs;
-        m.margin = diff > 0 ? `${diff} runs` : '';
-      } else {
-        // They batted first, we chased AND we won → "X wickets"
-        const wktsRemaining = 10 - our.wkts;
-        m.margin = wktsRemaining > 0 ? `${wktsRemaining} wickets` : 'last wicket';
-      }
-    } else if(result === 'lost'){
-      if(weBattedFirst){
-        // We batted first, they chased AND they won → "X wickets"
-        const wktsRemaining = 10 - their.wkts;
-        m.margin = wktsRemaining > 0 ? `${wktsRemaining} wickets` : 'last wicket';
-      } else {
-        // They batted first AND they won → they defended → "X runs"
-        const diff = their.runs - our.runs;
-        m.margin = diff > 0 ? `${diff} runs` : '';
-      }
-    }
-  },
 
   debouncedThumb(post){
     clearTimeout(post._tt);
@@ -2731,45 +2877,15 @@ function App(){return{
         this.aiPreviewPost = {type, meta: data, blob};
       } else {
         this.aiGeneratingProgress=60;
-        // CRITICAL FIX: Canvas may be tainted by external AI image.
-        // Create a fresh canvas and draw everything on it to ensure logos are included.
-        const freshCanvas = document.createElement('canvas');
-        freshCanvas.width = aiCanvas.width;
-        freshCanvas.height = aiCanvas.height;
-        const freshCtx = freshCanvas.getContext('2d');
-
-        // Draw the AI image onto the fresh, untainted canvas
-        freshCtx.drawImage(aiCanvas, 0, 0);
-
-        // Now draw logos on the fresh canvas (not tainted)
-        const cfgWithLogos = {
-          ...this.settings,
-          clubLogo: this.settings.clubLogo || CHAMPIONS_LOGO_B64,
-          leagueLogo: this.settings.leagueLogo || NACL_LOGO_B64,
-        };
-        console.log('🎨 Drawing logos on fresh canvas:', {hasClubLogo: !!cfgWithLogos.clubLogo, hasLeagueLogo: !!cfgWithLogos.leagueLogo, canvasSize: {w:freshCanvas.width, h:freshCanvas.height}});
-        try {
-          console.log('🎨 About to draw club logo...');
-          await drawClubLogo(freshCtx, cfgWithLogos);
-          console.log('✅ Club logo drawn');
-          console.log('🎨 About to draw league logo...');
-          await drawLeagueLogo(freshCtx, cfgWithLogos);
-          console.log('✅ League logo drawn');
-        } catch(logoErr) {
-          console.error('❌ Logo drawing error:', logoErr);
-        }
+        // Composite AI image with overlays (logos, text)
+        const ctx = aiCanvas.getContext('2d');
+        await drawClubLogo(ctx, this.settings);
+        await drawLeagueLogo(ctx, this.settings);
 
         this.aiGeneratingProgress=90;
-        try {
-          const blob = await new Promise((resolve, reject) => freshCanvas.toBlob(b => b ? resolve(b) : reject(new Error('toBlob returned null')), 'image/jpeg', 0.92));
-          this.aiPreviewUrl = URL.createObjectURL(blob);
-          this.aiPreviewPost = {type, meta: data, blob};
-          console.log('✅ AI image with logos successfully exported');
-        } catch(blobErr) {
-          console.error('❌ toBlob failed:', blobErr);
-          this.showToast('⚠ Image export failed - try again', false);
-          throw blobErr;
-        }
+        const blob = await new Promise(res => aiCanvas.toBlob(b => res(b), 'image/jpeg', 0.92));
+        this.aiPreviewUrl = URL.createObjectURL(blob);
+        this.aiPreviewPost = {type, meta: data, blob};
       }
 
       this.aiGeneratingProgress=100;
@@ -2857,7 +2973,7 @@ function App(){return{
 
   loadSample(type){
     const s=SAMPLES[type];if(!s)return;
-    if(type==='match'){Object.assign(this.mf,s);this.autoCalcMargin();}
+    if(type==='match'){Object.assign(this.mf,s);}
     else if(type==='fixture'){Object.assign(this.ff,s);}
     else if(type==='squad'){
       this.qf.opponent=s.opponent;this.qf.date=s.date;this.qf.competition=s.competition;
