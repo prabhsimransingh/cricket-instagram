@@ -402,11 +402,13 @@
             </div>
             <div style="margin-top:14px"><label class="lbl">Who Batted First? *</label>
               <select class="inp" x-model="mf.battedFirst" @change="autoCalcMargin();debouncedPreview('match')">
-                <option value="us">We Batted First (Defended)</option>
-                <option value="them">They Batted First (We Chased)</option>
+                <option value="us">We Batted First (we defended a total)</option>
+                <option value="them">They Batted First (we chased the target)</option>
               </select>
-              <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:4px">
-                Margin auto-calculates: <strong>by runs</strong> if defender wins, <strong>by wickets</strong> if chaser wins
+              <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:4px;line-height:1.5">
+                🏏 Cricket margin rule (auto-applied):<br>
+                • Team batting first wins → <strong>"won by X runs"</strong> (defended total)<br>
+                • Team batting second wins → <strong>"won by X wickets"</strong> (chased target, X = 10 − wickets lost)
               </div>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:14px">
@@ -2447,13 +2449,15 @@ function App(){return{
   // ── Auto-calculate margin from cricket rules ──
   // If defending team (batted first) wins → "by X runs" (their score - their score)
   // If chasing team (batted second) wins → "by X wickets" (10 - wickets lost when target reached)
+  // ── Cricket margin calculator ─────────────────────────────────
+  // Rule: Whoever bats FIRST defends a total → wins "by X runs"
+  //       Whoever bats SECOND chases the target → wins "by X wickets"
+  //       (X wickets = 10 minus wickets lost when target was reached)
   autoCalcMargin(){
     const m = this.mf;
-    if(!m.battedFirst) {
-      // Default to 'us' batted first if not set
-      m.battedFirst = 'us';
-    }
-    // Parse "156/5" → runs=156, wkts=5
+    if(!m.battedFirst) m.battedFirst = 'us'; // default
+
+    // Parse "156/5" → {runs:156, wkts:5}
     const parseScore = (s) => {
       if(!s) return {runs:0, wkts:0};
       const parts = String(s).split('/');
@@ -2461,34 +2465,45 @@ function App(){return{
     };
     const our = parseScore(m.ourScore);
     const their = parseScore(m.theirScore);
-    const result = m.result;
     const weBattedFirst = m.battedFirst === 'us';
+
+    // ── Auto-detect Won/Lost from scores when both are entered ──
+    // (skip if user explicitly picked tied/no result)
+    if(m.result !== 'tied' && m.result !== 'no result' && our.runs && their.runs){
+      if(our.runs > their.runs) m.result = weBattedFirst ? 'won' : 'lost';
+      else if(our.runs < their.runs) m.result = weBattedFirst ? 'lost' : 'won';
+      else m.result = 'tied';
+    }
+
+    const result = m.result;
 
     if(result === 'tied' || result === 'no result'){
       m.margin = result === 'tied' ? 'Match Tied' : 'No Result';
       return;
     }
 
-    // Determine who chased (batted second)
+    // ── Margin calculation: who won, did they bat first or chase? ──
+    // Defending team won → margin = run difference ("X runs")
+    // Chasing team won  → margin = wickets remaining ("X wickets")
     if(result === 'won'){
       if(weBattedFirst){
-        // We defended our total → "won by X runs"
+        // We batted first AND we won → we defended → "X runs"
         const diff = our.runs - their.runs;
-        m.margin = diff > 0 ? `${diff} runs` : '0 runs';
+        m.margin = diff > 0 ? `${diff} runs` : '';
       } else {
-        // We chased their total → "won by X wickets"
+        // They batted first, we chased AND we won → "X wickets"
         const wktsRemaining = 10 - our.wkts;
         m.margin = wktsRemaining > 0 ? `${wktsRemaining} wickets` : 'last wicket';
       }
     } else if(result === 'lost'){
       if(weBattedFirst){
-        // We defended but opp chased → opp won by wickets remaining
+        // We batted first, they chased AND they won → "X wickets"
         const wktsRemaining = 10 - their.wkts;
         m.margin = wktsRemaining > 0 ? `${wktsRemaining} wickets` : 'last wicket';
       } else {
-        // We chased but fell short → opp won by run difference
+        // They batted first AND they won → they defended → "X runs"
         const diff = their.runs - our.runs;
-        m.margin = diff > 0 ? `${diff} runs` : '0 runs';
+        m.margin = diff > 0 ? `${diff} runs` : '';
       }
     }
   },
