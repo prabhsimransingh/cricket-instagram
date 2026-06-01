@@ -2189,6 +2189,12 @@ function App(){return{
 
   async init(){
     this.posts=Store.getQueue();this.history=Store.getHistory();
+    // Load sample data by default so buttons are enabled
+    Object.assign(this.mf,SAMPLES.match);
+    Object.assign(this.ff,SAMPLES.fixture);
+    Object.assign(this.qf,SAMPLES.squad);
+    Object.assign(this.gf,SAMPLES.motm);
+    Object.assign(this.lf,SAMPLES.milestone);
     await this.$nextTick();
     ['match','fixture','squad','motm','milestone'].forEach(t=>this.drawPreview(t));
   },
