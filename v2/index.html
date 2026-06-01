@@ -267,7 +267,7 @@
           <div class="gen-row" style="display:flex;flex-direction:column;gap:10px;margin-top:16px">
             <div style="display:flex;gap:10px">
               <button class="btn btn-ghost" style="padding:12px 16px;font-size:14px;flex-shrink:0;white-space:nowrap" @click="loadSample('match')">📋 Sample</button>
-              <button class="btn btn-gold" style="flex:1;justify-content:center;padding:13px;font-size:15px" @click="generateMatchAIOnly()" :disabled="aiGenerating||!mf.opponent"><span x-show="!aiGenerating">✨ Generate Post</span><span x-show="aiGenerating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span></button></div></div>
+              <button class="btn btn-gold" style="flex:1;justify-content:center;padding:13px;font-size:15px" @click="generateMatchAIOnly()"><span x-show="!aiGenerating">✨ Generate Post</span><span x-show="aiGenerating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span></button></div></div>
         </div>
         <div class="prev-col" style="position:sticky;top:80px">
           <div class="sh">Live Preview</div>
