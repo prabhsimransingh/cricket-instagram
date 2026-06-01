@@ -211,14 +211,6 @@
             </div>
           </div>
           <div class="glass" style="padding:24px">
-            <div style="margin-bottom:16px;padding:12px;background:rgba(139,196,0,.08);border-radius:8px;border:1px solid rgba(139,196,0,.25);display:flex;gap:12px;align-items:center">
-              <span style="font-size:12px;font-weight:600;color:rgba(139,196,0,.95)">🎨 Render Style:</span>
-              <select x-model="mf._renderMode" style="flex:1;padding:8px 12px;border-radius:6px;background:rgba(255,255,255,.05);color:#fff;border:1px solid rgba(255,255,255,.15);font-size:12px;font-family:Inter">
-                <option value="canvas">Canvas</option>
-                <option value="ai-chars" selected>+ AI Characters</option>
-                <option value="ai-full">🎨 AI Full Card</option>
-              </select>
-            </div>
             <div class="fg2" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
               <div><label class="lbl">Opponent *</label><input class="inp" x-model="mf.opponent" @input="debouncedPreview('match')" placeholder="Brick Lane CC"/></div>
               <div><label class="lbl">Result *</label>
@@ -275,16 +267,7 @@
           <div class="gen-row" style="display:flex;flex-direction:column;gap:10px;margin-top:16px">
             <div style="display:flex;gap:10px">
               <button class="btn btn-ghost" style="padding:12px 16px;font-size:14px;flex-shrink:0;white-space:nowrap" @click="loadSample('match')">📋 Sample</button>
-              <button class="btn btn-gold" style="flex:1;justify-content:center;padding:13px;font-size:15px" @click="submitMatch()" :disabled="creating||aiGenerating||!mf.opponent">
-                <span x-show="!creating">✨ Generate Post</span>
-                <span x-show="creating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
-              </button>
-            </div>
-            <button class="btn btn-blue" style="width:100%;justify-content:center;padding:13px;font-size:15px;display:flex;align-items:center;gap:8px" @click="generateMatchAIOnly()" :disabled="aiGenerating||!mf.opponent">
-              <span x-show="!aiGenerating">🎨 Generate AI Card</span>
-              <span x-show="aiGenerating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
-            </button>
-          </div>
+              <button class="btn btn-gold" style="flex:1;justify-content:center;padding:13px;font-size:15px" @click="generateMatchAIOnly()" :disabled="aiGenerating||!mf.opponent"><span x-show="!aiGenerating">✨ Generate Post</span><span x-show="aiGenerating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span></button></div></div>
         </div>
         <div class="prev-col" style="position:sticky;top:80px">
           <div class="sh">Live Preview</div>
@@ -303,14 +286,6 @@
       <div style="display:grid;grid-template-columns:1fr 340px;gap:28px;align-items:start" class="rg2">
         <div>
           <div class="glass" style="padding:24px">
-            <div style="margin-bottom:16px;padding:12px;background:rgba(255,139,196,.08);border-radius:8px;border:1px solid rgba(255,139,196,.25);display:flex;gap:12px;align-items:center">
-              <span style="font-size:12px;font-weight:600;color:rgba(255,139,196,.95)">🎨 Render Style:</span>
-              <select x-model="ff._renderMode" style="flex:1;padding:8px 12px;border-radius:6px;background:rgba(255,255,255,.05);color:#fff;border:1px solid rgba(255,255,255,.15);font-size:12px;font-family:Inter">
-                <option value="canvas">Canvas</option>
-                <option value="ai-chars" selected>+ AI Characters</option>
-                <option value="ai-full">🎨 AI Full Card</option>
-              </select>
-            </div>
             <div class="fg2" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
               <div><label class="lbl">Opponent *</label><input class="inp" x-model="ff.opponent" @input="debouncedPreview('fixture')" placeholder="Hackney Hawks"/></div>
               <div><label class="lbl">Match Date & Time *</label><input class="inp" type="datetime-local" x-model="ff.datetime" @input="debouncedPreview('fixture')"/></div>
