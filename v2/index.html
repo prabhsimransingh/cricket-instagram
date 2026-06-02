@@ -1119,18 +1119,23 @@ function buildPrompt_match(data, cfg) {
   const club = (cfg.clubName || 'Champions Cricket Club').toUpperCase();
   const opp = (data.opponent || 'Opposition').toUpperCase();
   const won = data.result === 'won';
-  const result = won
-    ? `${club} won — ${club} ${data.ourScore} beat ${opp} ${data.theirScore}`
-    : `${opp} ${data.theirScore} beat ${club} ${data.ourScore}`;
-  const venue = data.venue || 'Cricket Ground';
+  const headline = won ? 'VICTORY' : (data.result === 'lost' ? 'DEFEAT' : 'MATCH RESULT');
+  const marginLine = (won && data.margin) ? `WON BY ${String(data.margin).toUpperCase()}` : '';
+  const lines = [
+    `${club} vs ${opp}`,
+    headline,
+    marginLine,
+    `${club}  ${data.ourScore}`,
+    `${opp}  ${data.theirScore}`,
+    data.venue || ''
+  ].filter(Boolean);
 
-  return `Professional cricket match RESULT poster for a match that has ALREADY FINISHED. ${club} vs ${opp} at ${venue}.
-    ${result}. ${won ? 'Victory celebration moment' : 'Hard-fought match moment'}.
-    Professional sports photography, cinematic 8k photorealism, dramatic stadium floodlights,
-    cricket action shot, pristine grass field, competitive energy, championship aesthetic,
-    golden warm stadium lighting, high contrast sharp focus, dynamic composition.
-    9:16 vertical Instagram format, premium sports design.
-    STRICT TEXT RULES: This is a completed match result — do NOT write any date, time, kickoff time, or words like "tonight", "today", "live", or "coming soon". Show only the final score above. Do not invent any other numbers, scores, or text.`;
+  return `Professional cricket match RESULT poster for a FINISHED match. Scene: ${won ? 'triumphant team victory celebration with confetti' : 'dramatic hard-fought cricket moment'} in a floodlit stadium, ${club} in cricket whites, premium sports photography, cinematic 8k photorealism, golden warm stadium lighting, high contrast, dynamic composition, vertical 9:16 poster.
+
+TEXT TO RENDER ON THE POSTER — spell every line EXACTLY as written, using clean bold modern sports typography. Do NOT change spelling, do NOT add any other words, dates, times, or numbers:
+${lines.map(l => `• "${l}"`).join('\n')}
+
+This match is ALREADY FINISHED — never write "tonight", "today", "live", or any date/time.`;
 }
 
 function buildPrompt_fixture(data, cfg) {
@@ -1146,54 +1151,89 @@ function buildPrompt_fixture(data, cfg) {
   const niceTime = valid ? dt.toLocaleTimeString('en-GB', { hour:'numeric', minute:'2-digit', hour12:true }) : '';
   const when = valid ? `${niceDate} at ${niceTime}` : '';
 
-  return `Professional cricket MATCH DAY announcement poster for an UPCOMING fixture. ${club} vs ${opp}, ${format} ${comp}.
-    Venue: ${venue}.${when ? ` Match date and time: ${when}.` : ''}
-    Professional sports photography, cinematic 8k photorealism, dramatic stadium floodlights,
-    night cricket match, pristine grass cricket field, intense competitive energy,
-    championship event aesthetic, golden warm stadium lighting, high contrast sharp focus,
-    action-ready atmosphere, awaiting match energy.
-    9:16 vertical Instagram story format, premium sports poster design.
-    STRICT TEXT RULES: Clearly show the VENUE "${venue}".${when ? ` Show the exact date and time "${when}".` : ' Do not show any date or time.'} Do NOT write "tonight" or "today" or invent any other date, time, score, or numbers.`;
+  const lines = [
+    'MATCH DAY',
+    `${club} vs ${opp}`,
+    `${format} · ${comp}`,
+    when || '',
+    venue
+  ].filter(Boolean);
+
+  return `Professional cricket MATCH DAY announcement poster for an UPCOMING fixture. Scene: anticipation before a big game — floodlit cricket stadium at dusk, pristine grass pitch, dramatic lighting, premium sports photography, cinematic 8k photorealism, championship event atmosphere, vertical 9:16 poster.
+
+TEXT TO RENDER ON THE POSTER — spell every line EXACTLY as written, using clean bold modern sports typography. Do NOT change spelling, do NOT add any other words, dates, times, or numbers:
+${lines.map(l => `• "${l}"`).join('\n')}
+
+Never write "tonight" or "today" — show only the exact date/time line above (if present).`;
 }
 
 function buildPrompt_squad(data, cfg) {
   const club = (cfg.clubName || 'Champions Cricket Club').toUpperCase();
   const opp = (data.opponent || 'Opposition').toUpperCase();
   const comp = data.competition || 'Tournament';
-  const playerCount = data.players.filter(p => p.name).length;
+  const names = data.players.filter(p => p.name).map(p => p.name.toUpperCase());
 
-  return `Professional cricket team squad announcement. ${club} vs ${opp} in ${comp}.
-    Display ${playerCount || '11'} players in playing XI formation with their positions highlighted.
-    Team squad photo, professional sports team portrait, players in cricket whites,
-    championship team aesthetic, pristine grass field background, dramatic stadium lighting,
-    professional group composition, unity and strength energy.
-    9:16 vertical Instagram format, high quality team photography, names visible.`;
+  const headerLines = [
+    'PLAYING XI',
+    `${club} vs ${opp}`,
+    comp
+  ].filter(Boolean);
+
+  return `Professional cricket PLAYING XI squad announcement poster. Scene: dark premium sports graphic, floodlit stadium background, subtle cricket pitch, gold and team-colour accents, clean vertical 9:16 layout with a header area at top and a tidy vertical list area below.
+
+TEXT TO RENDER — spell every line EXACTLY as written, clean bold modern sports typography, do NOT change spelling or add other words:
+HEADER:
+${headerLines.map(l => `• "${l}"`).join('\n')}
+PLAYER LIST (render as a clean readable vertical list, one name per line, evenly spaced):
+${names.length ? names.map(n => `• "${n}"`).join('\n') : '• (no players entered)'}
+
+Do not invent extra names, numbers, dates, or text beyond the lines above.`;
 }
 
 function buildPrompt_motm(data, cfg) {
   const club = (cfg.clubName || 'Champions Cricket Club').toUpperCase();
   const opp = (data.opponent || 'Opposition').toUpperCase();
-  const venue = data.venue || 'Cricket Ground';
-  const playerStats = `${data.runs} runs${data.balls ? ` off ${data.balls} balls` : ''}${data.wkts ? `, ${data.wkts} wickets` : ''}`;
+  const name = (data.name || 'PLAYER').toUpperCase();
+  const statBits = [
+    data.runs ? `${data.runs} RUNS${data.balls ? ` (${data.balls})` : ''}` : '',
+    data.wkts ? `${data.wkts} WICKETS` : ''
+  ].filter(Boolean).join('  •  ');
 
-  return `Man of the Match highlight graphic. ${data.name} for ${club} vs ${opp} at ${venue}.
-    Outstanding performance: ${playerStats}. Player portrait with match statistics display.
-    Professional cricket player action shot, championship moment, dramatic spotlight lighting,
-    celebration and excellence energy, premium sports photography, cinematic 8k quality,
-    victorious athletic energy, golden accent lighting, high contrast sharp focus.
-    9:16 vertical Instagram format, award-winning moment aesthetic.`;
+  const lines = [
+    'MAN OF THE MATCH',
+    name,
+    statBits,
+    `${club} vs ${opp}`
+  ].filter(Boolean);
+
+  return `Man of the Match cricket highlight poster. Scene: a dramatic anonymous cricketer in ${club} whites under a spotlight, stadium bokeh, celebration energy, premium sports photography, cinematic 8k, golden accent lighting, vertical 9:16 poster. (Generic stylised athlete — not a specific real person.)
+
+TEXT TO RENDER ON THE POSTER — spell every line EXACTLY as written, clean bold modern sports typography. Do NOT change spelling or add other words/numbers:
+${lines.map(l => `• "${l}"`).join('\n')}
+
+Do not invent extra stats, dates, or text beyond the lines above.`;
 }
 
 function buildPrompt_milestone(data, cfg) {
   const club = (cfg.clubName || 'Champions Cricket Club').toUpperCase();
-  const title = data.title || 'Milestone Achievement';
-  const season = data.season || 'Season';
+  const title = (data.title || 'MILESTONE').toUpperCase();
+  const name = (data.name || '').toUpperCase();
+  const numberLine = data.number ? `${data.number} ${title}` : title;
 
-  return `Celebration graphic: ${club} ${title} - ${data.name} achieved ${data.number} ${title.toLowerCase()} in ${season}.
-    Championship milestone celebration, gold and bronze accent colors, trophy aesthetic,
-    celebration confetti energy, achievement highlight design, premium sports graphic,
-    victorious moment, cinematic lighting, dramatic composition, inspiring achievement energy.
-    9:16 vertical Instagram format, celebratory poster design, premium quality.`;
+  const lines = [
+    title,
+    name,
+    numberLine,
+    data.season ? String(data.season).toUpperCase() : '',
+    club
+  ].filter(Boolean);
+
+  return `Cricket milestone CELEBRATION poster. Scene: premium gold-and-bronze trophy aesthetic, confetti, dramatic celebratory lighting, championship graphic design, vertical 9:16 poster.
+
+TEXT TO RENDER ON THE POSTER — spell every line EXACTLY as written, clean bold modern sports typography. Do NOT change spelling or add other words/numbers:
+${lines.map(l => `• "${l}"`).join('\n')}
+
+Do not invent extra text, dates, or numbers beyond the lines above.`;
 }
 
 function buildPrompt_photo(data, cfg) {
@@ -1228,7 +1268,7 @@ async function generateAI(type, data, cfg) {
   return await generateWithGemini(prompt, cfg);
 }
 
-// Gemini image generation wrapper (gemini-2.5-flash-image — ~4x cheaper than OpenAI)
+// Gemini image generation wrapper (gemini-3.1-flash-image — stronger text rendering)
 // Returns a 1080x1920 canvas (9:16 Story/Reel). Logos composited after via drawClubLogo/drawLeagueLogo.
 async function generateWithGemini(prompt, cfg) {
   const fullPrompt = `${prompt}\n\nFORMAT: vertical 9:16 Instagram Story/Reel poster at 1080x1920. Leave the top-left and top-right corners (approx 200x200px each) relatively clear and dark so team badges can be placed there. Make it look premium, dramatic, and shareable.`;
@@ -1240,7 +1280,7 @@ async function generateWithGemini(prompt, cfg) {
 
   try {
     const response = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image:generateContent',
       {
         method: 'POST',
         headers: {
