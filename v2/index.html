@@ -1230,17 +1230,40 @@ async function generateAI(type, data, cfg) {
 }
 
 // Gemini image generation wrapper (gemini-2.5-flash-image — ~4x cheaper than OpenAI)
-// Returns a 1080x1536 canvas; logos are composited later by generateAICardForType.
+// Returns a 1080x1920 canvas (9:16 Story/Reel). Logos are baked in by Gemini as reference images.
 async function generateWithGemini(prompt, cfg) {
-  // Tell the model to keep top corners dark/uniform so logos blend in seamlessly
-  const enhancedPrompt = `${prompt}\n\nFORMAT: vertical portrait poster. COMPOSITION REQUIREMENT: The top-left and top-right corners (about 160x160 pixels each) must be DARK, uniform, and visually quiet — like a subtle vignette or shadow. No bright details, no text, no graphics, no logos, no faces in those corner areas, so logos can be placed there cleanly.`;
+  // Build the parts array: text prompt first, then logos as reference images
+  const parts = [];
+
+  // Club logo reference (top-left)
+  const clubLogoB64 = cfg.clubLogo || CHAMPIONS_LOGO_B64;
+  if(clubLogoB64) {
+    // strip data:image/...;base64, prefix if present
+    const b64 = clubLogoB64.replace(/^data:[^;]+;base64,/, '');
+    const mime = clubLogoB64.match(/^data:([^;]+);/)?.[1] || 'image/png';
+    parts.push({ inlineData: { mimeType: mime, data: b64 } });
+  }
+
+  // League logo reference (top-right)
+  const leagueLogoB64 = cfg.leagueLogo || NACL_LOGO_B64;
+  if(leagueLogoB64) {
+    const b64 = leagueLogoB64.replace(/^data:[^;]+;base64,/, '');
+    const mime = leagueLogoB64.match(/^data:([^;]+);/)?.[1] || 'image/png';
+    parts.push({ inlineData: { mimeType: mime, data: b64 } });
+  }
+
+  const logoInstruction = clubLogoB64 && leagueLogoB64
+    ? `The first reference image is the CLUB BADGE — place it naturally in the top-left corner of the poster. The second reference image is the LEAGUE LOGO — place it naturally in the top-right corner. Integrate both logos as real design elements, not stickers.`
+    : ``;
+
+  parts.push({ text: `${prompt}\n\n${logoInstruction}\n\nFORMAT: vertical 9:16 Instagram Story/Reel poster at 1080x1920. Make it look premium and shareable.` });
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 120000);
 
   try {
     const response = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent',
       {
         method: 'POST',
         headers: {
@@ -1248,9 +1271,8 @@ async function generateWithGemini(prompt, cfg) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: enhancedPrompt }] }],
-          // Request true 2:3 portrait (832x1248) so it fills the 1080x1536 canvas with no crop/distortion
-          generationConfig: { responseModalities: ['IMAGE'], imageConfig: { aspectRatio: '2:3' } }
+          contents: [{ parts }],
+          generationConfig: { responseModalities: ['IMAGE', 'TEXT'], imageConfig: { aspectRatio: '9:16' } }
         }),
         signal: controller.signal
       }
@@ -1266,8 +1288,8 @@ async function generateWithGemini(prompt, cfg) {
     }
 
     // Find the image part (Gemini may also return text parts)
-    const parts = data?.candidates?.[0]?.content?.parts || [];
-    const imgPart = parts.find(p => p.inlineData?.data || p.inline_data?.data);
+    const resParts = data?.candidates?.[0]?.content?.parts || [];
+    const imgPart = resParts.find(p => p.inlineData?.data || p.inline_data?.data);
     const inline = imgPart?.inlineData || imgPart?.inline_data;
     if(!inline?.data) {
       console.error('❌ Gemini returned no image part:', data);
@@ -1282,22 +1304,21 @@ async function generateWithGemini(prompt, cfg) {
       img.onload = () => {
         const cv = document.createElement('canvas');
         cv.width = 1080;
-        cv.height = 1536;
+        cv.height = 1920;
         const ctx = cv.getContext('2d');
-        // Cover-fit: fill the 2:3 canvas without distortion
+        // Cover-fit: fill the 9:16 canvas without distortion
         const scale = Math.max(cv.width / img.width, cv.height / img.height);
         const dw = img.width * scale, dh = img.height * scale;
         ctx.drawImage(img, (cv.width - dw) / 2, (cv.height - dh) / 2, dw, dh);
-        // Logos are added later by drawClubLogo/drawLeagueLogo in generateAICardForType
         res(cv);
       };
       img.onerror = () => res(null);
-      img.src = imageUrl; // data: URL — no CORS taint, toBlob works
+      img.src = imageUrl;
     });
   } catch(e) {
     clearTimeout(timeoutId);
     console.error('❌ Gemini image error:', e);
-    throw e; // surface to UI instead of silently returning null
+    throw e;
   }
 }
 
@@ -2379,46 +2400,11 @@ function App(){return{
         this.aiPreviewUrl = URL.createObjectURL(blob);
         this.aiPreviewPost = {type, meta: data, blob};
       } else {
-        this.aiGeneratingProgress=60;
-        // CRITICAL FIX: Canvas may be tainted by external AI image.
-        // Create a fresh canvas and draw everything on it to ensure logos are included.
-        const freshCanvas = document.createElement('canvas');
-        freshCanvas.width = aiCanvas.width;
-        freshCanvas.height = aiCanvas.height;
-        const freshCtx = freshCanvas.getContext('2d');
-
-        // Draw the AI image onto the fresh, untainted canvas
-        freshCtx.drawImage(aiCanvas, 0, 0);
-
-        // Now draw logos on the fresh canvas (not tainted)
-        const cfgWithLogos = {
-          ...this.settings,
-          clubLogo: this.settings.clubLogo || CHAMPIONS_LOGO_B64,
-          leagueLogo: this.settings.leagueLogo || NACL_LOGO_B64,
-        };
-        console.log('🎨 Drawing logos on fresh canvas:', {hasClubLogo: !!cfgWithLogos.clubLogo, hasLeagueLogo: !!cfgWithLogos.leagueLogo, canvasSize: {w:freshCanvas.width, h:freshCanvas.height}});
-        try {
-          console.log('🎨 About to draw club logo...');
-          await drawClubLogo(freshCtx, cfgWithLogos);
-          console.log('✅ Club logo drawn');
-          console.log('🎨 About to draw league logo...');
-          await drawLeagueLogo(freshCtx, cfgWithLogos);
-          console.log('✅ League logo drawn');
-        } catch(logoErr) {
-          console.error('❌ Logo drawing error:', logoErr);
-        }
-
+        // Logos are baked in by Gemini — just export the canvas directly
         this.aiGeneratingProgress=90;
-        try {
-          const blob = await new Promise((resolve, reject) => freshCanvas.toBlob(b => b ? resolve(b) : reject(new Error('toBlob returned null')), 'image/jpeg', 0.92));
-          this.aiPreviewUrl = URL.createObjectURL(blob);
-          this.aiPreviewPost = {type, meta: data, blob};
-          console.log('✅ AI image with logos successfully exported');
-        } catch(blobErr) {
-          console.error('❌ toBlob failed:', blobErr);
-          this.showToast('⚠ Image export failed - try again', false);
-          throw blobErr;
-        }
+        const blob = await new Promise((resolve, reject) => aiCanvas.toBlob(b => b ? resolve(b) : reject(new Error('toBlob returned null')), 'image/jpeg', 0.92));
+        this.aiPreviewUrl = URL.createObjectURL(blob);
+        this.aiPreviewPost = {type, meta: data, blob};
       }
 
       this.aiGeneratingProgress=100;
