@@ -1121,12 +1121,19 @@ function buildPrompt_match(data, cfg) {
   const won = data.result === 'won';
   const headline = won ? 'VICTORY' : (data.result === 'lost' ? 'DEFEAT' : 'MATCH RESULT');
   const marginLine = (won && data.margin) ? `WON BY ${String(data.margin).toUpperCase()}` : '';
+  const dt = data.date ? new Date(data.date + 'T00:00:00') : null;
+  const niceDate = (dt && !isNaN(dt)) ? dt.toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' }) : '';
+  const topBat = data.batterName ? `TOP BAT: ${data.batterName} ${data.batterRuns||0}${data.batterBalls?` (${data.batterBalls})`:''}` : '';
+  const topBowl = data.bowlerName ? `TOP BOWL: ${data.bowlerName} ${data.bowlerWkts||0}/${data.bowlerRuns||0}` : '';
   const lines = [
     `${club} vs ${opp}`,
     headline,
     marginLine,
     `${club}  ${data.ourScore}`,
     `${opp}  ${data.theirScore}`,
+    topBat,
+    topBowl,
+    niceDate,
     data.venue || ''
   ].filter(Boolean);
 
@@ -1271,7 +1278,7 @@ async function generateAI(type, data, cfg) {
 // Gemini image generation wrapper (gemini-3.1-flash-image — stronger text rendering)
 // Returns a 1080x1920 canvas (9:16 Story/Reel). Logos composited after via drawClubLogo/drawLeagueLogo.
 async function generateWithGemini(prompt, cfg) {
-  const fullPrompt = `${prompt}\n\nFORMAT: vertical 9:16 Instagram Story/Reel poster at 1080x1920. Leave the top-left and top-right corners (approx 200x200px each) relatively clear and dark so team badges can be placed there. Make it look premium, dramatic, and shareable.`;
+  const fullPrompt = `${prompt}\n\nFORMAT: vertical 9:16 Instagram Story/Reel poster at 1080x1920. Leave the top-left and top-right corners (approx 200x200px each) relatively clear and dark so team badges can be placed there. Make it look premium, dramatic, and shareable. Render every text line EXACTLY ONCE — do not repeat, duplicate, or echo any line anywhere else in the image.`;
 
   console.log('%c[Gemini prompt being sent]', 'color:#17b8b8;font-weight:bold', '\n' + fullPrompt);
 
