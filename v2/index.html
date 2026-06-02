@@ -1139,18 +1139,21 @@ function buildPrompt_fixture(data, cfg) {
   const venue = data.venue || 'Cricket Ground';
   const comp = data.competition || 'Cricket';
   const format = (data.format || 'T20').toUpperCase();
-  const niceDate = data.date
-    ? new Date(data.date + 'T00:00:00').toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' })
-    : '';
+  // Fixture form uses ff.datetime (datetime-local, e.g. "2025-06-22T14:00")
+  const dt = data.datetime ? new Date(data.datetime) : null;
+  const valid = dt && !isNaN(dt);
+  const niceDate = valid ? dt.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' }) : '';
+  const niceTime = valid ? dt.toLocaleTimeString('en-GB', { hour:'numeric', minute:'2-digit', hour12:true }) : '';
+  const when = valid ? `${niceDate} at ${niceTime}` : '';
 
-  return `Professional cricket match day announcement poster. ${club} vs ${opp}, ${format} ${comp} at ${venue}.
-    ${niceDate ? `Match date: ${niceDate}.` : ''}
+  return `Professional cricket MATCH DAY announcement poster for an UPCOMING fixture. ${club} vs ${opp}, ${format} ${comp}.
+    Venue: ${venue}.${when ? ` Match date and time: ${when}.` : ''}
     Professional sports photography, cinematic 8k photorealism, dramatic stadium floodlights,
     night cricket match, pristine grass cricket field, intense competitive energy,
     championship event aesthetic, golden warm stadium lighting, high contrast sharp focus,
     action-ready atmosphere, awaiting match energy.
     9:16 vertical Instagram story format, premium sports poster design.
-    STRICT TEXT RULES: ${niceDate ? `If you show a date, show exactly "${niceDate}".` : 'Do not show any date.'} Do NOT write "tonight", "today", or invent any other date, time, or numbers.`;
+    STRICT TEXT RULES: Clearly show the VENUE "${venue}".${when ? ` Show the exact date and time "${when}".` : ' Do not show any date or time.'} Do NOT write "tonight" or "today" or invent any other date, time, score, or numbers.`;
 }
 
 function buildPrompt_squad(data, cfg) {
