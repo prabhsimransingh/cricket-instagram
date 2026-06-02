@@ -896,18 +896,35 @@ function jerseyBg(ctx,P,A,postType){
 }
 
 // ─── Draw NACL logo (top-right) ─ Seamless integration ──────
-// ─── Shared helper: draw a logo at natural size in a corner ─────────────────
-// size = target width/height (square). Respects transparency — no circular clip.
+// ─── Shared helper: draw a circular badge logo in a corner ─────────────────
+// Clips to a circle so any white/transparent corner background is removed.
+// (x,y) = top-left of the size×size box; size = diameter.
 function _drawCornerLogo(ctx, img, x, y, size) {
+  const r = size/2, cx = x + r, cy = y + r;
   const lw = img.naturalWidth||img.width||1, lh = img.naturalHeight||img.height||1;
-  const scale = Math.min(size/lw, size/lh);
+  // cover-fit + slight zoom so the badge's edge sits at/just past the clip (no white sliver)
+  const scale = Math.max(size/lw, size/lh) * 1.06;
   const dw = lw*scale, dh = lh*scale;
-  // drop shadow so logo lifts off any background
+
+  // drop shadow (cast by a solid disc that the logo then covers)
   ctx.save();
-  ctx.shadowColor = 'rgba(0,0,0,0.6)';
+  ctx.shadowColor = 'rgba(0,0,0,0.5)';
   ctx.shadowBlur = 18;
   ctx.shadowOffsetY = 4;
-  ctx.drawImage(img, x, y, dw, dh);
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
+  ctx.fillStyle = '#0b1020'; ctx.fill();
+  ctx.restore();
+
+  // clip to circle and draw the badge to fill it
+  ctx.save();
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.clip();
+  ctx.drawImage(img, cx - dw/2, cy - dh/2, dw, dh);
+  ctx.restore();
+
+  // crisp thin rim
+  ctx.save();
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
+  ctx.strokeStyle = 'rgba(255,255,255,0.22)'; ctx.lineWidth = 2; ctx.stroke();
   ctx.restore();
 }
 
@@ -1101,18 +1118,19 @@ async function drawMatchCard(ctx,d,cfg){
 function buildPrompt_match(data, cfg) {
   const club = (cfg.clubName || 'Champions Cricket Club').toUpperCase();
   const opp = (data.opponent || 'Opposition').toUpperCase();
-  const score = data.result === 'won'
-    ? `${data.ourScore}/${data.theirScore} victory`
-    : `fell short at ${data.ourScore}/${data.theirScore}`;
+  const won = data.result === 'won';
+  const result = won
+    ? `${club} won — ${club} ${data.ourScore} beat ${opp} ${data.theirScore}`
+    : `${opp} ${data.theirScore} beat ${club} ${data.ourScore}`;
   const venue = data.venue || 'Cricket Ground';
-  const comp = data.competition || 'Match';
 
-  return `Professional cricket match result celebration poster. ${club} vs ${opp} at ${venue}.
-    Final score: ${score}. ${data.result === 'won' ? 'Victory celebration moment' : 'Intense match moment'}.
+  return `Professional cricket match RESULT poster for a match that has ALREADY FINISHED. ${club} vs ${opp} at ${venue}.
+    ${result}. ${won ? 'Victory celebration moment' : 'Hard-fought match moment'}.
     Professional sports photography, cinematic 8k photorealism, dramatic stadium floodlights,
     cricket action shot, pristine grass field, competitive energy, championship aesthetic,
     golden warm stadium lighting, high contrast sharp focus, dynamic composition.
-    9:16 vertical Instagram format, premium sports design, celebration ${data.result === 'won' ? 'energy' : 'drama'}.`;
+    9:16 vertical Instagram format, premium sports design.
+    STRICT TEXT RULES: This is a completed match result — do NOT write any date, time, kickoff time, or words like "tonight", "today", "live", or "coming soon". Show only the final score above. Do not invent any other numbers, scores, or text.`;
 }
 
 function buildPrompt_fixture(data, cfg) {
@@ -1121,13 +1139,18 @@ function buildPrompt_fixture(data, cfg) {
   const venue = data.venue || 'Cricket Ground';
   const comp = data.competition || 'Cricket';
   const format = (data.format || 'T20').toUpperCase();
+  const niceDate = data.date
+    ? new Date(data.date + 'T00:00:00').toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' })
+    : '';
 
   return `Professional cricket match day announcement poster. ${club} vs ${opp}, ${format} ${comp} at ${venue}.
+    ${niceDate ? `Match date: ${niceDate}.` : ''}
     Professional sports photography, cinematic 8k photorealism, dramatic stadium floodlights,
     night cricket match, pristine grass cricket field, intense competitive energy,
     championship event aesthetic, golden warm stadium lighting, high contrast sharp focus,
     action-ready atmosphere, awaiting match energy.
-    9:16 vertical Instagram story format, premium sports poster design.`;
+    9:16 vertical Instagram story format, premium sports poster design.
+    STRICT TEXT RULES: ${niceDate ? `If you show a date, show exactly "${niceDate}".` : 'Do not show any date.'} Do NOT write "tonight", "today", or invent any other date, time, or numbers.`;
 }
 
 function buildPrompt_squad(data, cfg) {
@@ -1206,6 +1229,8 @@ async function generateAI(type, data, cfg) {
 // Returns a 1080x1920 canvas (9:16 Story/Reel). Logos composited after via drawClubLogo/drawLeagueLogo.
 async function generateWithGemini(prompt, cfg) {
   const fullPrompt = `${prompt}\n\nFORMAT: vertical 9:16 Instagram Story/Reel poster at 1080x1920. Leave the top-left and top-right corners (approx 200x200px each) relatively clear and dark so team badges can be placed there. Make it look premium, dramatic, and shareable.`;
+
+  console.log('%c[Gemini prompt being sent]', 'color:#17b8b8;font-weight:bold', '\n' + fullPrompt);
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 120000);
