@@ -235,7 +235,7 @@
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:14px">
               <div><label class="lbl">Our Score (e.g., 156/5)</label><input class="inp" x-model="mf.ourScore" @input="autoCalcMargin();debouncedPreview('match')" placeholder="156/5"/></div>
               <div><label class="lbl">Their Score (e.g., 143/8)</label><input class="inp" x-model="mf.theirScore" @input="autoCalcMargin();debouncedPreview('match')" placeholder="143/8"/></div>
-              <div><label class="lbl">Margin (auto)</label><input class="inp" x-model="mf.margin" :readonly="mf.battedFirst" :style="mf.battedFirst?'background:rgba(255,255,255,.03);opacity:.8':''" placeholder="13 runs"/></div>
+              <div><label class="lbl">Margin (auto)</label><input class="inp" x-model="mf.margin" :readonly="mf.battedFirst" :style="mf.battedFirst?'background:rgba(0,0,0,.02);opacity:.8':''" placeholder="13 runs"/></div>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
               <div><label class="lbl">Venue</label><input class="inp" x-model="mf.venue" @input="debouncedPreview('match')" placeholder="Victoria Park"/></div>
@@ -362,7 +362,7 @@
             <div style="display:flex;flex-direction:column;gap:10px">
               <template x-for="(pl,i) in qf.players" :key="i">
                 <div class="pl-row" style="display:grid;grid-template-columns:32px 1fr 120px;gap:8px;align-items:center">
-                  <span style="font-size:13px;font-weight:700;color:rgba(255,255,255,.4);text-align:center" x-text="i+1"></span>
+                  <span style="font-size:13px;font-weight:700;color:#71717a;text-align:center" x-text="i+1"></span>
                   <input class="inp" x-model="pl.name" @input="debouncedPreview('squad')" :placeholder="'Player '+(i+1)"/>
                   <select class="inp" x-model="pl.role" @change="debouncedPreview('squad')" style="font-size:12px">
                     <option value="">Role</option><option>Batter</option><option>Bowler</option><option>All-rounder</option><option>WK</option><option>Captain</option>
@@ -373,14 +373,14 @@
           </div>
           <div class="gen-row" style="display:flex;flex-direction:column;gap:10px;margin-top:16px">
             <div style="display:flex;gap:10px">
-              <button class="btn btn-ghost" style="padding:12px 16px;font-size:14px;flex-shrink:0;white-space:nowrap" @click="loadSample('squad')">📋 Sample</button>
+              <button class="btn btn-ghost" style="padding:12px 16px;font-size:14px;flex-shrink:0;white-space:nowrap" @click="loadSample('squad')"><i class="ph ph-list"></i> Sample</button>
               <button class="btn btn-gold" style="flex:1;justify-content:center;padding:13px;font-size:15px" @click="submitSquad()" :disabled="creating||aiGenerating||!qf.opponent">
-                <span x-show="!creating">✨ Generate Squad Post</span>
+                <span x-show="!creating"><i class="ph-fill ph-magic-wand"></i> Generate Squad Post</span>
                 <span x-show="creating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
               </button>
             </div>
             <button class="btn btn-blue" style="width:100%;justify-content:center;padding:13px;font-size:15px;display:flex;align-items:center;gap:8px" @click="generateSquadAIOnly()" :disabled="aiGenerating||!qf.opponent">
-              <span x-show="!aiGenerating">🎨 Generate AI Card</span>
+              <span x-show="!aiGenerating"><i class="ph-fill ph-palette"></i> Generate AI Card</span>
               <span x-show="aiGenerating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
             </button>
           </div>
@@ -389,18 +389,18 @@
           <div class="sh">Live Preview</div>
           <div class="preview-wrap"><canvas id="squad-preview" width="1080" height="1920" style="width:100%;height:auto;display:block"></canvas></div>
           <div style="display:flex;gap:8px;margin-top:10px">
-            <button class="btn btn-ghost" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="playPreview('squad')">▶ Play Effects</button>
-            <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="exportVideo('squad')">🎬 Export Video</button>
+            <button class="btn btn-ghost" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="playPreview('squad')"><i class="ph ph-play"></i> Play Effects</button>
+            <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="exportVideo('squad')"><i class="ph ph-download"></i> Export Video</button>
           </div>
 
           <!-- AI Preview (Single Image) -->
-          <div x-show="aiPreviewUrl" class="ai-preview-img" style="margin-top:24px;padding:16px;background:rgba(23,184,184,.08);border:2px solid rgba(23,184,184,.3);border-radius:12px">
+          <div x-show="aiPreviewUrl" class="ai-preview-img" style="margin-top:24px;padding:16px;background:rgba(21,128,61,.08);border:2px solid rgba(21,128,61,.3);border-radius:12px">
             <div class="sh">🎨 AI Generated Image</div>
-            <img x-bind:src="aiPreviewUrl || ''" style="width:100%;border-radius:10px;display:block;border:1px solid rgba(23,184,184,.3);margin:12px 0" alt="AI preview"/>
+            <img x-bind:src="aiPreviewUrl || ''" style="width:100%;border-radius:10px;display:block;border:1px solid rgba(21,128,61,.3);margin:12px 0" alt="AI preview"/>
             <div style="display:flex;gap:8px">
-              <button class="btn btn-gold" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="saveAIPreviewAsPost()">✓ Save as Post</button>
-              <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="generateSquadAIOnly()">🔄 Regenerate</button>
-              <button class="btn btn-red" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="resetAIGeneration()">✕ Discard</button>
+              <button class="btn btn-gold" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="saveAIPreviewAsPost()"><i class="ph ph-check"></i> Save as Post</button>
+              <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="generateSquadAIOnly()"><i class="ph ph-arrow-clockwise"></i> Regenerate</button>
+              <button class="btn btn-red" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="resetAIGeneration()"><i class="ph ph-x"></i> Discard</button>
             </div>
           </div>
         </div>
@@ -433,19 +433,19 @@
             <div class="divider"></div>
             <div class="drop-zone" @click="$refs.motmPhoto.click()" style="padding:16px">
               <input type="file" accept="image/*" x-ref="motmPhoto" class="hidden" @change="handlePhotoUpload($event,'gf')"/>
-              <div style="font-size:13px;color:rgba(255,255,255,.4)" x-text="gf.photoName||'📸 Add player photo (recommended)'"></div>
+              <div style="font-size:13px;color:#71717a" x-text="gf.photoName||'<i class="ph ph-image"></i> Add player photo (recommended)'"></div>
             </div>
           </div>
           <div class="gen-row" style="display:flex;flex-direction:column;gap:10px;margin-top:16px">
             <div style="display:flex;gap:10px">
-              <button class="btn btn-ghost" style="padding:12px 16px;font-size:14px;flex-shrink:0;white-space:nowrap" @click="loadSample('motm')">📋 Sample</button>
+              <button class="btn btn-ghost" style="padding:12px 16px;font-size:14px;flex-shrink:0;white-space:nowrap" @click="loadSample('motm')"><i class="ph ph-list"></i> Sample</button>
               <button class="btn btn-gold" style="flex:1;justify-content:center;padding:13px;font-size:15px" @click="submitMOTM()" :disabled="creating||aiGenerating||!gf.name">
-                <span x-show="!creating">🌟 Generate MOTM Post</span>
+                <span x-show="!creating"><i class="ph-fill ph-star"></i> Generate MOTM Post</span>
                 <span x-show="creating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
               </button>
             </div>
             <button class="btn btn-blue" style="width:100%;justify-content:center;padding:13px;font-size:15px;display:flex;align-items:center;gap:8px" @click="generateMOTMAIOnly()" :disabled="aiGenerating||!gf.name">
-              <span x-show="!aiGenerating">🎨 Generate AI Card</span>
+              <span x-show="!aiGenerating"><i class="ph-fill ph-palette"></i> Generate AI Card</span>
               <span x-show="aiGenerating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
             </button>
           </div>
@@ -454,18 +454,18 @@
           <div class="sh">Live Preview</div>
           <div class="preview-wrap"><canvas id="motm-preview" width="1080" height="1920" style="width:100%;height:auto;display:block"></canvas></div>
           <div style="display:flex;gap:8px;margin-top:10px">
-            <button class="btn btn-ghost" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="playPreview('motm')">▶ Play Effects</button>
-            <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="exportVideo('motm')">🎬 Export Video</button>
+            <button class="btn btn-ghost" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="playPreview('motm')"><i class="ph ph-play"></i> Play Effects</button>
+            <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="exportVideo('motm')"><i class="ph ph-download"></i> Export Video</button>
           </div>
 
           <!-- AI Preview (Single Image) -->
-          <div x-show="aiPreviewUrl" class="ai-preview-img" style="margin-top:24px;padding:16px;background:rgba(23,184,184,.08);border:2px solid rgba(23,184,184,.3);border-radius:12px">
+          <div x-show="aiPreviewUrl" class="ai-preview-img" style="margin-top:24px;padding:16px;background:rgba(21,128,61,.08);border:2px solid rgba(21,128,61,.3);border-radius:12px">
             <div class="sh">🎨 AI Generated Image</div>
-            <img x-bind:src="aiPreviewUrl || ''" style="width:100%;border-radius:10px;display:block;border:1px solid rgba(23,184,184,.3);margin:12px 0" alt="AI preview"/>
+            <img x-bind:src="aiPreviewUrl || ''" style="width:100%;border-radius:10px;display:block;border:1px solid rgba(21,128,61,.3);margin:12px 0" alt="AI preview"/>
             <div style="display:flex;gap:8px">
-              <button class="btn btn-gold" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="saveAIPreviewAsPost()">✓ Save as Post</button>
-              <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="generateMOTMAIOnly()">🔄 Regenerate</button>
-              <button class="btn btn-red" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="resetAIGeneration()">✕ Discard</button>
+              <button class="btn btn-gold" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="saveAIPreviewAsPost()"><i class="ph ph-check"></i> Save as Post</button>
+              <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="generateMOTMAIOnly()"><i class="ph ph-arrow-clockwise"></i> Regenerate</button>
+              <button class="btn btn-red" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="resetAIGeneration()"><i class="ph ph-x"></i> Discard</button>
             </div>
           </div>
         </div>
@@ -489,19 +489,19 @@
             <div class="divider"></div>
             <div class="drop-zone" @click="$refs.milPhoto.click()" style="padding:16px">
               <input type="file" accept="image/*" x-ref="milPhoto" class="hidden" @change="handlePhotoUpload($event,'lf')"/>
-              <div style="font-size:13px;color:rgba(255,255,255,.4)" x-text="lf.photoName||'📸 Add photo background'"></div>
+              <div style="font-size:13px;color:#71717a" x-text="lf.photoName||'<i class="ph ph-image"></i> Add photo background'"></div>
             </div>
           </div>
           <div class="gen-row" style="display:flex;flex-direction:column;gap:10px;margin-top:16px">
             <div style="display:flex;gap:10px">
-              <button class="btn btn-ghost" style="padding:12px 16px;font-size:14px;flex-shrink:0;white-space:nowrap" @click="loadSample('milestone')">📋 Sample</button>
+              <button class="btn btn-ghost" style="padding:12px 16px;font-size:14px;flex-shrink:0;white-space:nowrap" @click="loadSample('milestone')"><i class="ph ph-list"></i> Sample</button>
               <button class="btn btn-gold" style="flex:1;justify-content:center;padding:13px;font-size:15px" @click="submitMilestone()" :disabled="creating||aiGenerating||!lf.title">
-                <span x-show="!creating">🎯 Generate Milestone Post</span>
+                <span x-show="!creating"><i class="ph-fill ph-target"></i> Generate Milestone Post</span>
                 <span x-show="creating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
               </button>
             </div>
             <button class="btn btn-blue" style="width:100%;justify-content:center;padding:13px;font-size:15px;display:flex;align-items:center;gap:8px" @click="generateMilestoneAIOnly()" :disabled="aiGenerating||!lf.title">
-              <span x-show="!aiGenerating">🎨 Generate AI Card</span>
+              <span x-show="!aiGenerating"><i class="ph-fill ph-palette"></i> Generate AI Card</span>
               <span x-show="aiGenerating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Generating…</span>
             </button>
           </div>
@@ -510,18 +510,18 @@
           <div class="sh">Live Preview</div>
           <div class="preview-wrap"><canvas id="milestone-preview" width="1080" height="1920" style="width:100%;height:auto;display:block"></canvas></div>
           <div style="display:flex;gap:8px;margin-top:10px">
-            <button class="btn btn-ghost" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="playPreview('milestone')">▶ Play Effects</button>
-            <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="exportVideo('milestone')">🎬 Export Video</button>
+            <button class="btn btn-ghost" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="playPreview('milestone')"><i class="ph ph-play"></i> Play Effects</button>
+            <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="exportVideo('milestone')"><i class="ph ph-download"></i> Export Video</button>
           </div>
 
           <!-- AI Preview (Single Image) -->
-          <div x-show="aiPreviewUrl" class="ai-preview-img" style="margin-top:24px;padding:16px;background:rgba(23,184,184,.08);border:2px solid rgba(23,184,184,.3);border-radius:12px">
+          <div x-show="aiPreviewUrl" class="ai-preview-img" style="margin-top:24px;padding:16px;background:rgba(21,128,61,.08);border:2px solid rgba(21,128,61,.3);border-radius:12px">
             <div class="sh">🎨 AI Generated Image</div>
-            <img x-bind:src="aiPreviewUrl || ''" style="width:100%;border-radius:10px;display:block;border:1px solid rgba(23,184,184,.3);margin:12px 0" alt="AI preview"/>
+            <img x-bind:src="aiPreviewUrl || ''" style="width:100%;border-radius:10px;display:block;border:1px solid rgba(21,128,61,.3);margin:12px 0" alt="AI preview"/>
             <div style="display:flex;gap:8px">
-              <button class="btn btn-gold" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="saveAIPreviewAsPost()">✓ Save as Post</button>
-              <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="generateMilestoneAIOnly()">🔄 Regenerate</button>
-              <button class="btn btn-red" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="resetAIGeneration()">✕ Discard</button>
+              <button class="btn btn-gold" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="saveAIPreviewAsPost()"><i class="ph ph-check"></i> Save as Post</button>
+              <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="generateMilestoneAIOnly()"><i class="ph ph-arrow-clockwise"></i> Regenerate</button>
+              <button class="btn btn-red" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="resetAIGeneration()"><i class="ph ph-x"></i> Discard</button>
             </div>
           </div>
         </div>
@@ -536,19 +536,19 @@
             @dragover.prevent @drop.prevent="handlePhotoUpload($event,'pf',true)">
             <input type="file" accept="image/*" x-ref="customPhoto" class="hidden" @change="handlePhotoUpload($event,'pf')"/>
             <div style="font-size:36px;margin-bottom:8px" x-text="pf.photoName?'✅':'🖼️'"></div>
-            <div style="font-size:13px;color:rgba(255,255,255,.45)" x-text="pf.photoName||'Drop photo or click to browse'"></div>
+            <div style="font-size:13px;color:#71717a" x-text="pf.photoName||'Drop photo or click to browse'"></div>
           </div>
           <div style="margin-top:16px"><label class="lbl">Caption</label>
             <textarea class="inp" x-model="pf.caption" @input="debouncedPreview('photo')" rows="3" style="resize:none" placeholder="Write caption or leave blank for AI…"></textarea>
           </div>
           <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:10px;font-size:13px">
             <input type="checkbox" x-model="pf.genCaption" style="accent-color:#f0b429"/>
-            <span style="color:rgba(255,255,255,.65)">Generate caption with AI ✨</span>
+            <span style="color:#525252">Generate caption with AI ✨</span>
           </label>
           <div style="display:flex;flex-direction:column;gap:10px;margin-top:18px">
             <button class="btn btn-gold" style="width:100%;justify-content:center;padding:13px;font-size:15px"
               @click="submitPhoto()" :disabled="creating||aiGenerating||!pf.photoDataURL">
-              <span x-show="!creating">📸 Add to Queue</span>
+              <span x-show="!creating"><i class="ph ph-image"></i> Add to Queue</span>
               <span x-show="creating" style="display:flex;align-items:center;gap:8px"><span class="spin"></span>Processing…</span>
             </button>
             <button class="btn btn-blue" style="width:100%;justify-content:center;padding:13px;font-size:15px;display:flex;align-items:center;gap:8px" @click="generatePhotoAIOnly()" :disabled="aiGenerating||!pf.photoDataURL">
@@ -561,8 +561,8 @@
           <div class="sh">Live Preview</div>
           <div class="preview-wrap"><canvas id="photo-preview" width="1080" height="1920" style="width:100%;height:auto;display:block"></canvas></div>
           <div style="display:flex;gap:8px;margin-top:10px">
-            <button class="btn btn-ghost" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="playPreview('photo')">▶ Play Effects</button>
-            <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="exportVideo('photo')">🎬 Export Video</button>
+            <button class="btn btn-ghost" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="playPreview('photo')"><i class="ph ph-play"></i> Play Effects</button>
+            <button class="btn btn-blue" style="flex:1;justify-content:center;font-size:12px;padding:9px" @click="exportVideo('photo')"><i class="ph ph-download"></i> Export Video</button>
           </div>
         </div>
       </div>
@@ -570,7 +570,7 @@
 
     <!-- AI Generation Progress Overlay -->
     <div x-show="aiGenerating" @click="if(!aiGenerating)return" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.90);display:flex !important;align-items:center;justify-content:center;z-index:99999;backdrop-filter:blur(5px);">
-      <div style="text-align:center;padding:50px 40px;background:rgba(15,15,25,.98);border-radius:20px;border:2px solid rgba(23,184,184,.3);max-width:320px;box-shadow:0 20px 60px rgba(0,0,0,.9)">
+      <div style="text-align:center;padding:50px 40px;background:rgba(15,15,25,.98);border-radius:20px;border:2px solid rgba(21,128,61,.3);max-width:320px;box-shadow:0 20px 60px rgba(0,0,0,.9)">
         <div style="font-size:48px;margin-bottom:20px;animation:bounce 1.5s ease-in-out infinite">🎨</div>
         <div style="font-size:18px;font-weight:700;margin-bottom:16px;color:#fff;letter-spacing:.5px" x-text="aiGeneratingStatus||'Generating Images...'"></div>
         <div style="margin-bottom:20px">
@@ -580,7 +580,7 @@
         </div>
         <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:8px" x-text="`${aiGeneratingProgress}%`"></div>
         <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:8px;font-weight:500">OpenAI DALL-E 3</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.4)">⏱️ 30-60 seconds total</div>
+        <div style="font-size:12px;color:#71717a">⏱️ 30-60 seconds total</div>
       </div>
     </div>
     <style>
@@ -2460,7 +2460,7 @@ function App(){return{
     else if(type==='motm'){Object.assign(this.gf,s);}
     else if(type==='milestone'){Object.assign(this.lf,s);}
     this.debouncedPreview(type);
-    this.showToast('📋 Sample data loaded!');
+    this.showToast('<i class="ph ph-list"></i> Sample data loaded!');
   },
 
   handleClubLogo(ev){
