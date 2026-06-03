@@ -2033,13 +2033,18 @@ function parseCSV(raw){
   const dm=hdr.match(/\((\d{2}\/\d{2}\/\d{4})\)/);
   if(dm){try{const[mo,dy,yr]=dm[1].split('/');matchDate=`${yr}-${mo.padStart(2,'0')}-${dy.padStart(2,'0')}`;}catch{}}
   function sec(kind,team){const mk=new RegExp(`${team.split(' ')[0]}.*${kind}`,'i');let in2=false;const r=[];for(const l of lines){if(mk.test(l.replace(/"/g,''))){in2=true;continue;}if(in2){if(/Batting|Bowling/i.test(l.replace(/"/g,''))&&!mk.test(l.replace(/"/g,'')))break;r.push(l.split(',').map(c));}}return r;}
-  function bat(rows){const r=[];for(const x of rows){const n=x[0];if(!n||/batsman|batter|total|byes|wides/i.test(n))continue;try{r.push({name:n,runs:+x[4]||0,balls:+x[5]||0,fours:+x[6]||0,sixes:+x[7]||0});}catch{}}return r;}
-  function bwl(rows){const r=[];for(const x of rows){const n=x[0];if(!n||/bowler|total/i.test(n))continue;try{r.push({name:n,overs:x[1]||'0',runs:+x[3]||0,wickets:+x[4]||0});}catch{}}return r;}
+  function bat(rows){const r=[];for(const x of rows){const n=x[0];if(!n||/^(name|batsman|batter|total|extras|byes|wides|did not bat|fall of)/i.test(n.trim()))continue;try{r.push({name:n,runs:+x[4]||0,balls:+x[5]||0,fours:+x[6]||0,sixes:+x[7]||0});}catch{}}return r;}
+  function bwl(rows){const r=[];for(const x of rows){const n=x[0];if(!n||/^(name|bowler|total|extras)/i.test(n.trim()))continue;try{r.push({name:n,overs:x[1]||'0',runs:+x[3]||0,wickets:+x[4]||0});}catch{}}return r;}
   const bA=bat(sec('Batting',teamA)),bB=bat(sec('Batting',teamB)),wB=bwl(sec('Bowling',teamB));
   const topBat=bA.length?bA.reduce((a,b)=>b.runs>a.runs?b:a):null;
   const topBwl=wB.length?wB.reduce((a,b)=>b.wickets>a.wickets||(b.wickets===a.wickets&&b.runs<a.runs)?b:a):null;
   const rA=bA.reduce((s,b)=>s+b.runs,0),rB=bB.reduce((s,b)=>s+b.runs,0);
-  return{teamA,teamB,winner,matchDate,ourScore:rA?`${rA}/10`:'',theirScore:rB?`${rB}/10`:'',topBat,topBwl};
+  // Who batted first: whichever team's Batting section appears first in the file
+  const battingIdx=team=>{const mk=new RegExp(`${team.split(' ')[0]}.*Batting`,'i');return lines.findIndex(l=>mk.test(l.replace(/"/g,'')));};
+  const idxA=battingIdx(teamA),idxB=battingIdx(teamB);
+  const battedFirstTeam=(idxA>=0&&idxB>=0)?(idxA<idxB?teamA:teamB):'';
+  const rosterA=bA.map(b=>b.name).filter(Boolean),rosterB=bB.map(b=>b.name).filter(Boolean);
+  return{teamA,teamB,winner,matchDate,ourScore:rA?`${rA}/10`:'',theirScore:rB?`${rB}/10`:'',topBat,topBwl,battedFirstTeam,rosterA,rosterB};
 }
 
 // ═══════════════════════════════════════════════════════
@@ -2566,11 +2571,30 @@ function App(){return{
   applyCSV(text){
     try{
       const d=parseCSV(text);
-      const isOurs=n=>this.settings.clubName.toLowerCase().split(' ').some(w=>n.toLowerCase().includes(w));
+      const isOurs=n=>!!n&&this.settings.clubName.toLowerCase().split(' ').some(w=>w&&n.toLowerCase().includes(w));
       const isA=isOurs(d.teamA);
+      const opp=isA?d.teamB:d.teamA;
+      const ourRoster=(isA?d.rosterA:d.rosterB)||[];
       const tb=isA?d.topBat:null,bwl=isA?d.topBwl:null;
-      Object.assign(this.mf,{opponent:isA?d.teamB:d.teamA,result:d.winner&&isOurs(d.winner)?'won':(d.winner?'lost':'tied'),ourScore:isA?d.ourScore:d.theirScore,theirScore:isA?d.theirScore:d.ourScore,date:d.matchDate||this.mf.date,batterName:tb?.name||'',batterRuns:tb?.runs||0,batterBalls:tb?.balls||0,batterFours:tb?.fours||0,batterSixes:tb?.sixes||0,bowlerName:bwl?.name||'',bowlerWkts:bwl?.wickets||0,bowlerRuns:bwl?.runs||0,bowlerOvers:bwl?.overs||''});
-      this.debouncedPreview('match');this.showToast('📋 CSV imported!');
+      // Infer who batted first (auto-fills margin via autoCalcMargin below)
+      let battedFirst=this.mf.battedFirst;
+      if(d.battedFirstTeam)battedFirst=isOurs(d.battedFirstTeam)?'us':'them';
+      // ── Match Result ──
+      Object.assign(this.mf,{opponent:opp,result:d.winner&&isOurs(d.winner)?'won':(d.winner?'lost':'tied'),battedFirst,ourScore:isA?d.ourScore:d.theirScore,theirScore:isA?d.theirScore:d.ourScore,date:d.matchDate||this.mf.date,batterName:tb?.name||'',batterRuns:tb?.runs||0,batterBalls:tb?.balls||0,batterFours:tb?.fours||0,batterSixes:tb?.sixes||0,bowlerName:bwl?.name||'',bowlerWkts:bwl?.wickets||0,bowlerRuns:bwl?.runs||0,bowlerOvers:bwl?.overs||''});
+      this.autoCalcMargin();
+      // ── Playing XI (from our batting card) ──
+      if(ourRoster.length){
+        this.qf.opponent=opp;this.qf.date=d.matchDate||this.qf.date;
+        this.qf.players=this.qf.players.map((p,i)=>({name:ourRoster[i]||'',role:p.role||''}));
+      }
+      // ── Man of the Match (default to our top scorer; user can edit) ──
+      if(tb){
+        this.gf.name=tb.name;this.gf.opponent=opp;this.gf.date=d.matchDate||this.gf.date;
+        this.gf.runs=tb.runs||0;this.gf.balls=tb.balls||0;
+      }
+      this.debouncedPreview('match');this.debouncedPreview('squad');this.debouncedPreview('motm');
+      const parts=['Match Result'];if(ourRoster.length)parts.push(`Playing XI (${ourRoster.length})`);if(tb)parts.push('MOTM');
+      this.showToast('📋 Imported → '+parts.join(' · '));
     }catch(e){this.showToast(`CSV error: ${e.message}`,false);}
   },
 
