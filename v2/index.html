@@ -1278,7 +1278,7 @@ async function generateAI(type, data, cfg) {
 // Gemini image generation wrapper (gemini-3.1-flash-image — stronger text rendering)
 // Returns a 1080x1920 canvas (9:16 Story/Reel). Logos composited after via drawClubLogo/drawLeagueLogo.
 async function generateWithGemini(prompt, cfg) {
-  const fullPrompt = `${prompt}\n\nFORMAT: vertical 9:16 Instagram Story/Reel poster at 1080x1920. Leave the top-left and top-right corners (approx 200x200px each) relatively clear and dark so team badges can be placed there. Make it look premium, dramatic, and shareable. Render every text line EXACTLY ONCE — do not repeat, duplicate, or echo any line anywhere else in the image.`;
+  const fullPrompt = `${prompt}\n\nFORMAT: vertical 9:16 Instagram Story/Reel poster at 1080x1920. Keep the top-left and top-right corner zones (about 220x220px each) calm and uncluttered — let the background scene flow naturally into them, but keep faces, text, logos and busy detail out of those two corners so circular team badges can be overlaid there cleanly afterward. CRITICAL: do NOT draw any solid black, dark, or coloured rectangular boxes, panels, frames, placeholders, or empty cut-outs anywhere in the image — there must be no box-shaped artefacts; the artwork should fill the whole frame edge to edge with the scene itself. Make it look premium, dramatic, and shareable. Render every text line EXACTLY ONCE — do not repeat, duplicate, or echo any line anywhere else in the image.`;
 
   console.log('%c[Gemini prompt being sent]', 'color:#17b8b8;font-weight:bold', '\n' + fullPrompt);
 
