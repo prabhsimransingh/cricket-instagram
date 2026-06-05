@@ -896,35 +896,61 @@ function jerseyBg(ctx,P,A,postType){
 }
 
 // ─── Draw NACL logo (top-right) ─ Seamless integration ──────
-// ─── Shared helper: draw a circular badge logo in a corner ─────────────────
-// Clips to a circle so any white/transparent corner background is removed.
-// (x,y) = top-left of the size×size box; size = diameter.
+// ─── Knock out a logo's flat background so it blends into the photo ────────
+// Flood-fills transparency inward from the four edges, removing background
+// that is near-white OR near-black and connected to the border. White/dark
+// pixels INSIDE the logo (text, crest detail) are kept because they are not
+// edge-connected. Result is cached on the image element. Returns a canvas.
+const _cutCache = new Map();   // src → cutout canvas (flood-fill is expensive; do it once)
+function _logoCutout(img){
+  const key = img.src || '';
+  if(_cutCache.has(key)) return _cutCache.get(key);
+  const w = img.naturalWidth||img.width||1, h = img.naturalHeight||img.height||1;
+  const cv = document.createElement('canvas'); cv.width=w; cv.height=h;
+  const cx = cv.getContext('2d');
+  cx.drawImage(img, 0, 0, w, h);
+  let id; try{ id = cx.getImageData(0,0,w,h); }catch(e){ _cutCache.set(key,cv); return cv; } // tainted → skip
+  const d = id.data;
+  const bg = i => { // flat, desaturated backdrop? (white / grey / checkerboard / near-black)
+    const a=d[i+3]; if(a<16) return true;
+    const r=d[i],g=d[i+1],b=d[i+2];
+    const mx=Math.max(r,g,b), mn=Math.min(r,g,b), avg=(r+g+b)/3;
+    const desat = (mx-mn) <= 28;              // low colour = backdrop, not the logo art
+    return desat && (avg>=170 || avg<=28);    // light grey/white OR near-black
+  };
+  const stack=[]; const seen=new Uint8Array(w*h);
+  const push=(px,py)=>{ if(px<0||py<0||px>=w||py>=h) return; const p=py*w+px; if(seen[p]) return; seen[p]=1; stack.push(p); };
+  for(let x=0;x<w;x++){ push(x,0); push(x,h-1); }
+  for(let y=0;y<h;y++){ push(0,y); push(w-1,y); }
+  while(stack.length){
+    const p=stack.pop(); const i=p*4;
+    if(!bg(i)) continue;          // hit the real logo edge → stop
+    d[i+3]=0;                     // erase this background pixel
+    const px=p%w, py=(p-px)/w;
+    push(px+1,py); push(px-1,py); push(px,py+1); push(px,py-1);
+  }
+  cx.putImageData(id,0,0);
+  _cutCache.set(key,cv); return cv;
+}
+
+// ─── Shared helper: draw a logo in a corner, blended into the artwork ──────
+// No backing disc, rim, or circular crop — the logo keeps its own shape and
+// transparency and sits on the photo with only a soft shadow for separation.
+// (x,y) = top-left of the size×size box the logo is fit (contain) inside.
 function _drawCornerLogo(ctx, img, x, y, size) {
-  const r = size/2, cx = x + r, cy = y + r;
-  const lw = img.naturalWidth||img.width||1, lh = img.naturalHeight||img.height||1;
-  // cover-fit + slight zoom so the badge's edge sits at/just past the clip (no white sliver)
-  const scale = Math.max(size/lw, size/lh) * 1.06;
+  const src = _logoCutout(img);
+  const lw = src.width||1, lh = src.height||1;
+  // contain-fit: preserve aspect ratio, never crop the badge
+  const scale = Math.min(size/lw, size/lh);
   const dw = lw*scale, dh = lh*scale;
+  const cx = x + size/2, cy = y + size/2;
 
-  // drop shadow (cast by a solid disc that the logo then covers)
+  // soft shadow cast by the logo's own pixels (follows its real shape)
   ctx.save();
-  ctx.shadowColor = 'rgba(0,0,0,0.5)';
-  ctx.shadowBlur = 18;
-  ctx.shadowOffsetY = 4;
-  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
-  ctx.fillStyle = '#0b1020'; ctx.fill();
-  ctx.restore();
-
-  // clip to circle and draw the badge to fill it
-  ctx.save();
-  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.clip();
-  ctx.drawImage(img, cx - dw/2, cy - dh/2, dw, dh);
-  ctx.restore();
-
-  // crisp thin rim
-  ctx.save();
-  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
-  ctx.strokeStyle = 'rgba(255,255,255,0.22)'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.shadowColor = 'rgba(0,0,0,0.45)';
+  ctx.shadowBlur = 14;
+  ctx.shadowOffsetY = 3;
+  ctx.drawImage(src, cx - dw/2, cy - dh/2, dw, dh);
   ctx.restore();
 }
 
