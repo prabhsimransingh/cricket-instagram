@@ -935,11 +935,14 @@ function _logoCutout(img){
 
 // ─── Shared helper: draw a logo in a corner, blended into the artwork ──────
 // No backing disc, rim, or circular crop — the logo keeps its own shape and
-// transparency and sits on the photo with only a soft shadow for separation.
+// sits on the photo with only a soft shadow for separation.
+// opts.cutout (default true) — knock out the flat baked-in background.
+// opts.alpha  (default 1)    — overall opacity (e.g. 0.82 = slightly translucent).
 // (x,y) = top-left of the size×size box the logo is fit (contain) inside.
-function _drawCornerLogo(ctx, img, x, y, size) {
-  const src = _logoCutout(img);
-  const lw = src.width||1, lh = src.height||1;
+function _drawCornerLogo(ctx, img, x, y, size, opts={}) {
+  const { cutout=true, alpha=1 } = opts;
+  const src = cutout ? _logoCutout(img) : img;
+  const lw = src.naturalWidth||src.width||1, lh = src.naturalHeight||src.height||1;
   // contain-fit: preserve aspect ratio, never crop the badge
   const scale = Math.min(size/lw, size/lh);
   const dw = lw*scale, dh = lh*scale;
@@ -947,6 +950,7 @@ function _drawCornerLogo(ctx, img, x, y, size) {
 
   // soft shadow cast by the logo's own pixels (follows its real shape)
   ctx.save();
+  ctx.globalAlpha = alpha;
   ctx.shadowColor = 'rgba(0,0,0,0.45)';
   ctx.shadowBlur = 14;
   ctx.shadowOffsetY = 3;
@@ -959,7 +963,8 @@ async function drawLeagueLogo(ctx,cfg){
   const img=await loadImg(cfg.leagueLogo);if(!img){return;}
   const size=160, pad=20;
   const canvasW=ctx.canvas.width||S;
-  _drawCornerLogo(ctx, img, canvasW - size - pad, pad, size);
+  // League logo keeps its white background, drawn slightly translucent to soften it
+  _drawCornerLogo(ctx, img, canvasW - size - pad, pad, size, {cutout:false, alpha:0.82});
 }
 
 // ─── Draw club/team logo (top-left) ─────────────────────────
