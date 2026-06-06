@@ -906,8 +906,10 @@ const _cutCache = new Map();   // src|mode → cutout canvas (flood-fill is expe
 //                Champions JPEG whose transparency was flattened into a grey checkerboard).
 // mode 'white' : remove ONLY near-pure-white. Keeps coloured AND dark detail inside the logo
 //                intact — use for emblems like NACL where the artwork itself contains white/dark.
-function _logoCutout(img, mode='desat'){
-  const key = (img.src||'') + '|' + mode;
+// recolorBlue: after background removal, repaint blue-dominant pixels white
+//              (used for the NACL emblem so the blue cricketer becomes white).
+function _logoCutout(img, mode='desat', recolorBlue=false){
+  const key = (img.src||'') + '|' + mode + (recolorBlue?'|bw':'');
   if(_cutCache.has(key)) return _cutCache.get(key);
   const w = img.naturalWidth||img.width||1, h = img.naturalHeight||img.height||1;
   const cv = document.createElement('canvas'); cv.width=w; cv.height=h;
@@ -934,6 +936,12 @@ function _logoCutout(img, mode='desat'){
     const px=p%w, py=(p-px)/w;
     push(px+1,py); push(px-1,py); push(px,py+1); push(px,py-1);
   }
+  if(recolorBlue){ // repaint the blue cricketer white, leave red/white/text alone
+    for(let p=0;p<w*h;p++){ const i=p*4; if(d[i+3]<16) continue;
+      const r=d[i],g=d[i+1],b=d[i+2];
+      if(b>r+20 && b>g+20){ d[i]=255; d[i+1]=255; d[i+2]=255; }
+    }
+  }
   cx.putImageData(id,0,0);
   _cutCache.set(key,cv); return cv;
 }
@@ -946,8 +954,8 @@ function _logoCutout(img, mode='desat'){
 // opts.alpha  (default 1)    — overall opacity (e.g. 0.82 = slightly translucent).
 // (x,y) = top-left of the size×size box the logo is fit (contain) inside.
 function _drawCornerLogo(ctx, img, x, y, size, opts={}) {
-  const { cutout=true, alpha=1, bgMode='desat' } = opts;
-  const src = cutout ? _logoCutout(img, bgMode) : img;
+  const { cutout=true, alpha=1, bgMode='desat', recolorBlue=false } = opts;
+  const src = cutout ? _logoCutout(img, bgMode, recolorBlue) : img;
   const lw = src.naturalWidth||src.width||1, lh = src.naturalHeight||src.height||1;
   // contain-fit: preserve aspect ratio, never crop the badge
   const scale = Math.min(size/lw, size/lh);
@@ -969,8 +977,8 @@ async function drawLeagueLogo(ctx,cfg){
   const img=await loadImg(cfg.leagueLogo);if(!img){return;}
   const size=160, pad=20;
   const canvasW=ctx.canvas.width||S;
-  // League logo: remove ONLY the pure-white square; keep the emblem's own white/dark detail
-  _drawCornerLogo(ctx, img, canvasW - size - pad, pad, size, {cutout:true, bgMode:'white'});
+  // League logo: remove the white square, and repaint the blue cricketer white
+  _drawCornerLogo(ctx, img, canvasW - size - pad, pad, size, {cutout:true, bgMode:'white', recolorBlue:true});
 }
 
 // ─── Draw club/team logo (top-left) ─────────────────────────
