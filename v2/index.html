@@ -963,8 +963,8 @@ async function drawLeagueLogo(ctx,cfg){
   const img=await loadImg(cfg.leagueLogo);if(!img){return;}
   const size=160, pad=20;
   const canvasW=ctx.canvas.width||S;
-  // League logo keeps its white background, drawn slightly translucent to soften it
-  _drawCornerLogo(ctx, img, canvasW - size - pad, pad, size, {cutout:false, alpha:0.7});
+  // League logo: knock out the flat white background, keep only the inner emblem
+  _drawCornerLogo(ctx, img, canvasW - size - pad, pad, size, {cutout:true});
 }
 
 // ─── Draw club/team logo (top-left) ─────────────────────────
