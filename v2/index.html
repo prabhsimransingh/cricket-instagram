@@ -901,9 +901,13 @@ function jerseyBg(ctx,P,A,postType){
 // that is near-white OR near-black and connected to the border. White/dark
 // pixels INSIDE the logo (text, crest detail) are kept because they are not
 // edge-connected. Result is cached on the image element. Returns a canvas.
-const _cutCache = new Map();   // src → cutout canvas (flood-fill is expensive; do it once)
-function _logoCutout(img){
-  const key = img.src || '';
+const _cutCache = new Map();   // src|mode → cutout canvas (flood-fill is expensive; do it once)
+// mode 'desat' : remove white / grey / checkerboard / near-black backdrops (good for the
+//                Champions JPEG whose transparency was flattened into a grey checkerboard).
+// mode 'white' : remove ONLY near-pure-white. Keeps coloured AND dark detail inside the logo
+//                intact — use for emblems like NACL where the artwork itself contains white/dark.
+function _logoCutout(img, mode='desat'){
+  const key = (img.src||'') + '|' + mode;
   if(_cutCache.has(key)) return _cutCache.get(key);
   const w = img.naturalWidth||img.width||1, h = img.naturalHeight||img.height||1;
   const cv = document.createElement('canvas'); cv.width=w; cv.height=h;
@@ -911,9 +915,10 @@ function _logoCutout(img){
   cx.drawImage(img, 0, 0, w, h);
   let id; try{ id = cx.getImageData(0,0,w,h); }catch(e){ _cutCache.set(key,cv); return cv; } // tainted → skip
   const d = id.data;
-  const bg = i => { // flat, desaturated backdrop? (white / grey / checkerboard / near-black)
+  const bg = i => {
     const a=d[i+3]; if(a<16) return true;
     const r=d[i],g=d[i+1],b=d[i+2];
+    if(mode==='white') return r>=238 && g>=238 && b>=238;   // ONLY near-pure-white
     const mx=Math.max(r,g,b), mn=Math.min(r,g,b), avg=(r+g+b)/3;
     const desat = (mx-mn) <= 28;              // low colour = backdrop, not the logo art
     return desat && (avg>=170 || avg<=28);    // light grey/white OR near-black
@@ -937,11 +942,12 @@ function _logoCutout(img){
 // No backing disc, rim, or circular crop — the logo keeps its own shape and
 // sits on the photo with only a soft shadow for separation.
 // opts.cutout (default true) — knock out the flat baked-in background.
+// opts.bgMode ('desat'|'white') — how aggressive the background removal is.
 // opts.alpha  (default 1)    — overall opacity (e.g. 0.82 = slightly translucent).
 // (x,y) = top-left of the size×size box the logo is fit (contain) inside.
 function _drawCornerLogo(ctx, img, x, y, size, opts={}) {
-  const { cutout=true, alpha=1 } = opts;
-  const src = cutout ? _logoCutout(img) : img;
+  const { cutout=true, alpha=1, bgMode='desat' } = opts;
+  const src = cutout ? _logoCutout(img, bgMode) : img;
   const lw = src.naturalWidth||src.width||1, lh = src.naturalHeight||src.height||1;
   // contain-fit: preserve aspect ratio, never crop the badge
   const scale = Math.min(size/lw, size/lh);
@@ -963,8 +969,8 @@ async function drawLeagueLogo(ctx,cfg){
   const img=await loadImg(cfg.leagueLogo);if(!img){return;}
   const size=160, pad=20;
   const canvasW=ctx.canvas.width||S;
-  // League logo: knock out the flat white background, keep only the inner emblem
-  _drawCornerLogo(ctx, img, canvasW - size - pad, pad, size, {cutout:true});
+  // League logo: remove ONLY the pure-white square; keep the emblem's own white/dark detail
+  _drawCornerLogo(ctx, img, canvasW - size - pad, pad, size, {cutout:true, bgMode:'white'});
 }
 
 // ─── Draw club/team logo (top-left) ─────────────────────────
