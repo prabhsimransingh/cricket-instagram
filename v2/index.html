@@ -735,6 +735,14 @@ function rr(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y)
 
 async function loadImg(src){return new Promise(res=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>res(null);i.src=src;});}
 function blobToDataURL(b){return new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=()=>res(null);fr.readAsDataURL(b);});}
+// Next upcoming weekend day (Sat or Sun, from tomorrow) as a datetime-local string
+function nextWeekendDateTime(hour=14, minute=0){
+  const d=new Date(); d.setDate(d.getDate()+1);
+  while(d.getDay()!==6 && d.getDay()!==0) d.setDate(d.getDate()+1); // 6=Sat, 0=Sun
+  d.setHours(hour,minute,0,0);
+  const p=n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+}
 
 function drawPhoto(ctx,src,dim=0.5){return new Promise(res=>{const img=new Image();img.onload=()=>{const{width:iw,height:ih}=img;const sc=Math.max(W/iw,H/ih),dw=iw*sc,dh=ih*sc;ctx.drawImage(img,(W-dw)/2,(H-dh)/2,dw,dh);if(dim>0){ctx.fillStyle=`rgba(0,0,0,${dim})`;ctx.fillRect(0,0,W,H);}res();};img.onerror=res;img.src=src;});}
 
@@ -2195,6 +2203,7 @@ function App(){return{
     // Load sample data by default so buttons are enabled
     Object.assign(this.mf,SAMPLES.match);
     Object.assign(this.ff,SAMPLES.fixture);
+    this.ff.datetime=nextWeekendDateTime();   // default match day = next weekend
     Object.assign(this.qf,SAMPLES.squad);
     Object.assign(this.gf,SAMPLES.motm);
     Object.assign(this.lf,SAMPLES.milestone);
@@ -2594,7 +2603,7 @@ function App(){return{
   loadSample(type){
     const s=SAMPLES[type];if(!s)return;
     if(type==='match'){Object.assign(this.mf,s);this.autoCalcMargin();}
-    else if(type==='fixture'){Object.assign(this.ff,s);}
+    else if(type==='fixture'){Object.assign(this.ff,s);this.ff.datetime=nextWeekendDateTime();}
     else if(type==='squad'){
       this.qf.opponent=s.opponent;this.qf.date=s.date;this.qf.competition=s.competition;
       this.qf.players=s.players.map(p=>({...p}));
