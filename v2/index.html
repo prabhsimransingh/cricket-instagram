@@ -734,6 +734,7 @@ function darken(c,f){return c.map(v=>Math.round(v*f));}
 function rr(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();}
 
 async function loadImg(src){return new Promise(res=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>res(null);i.src=src;});}
+function blobToDataURL(b){return new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=()=>res(null);fr.readAsDataURL(b);});}
 
 function drawPhoto(ctx,src,dim=0.5){return new Promise(res=>{const img=new Image();img.onload=()=>{const{width:iw,height:ih}=img;const sc=Math.max(W/iw,H/ih),dw=iw*sc,dh=ih*sc;ctx.drawImage(img,(W-dw)/2,(H-dh)/2,dw,dh);if(dim>0){ctx.fillStyle=`rgba(0,0,0,${dim})`;ctx.fillRect(0,0,W,H);}res();};img.onerror=res;img.src=src;});}
 
@@ -2063,6 +2064,18 @@ async function renderCard(canvas,post,cfg){
   }catch(e){console.warn('Canvas error',e);}
 }
 
+// Render a saved post to a canvas. If the post carries a baked AI image
+// (post.aiImage, set when "Save as Post" is clicked on an AI preview), use
+// that exact image; otherwise fall back to redrawing the canvas card.
+async function renderPostToCanvas(canvas,post,cfg){
+  if(!canvas)return;
+  if(post&&post.aiImage){
+    const img=await loadImg(post.aiImage);
+    if(img){const ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);return;}
+  }
+  await renderCard(canvas,post,cfg);
+}
+
 // ═══════════════════════════════════════════════════════
 //  CSV PARSER
 // ═══════════════════════════════════════════════════════
@@ -2276,9 +2289,9 @@ function App(){return{
     }catch(e){console.warn(e);}
   },
 
-  async renderThumb(post,id){const c=document.getElementById(id||'thumb-'+post.id);if(c)await renderCard(c,post,this.settings);},
+  async renderThumb(post,id){const c=document.getElementById(id||'thumb-'+post.id);if(c)await renderPostToCanvas(c,post,this.settings);},
 
-  saveQueue(){Store.setQueue(this.posts);},
+  saveQueue(){try{Store.setQueue(this.posts);}catch(e){console.warn('saveQueue: storage full',e);this.showToast('⚠ Storage full — post kept this session but may not survive reload',false);}},
   saveSettings(){Store.setSettings(this.settings);this.showToast('⚙ Settings saved!');},
   showToast(msg,ok=true){this.toast={show:true,msg,ok};setTimeout(()=>{this.toast.show=false;},3000);},
   approvePost(p){p.status='approved';this.saveQueue();this.showToast('✓ Approved');},
@@ -2289,7 +2302,7 @@ function App(){return{
     this.downloading=post.id;
     try{
       const cv=document.createElement('canvas');cv.width=W;cv.height=H;
-      await renderCard(cv,post,this.settings);
+      await renderPostToCanvas(cv,post,this.settings);
       const type=post.type||'post';
       const opp=(post.meta?.opponent||'').replace(/\s+/g,'-').toLowerCase();
       const fname=`wicketgram-${type}${opp?'-'+opp:''}-${Date.now()}.jpg`;
@@ -2317,7 +2330,7 @@ function App(){return{
     try{
       // Render card → blob (memory-safe, no OOM crash)
       const cv=document.createElement('canvas');cv.width=W;cv.height=H;
-      await renderCard(cv,post,s);
+      await renderPostToCanvas(cv,post,s);
       const blob=await new Promise((res,rej)=>cv.toBlob(b=>b?res(b):rej(new Error('Canvas failed')),'image/jpeg',0.92));
       const igFile=new File([blob],'instagram-post.jpg',{type:'image/jpeg'});
 
@@ -2542,6 +2555,9 @@ function App(){return{
     const type = this.aiPreviewPost.type;
     let captions=[];
     if(this.settings.groqKey){try{captions=await generateCaptions(type,this.aiPreviewPost.meta,this.settings);}catch(e){}}
+    // Bake the actual AI-generated image (with logos) onto the post so download /
+    // publish use it instead of re-rendering the canvas version.
+    const aiImage = this.aiPreviewPost.blob ? await blobToDataURL(this.aiPreviewPost.blob) : null;
     const post={
       id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),
       type:type,
@@ -2550,6 +2566,7 @@ function App(){return{
       captions,
       meta:this.aiPreviewPost.meta,
       renderMode:'ai-full',
+      aiImage,
       createdAt:new Date().toISOString()
     };
     this.posts.unshift(post);this.saveQueue();this.createdPost=post;
