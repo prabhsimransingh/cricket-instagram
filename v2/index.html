@@ -2236,8 +2236,10 @@ function App(){return{
     // ── Auto-detect Won/Lost from scores when both are entered ──
     // (skip if user explicitly picked tied/no result)
     if(m.result !== 'tied' && m.result !== 'no result' && our.runs && their.runs){
-      if(our.runs > their.runs) m.result = weBattedFirst ? 'won' : 'lost';
-      else if(our.runs < their.runs) m.result = weBattedFirst ? 'lost' : 'won';
+      // More runs wins regardless of batting order (batting order only decides
+      // whether the margin reads "X runs" or "X wickets")
+      if(our.runs > their.runs) m.result = 'won';
+      else if(our.runs < their.runs) m.result = 'lost';
       else m.result = 'tied';
     }
 
